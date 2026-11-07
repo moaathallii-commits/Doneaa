@@ -631,7 +631,6 @@
         </div>
         <div class="stat-card red">
           <div class="stat-title">إجمالي المصاريف (ل.س)</div>
-          <div class="stat-title" style="display:none;"></div>
           <div class="stat-value" id="owner-total-expenses">0</div>
         </div>
         <div class="stat-card green">
@@ -647,7 +646,7 @@
       <!-- جدول الفصل المحاسبي حسب نوع الوقود المخزن في الفاتورة -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">⛽ ملخص المبيعات المفصل حسب نوع الوقود (فصل محاسبي تاريخي)</div>
+          <div class="card-title">⛽ ملخص المبيعات المفصل حسب نوع الوقود</div>
         </div>
         <div class="table-responsive">
           <table>
@@ -728,7 +727,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // دالة الحماية ضد انهيار البيانات (Safe Parsing)
     function safeNum(val) {
       return Number(val) || 0;
     }
@@ -737,7 +735,6 @@
       return (Number(val) || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
     }
 
-    // حساب تاريخ سوريا الدقيق (UTC+3) عند منتصف الليل بدون استخدام toISOString المباشر
     function getSyriaDateObj(customDate = new Date()) {
       const utcMillis = customDate.getTime() + (customDate.getTimezoneOffset() * 60000);
       return new Date(utcMillis + (3 * 3600000));
@@ -758,7 +755,6 @@
       return `${hours}:${mins}`;
     }
 
-    // تحديث شارة التاريخ في الهيدر
     function updateHeaderDate() {
       const todayStr = getSyriaDateString();
       document.getElementById('current-date-badge').textContent = `تاريخ اليوم (سوريا): ${todayStr}`;
@@ -832,7 +828,7 @@
         if (attempts >= MAX_ATTEMPTS) {
           localStorage.setItem('donea_lock_until', Date.now() + LOCKOUT_MS);
           checkLockoutStatus();
-          showToast('تم قفل النظام لمدة 15 دقيقة لتجاوز المحاولات المسموحة!', '#ef4444');
+          showToast('تم قفل النظام لمدة 15 دقيقة!', '#ef4444');
         } else {
           showToast(`كلمة المرور غير صحيحة! المحاولات المتبقية: ${MAX_ATTEMPTS - attempts}`, '#ef4444');
         }
@@ -843,9 +839,7 @@
       document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
       document.getElementById(viewId).classList.add('active');
       document.getElementById('logout-btn').style.display = viewId === 'login-view' ? 'none' : 'inline-flex';
-      if (viewId === 'owner-view') {
-        renderOwnerDashboard();
-      }
+      if (viewId === 'owner-view') renderOwnerDashboard();
     }
 
     function logoutSession() {
@@ -862,47 +856,35 @@
     }
 
     /**************************************************************
-     * 3. الحالة السحابية (State) والمزامنة الفورية مع Firebase
+     * 3. الحالة السحابية والمزامنة مع Firebase
      **************************************************************/
-    let appState = {
-      settings: { fuels: {} },
-      meters: {},
-      tanks: {},
-      daily_logs: {},
-      expenses: {}
-    };
-
+    let appState = { settings: { fuels: {} }, meters: {}, tanks: {}, daily_logs: {}, expenses: {} };
     let currentOwnerFilter = 'today';
 
-    // الاستماع المباشر لجذر قاعدة البيانات
     db.ref('/').on('value', (snapshot) => {
       const data = snapshot.val();
       if (!data || !data.settings || !data.meters || !data.tanks) {
-        // تهيئة تلقائية إذا كانت القاعدة فارغة تماماً
         initializeDefaultDatabaseIfNeeded(data);
         return;
       }
-
-      appState.settings = data.settings || { fuels: {} };
-      appState.meters = data.meters || {};
-      appState.tanks = data.tanks || {};
-      appState.daily_logs = data.daily_logs || {};
-      appState.expenses = data.expenses || {};
-
+      appState = {
+        settings: data.settings || { fuels: {} },
+        meters: data.meters || {},
+        tanks: data.tanks || {},
+        daily_logs: data.daily_logs || {},
+        expenses: data.expenses || {}
+      };
       renderAdminInterface();
-      if (document.getElementById('owner-view').classList.contains('active')) {
-        renderOwnerDashboard();
-      }
+      if (document.getElementById('owner-view').classList.contains('active')) renderOwnerDashboard();
     });
 
-    // تهيئة أولية أو إصلاح طارئ للهيكلية القياسية
     async function initializeDefaultDatabaseIfNeeded(existingData) {
       if (existingData && existingData.settings && existingData.meters && existingData.tanks) return;
       await buildStandardSchema(false);
     }
 
     async function repairDatabaseSchema() {
-      if (!confirm('سيقوم هذا الإجراء بفحص وإصلاح هيكلية (settings, meters, tanks) وتطبيع القيم التالفة دون حذف الفواتير السابقة. هل تود المتابعة؟')) return;
+      if (!confirm('سيقوم هذا الإجراء بفحص وإصلاح هيكلية القاعدة. هل تود المتابعة؟')) return;
       await buildStandardSchema(true);
     }
 
@@ -950,22 +932,16 @@
           meters[mId].max_reading = safeNum(meters[mId].max_reading) || 999999;
         });
 
-        const updates = {};
-        updates['settings/fuels'] = fuels;
-        updates['tanks'] = tanks;
-        updates['meters'] = meters;
-
+        const updates = { 'settings/fuels': fuels, 'tanks': tanks, 'meters': meters };
         await db.ref().update(updates);
-        if (isManualRepair) {
-          showToast('تمت تهيئة وإصلاح قاعدة البيانات بنجاح ✅', '#10b981');
-        }
+        if (isManualRepair) showToast('تمت تهيئة وإصلاح قاعدة البيانات بنجاح ✅', '#10b981');
       } catch (err) {
-        showToast('حدث خطأ أثناء إصلاح القاعدة: ' + err.message, '#ef4444');
+        showToast('حدث خطأ: ' + err.message, '#ef4444');
       }
     }
 
     /**************************************************************
-     * 4. واجهة أمين المحطة: العرض والعمليات الذرية (Atomic Updates)
+     * 4. واجهة أمين المحطة (مع إزالة await للاستجابة الفورية)
      **************************************************************/
     function renderAdminInterface() {
       renderMetersSection();
@@ -991,7 +967,6 @@
         const prevReading = safeNum(meter.current_reading);
         const unitPrice = safeNum(fuelObj.price);
 
-        // التحقق من وجود عملية مسجلة اليوم لهذا العداد لتفعيل زر التراجع (Undo)
         const meterLogsToday = Object.entries(todayLogs)
           .filter(([_, log]) => log && log.meter_id === meterId)
           .sort((a, b) => safeNum(b[1].timestamp) - safeNum(a[1].timestamp));
@@ -1007,7 +982,7 @@
           </div>
 
           <div class="form-group">
-            <label>القراءة السابقة المسجلة:</label>
+            <label>القراءة السابقة:</label>
             <input type="number" id="prev_${meterId}" value="${prevReading}" readonly />
           </div>
 
@@ -1017,13 +992,13 @@
           </div>
 
           <div class="form-group">
-            <label>كمية المعايرة / الفحص المسترجعة (لتر - اختياري):</label>
+            <label>كمية المعايرة المسترجعة (لتر):</label>
             <input type="number" id="calib_${meterId}" step="any" min="0" value="0" oninput="previewMeterCalculation('${meterId}')" />
           </div>
 
           <label class="checkbox-row">
             <input type="checkbox" id="rollover_${meterId}" onchange="previewMeterCalculation('${meterId}')" />
-            <span>تصفير العداد (Rollover - وصل للحد الأقصى وعاد للصفر)</span>
+            <span>تصفير العداد (Rollover)</span>
           </label>
 
           <div id="rollover_box_${meterId}" class="form-group" style="display:none;">
@@ -1037,7 +1012,7 @@
           </div>
 
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-primary" style="flex:2;" onclick="submitMeterSale('${meterId}')">💾 حفظ عملية البيع</button>
+            <button class="btn btn-primary" style="flex:2;" onclick="submitMeterSale('${meterId}')">💾 حفظ الفاتورة</button>
             ${hasUndo ? `<button class="btn btn-danger" style="flex:1;" onclick="undoLastMeterSale('${meterId}')">↩️ تراجع</button>` : ''}
           </div>
         `;
@@ -1049,15 +1024,13 @@
       const meter = appState.meters[meterId];
       if (!meter) return;
 
-      const fuels = (appState.settings && appState.settings.fuels) || {};
-      const fuelObj = fuels[meter.fuel_type_id] || { price: 0 };
+      const fuelObj = (appState.settings.fuels && appState.settings.fuels[meter.fuel_type_id]) || { price: 0 };
       const prev = safeNum(meter.current_reading);
       const currInput = document.getElementById(`curr_${meterId}`).value;
       const calib = safeNum(document.getElementById(`calib_${meterId}`).value);
       const isRollover = document.getElementById(`rollover_${meterId}`).checked;
 
-      const rolloverBox = document.getElementById(`rollover_box_${meterId}`);
-      rolloverBox.style.display = isRollover ? 'block' : 'none';
+      document.getElementById(`rollover_box_${meterId}`).style.display = isRollover ? 'block' : 'none';
 
       if (currInput === '') {
         document.getElementById(`net_liters_${meterId}`).textContent = '0';
@@ -1068,13 +1041,7 @@
       const curr = safeNum(currInput);
       const maxVal = safeNum(document.getElementById(`max_${meterId}`).value) || 999999;
 
-      let rawDiff = 0;
-      if (isRollover) {
-        rawDiff = (maxVal - prev) + curr;
-      } else {
-        rawDiff = curr - prev;
-      }
-
+      let rawDiff = isRollover ? ((maxVal - prev) + curr) : (curr - prev);
       const netLiters = Math.max(0, rawDiff - calib);
       const totalAmount = netLiters * safeNum(fuelObj.price);
 
@@ -1082,8 +1049,7 @@
       document.getElementById(`total_money_${meterId}`).textContent = formatNum(totalAmount);
     }
 
-    // التحديث الذري (Atomic Update) عند حفظ البيع
-    async function submitMeterSale(meterId) {
+    function submitMeterSale(meterId) {
       const meter = appState.meters[meterId];
       if (!meter) return;
 
@@ -1104,17 +1070,16 @@
       const maxReading = safeNum(document.getElementById(`max_${meterId}`).value) || 999999;
 
       if (!isRollover && currReading < prevReading) {
-        showToast('القراءة الحالية أقل من السابقة! فعّل خيار (تصفير العداد Rollover) إذا صفر العداد.', '#ef4444');
+        showToast('تأكد من تفعيل خيار (تصفير العداد) إذا كانت القراءة الحالية أقل من السابقة.', '#ef4444');
         return;
       }
 
       const rawMovement = isRollover ? ((maxReading - prevReading) + currReading) : (currReading - prevReading);
       if (calibLiters > rawMovement) {
-        showToast('كمية المعايرة لا يمكن أن تكون أكبر من حركة العداد!', '#ef4444');
+        showToast('كمية المعايرة أكبر من الحركة!', '#ef4444');
         return;
       }
 
-      // المعايرة تُخصم من المبيعات (الصافي) ولا تُخصم من حركة العداد الميكانيكية
       const netSoldLiters = rawMovement - calibLiters;
       const unitPrice = safeNum(fuelObj.price);
       const totalPrice = netSoldLiters * unitPrice;
@@ -1128,73 +1093,48 @@
 
       const atomicUpdates = {};
       atomicUpdates[`daily_logs/${todayStr}/${logId}`] = {
-        log_id: logId,
-        date: todayStr,
-        time: timeStr,
-        timestamp: Date.now(),
-        meter_id: meterId,
-        meter_name: meter.name,
-        fuel_type_id: fuelId,
-        fuel_name: fuelObj.name,
-        unit_price: unitPrice,
-        prev_reading: prevReading,
-        curr_reading: currReading,
-        calibration_liters: calibLiters,
-        raw_liters: rawMovement,
-        net_liters: netSoldLiters,
-        total_amount: totalPrice,
-        is_rollover: isRollover
+        log_id: logId, date: todayStr, time: timeStr, timestamp: Date.now(),
+        meter_id: meterId, meter_name: meter.name, fuel_type_id: fuelId, fuel_name: fuelObj.name,
+        unit_price: unitPrice, prev_reading: prevReading, curr_reading: currReading,
+        calibration_liters: calibLiters, raw_liters: rawMovement, net_liters: netSoldLiters,
+        total_amount: totalPrice, is_rollover: isRollover
       };
-
       atomicUpdates[`meters/${meterId}/current_reading`] = currReading;
-      if (tankObj) {
-        atomicUpdates[`tanks/${fuelId}/current_volume`] = updatedTankVolume;
-      }
+      if (tankObj) atomicUpdates[`tanks/${fuelId}/current_volume`] = updatedTankVolume;
 
-      try {
-        await db.ref().update(atomicUpdates);
-        showToast(`تم تسجيل البيع لـ ${meter.name} بنجاح ✅`, '#10b981');
-      } catch (err) {
-        showToast('فشل الحفظ الذري: ' + err.message, '#ef4444');
-      }
+      // تحديث فوري دون await
+      db.ref().update(atomicUpdates);
+      
+      // تفريغ الحقول وإظهار رسالة النجاح فوراً
+      document.getElementById(`curr_${meterId}`).value = '';
+      document.getElementById(`calib_${meterId}`).value = '0';
+      document.getElementById(`rollover_${meterId}`).checked = false;
+      previewMeterCalculation(meterId);
+      
+      showToast(`تم تسجيل البيع لـ ${meter.name} بنجاح ✅`, '#10b981');
     }
 
-    // ميزة التراجع (Undo) لآخر عملية مسجلة للعداد في اليوم الحالي
-    async function undoLastMeterSale(meterId) {
+    function undoLastMeterSale(meterId) {
       const todayStr = getSyriaDateString();
       const todayLogs = (appState.daily_logs && appState.daily_logs[todayStr]) || {};
+      const meterLogs = Object.entries(todayLogs).filter(([_, log]) => log && log.meter_id === meterId).sort((a, b) => safeNum(b[1].timestamp) - safeNum(a[1].timestamp));
 
-      const meterLogs = Object.entries(todayLogs)
-        .filter(([_, log]) => log && log.meter_id === meterId)
-        .sort((a, b) => safeNum(b[1].timestamp) - safeNum(a[1].timestamp));
-
-      if (meterLogs.length === 0) {
-        showToast('لا توجد عمليات اليوم لهذا العداد للتراجع عنها.', '#ef4444');
-        return;
-      }
-
+      if (meterLogs.length === 0) return;
       const [lastLogKey, lastLog] = meterLogs[0];
-      if (!confirm(`هل أنت متأكد من التراجع عن آخر فاتورة لـ (${lastLog.meter_name}) وإرجاع العداد إلى ${lastLog.prev_reading} وإعادة ${lastLog.net_liters} لتر إلى الخزان؟`)) {
-        return;
-      }
+      if (!confirm(`سيتم إلغاء آخر فاتورة لـ (${lastLog.meter_name}) وإعادة ${lastLog.net_liters} لتر للخزان. متأكد؟`)) return;
 
       const fuelId = lastLog.fuel_type_id;
       const currentTankVol = safeNum(appState.tanks?.[fuelId]?.current_volume);
-      const restoredTankVol = currentTankVol + safeNum(lastLog.net_liters);
-
+      
       const atomicUndo = {};
       atomicUndo[`daily_logs/${todayStr}/${lastLogKey}`] = null;
       atomicUndo[`meters/${meterId}/current_reading`] = safeNum(lastLog.prev_reading);
       if (appState.tanks && appState.tanks[fuelId]) {
-        atomicUndo[`tanks/${fuelId}/current_volume`] = restoredTankVol;
+        atomicUndo[`tanks/${fuelId}/current_volume`] = currentTankVol + safeNum(lastLog.net_liters);
       }
 
-      try {
-        await db.ref().update(atomicUndo);
-        showToast('تم التراجع وإرجاع قراءة العداد ورصيد الخزان بنجاح ↩️', '#f59e0b');
-      } catch (err) {
-        showToast('خطأ أثناء التراجع: ' + err.message, '#ef4444');
-      }
+      db.ref().update(atomicUndo);
+      showToast('تم التراجع بنجاح ↩️', '#f59e0b');
     }
 
     function renderAdminDailyLogs() {
@@ -1204,10 +1144,9 @@
       const logsArr = Object.values(logsObj).sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
 
       if (logsArr.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--text-muted);">لا توجد مبيعات مسجلة لهذا اليوم حتى الآن</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--text-muted);">لا توجد مبيعات مسجلة لهذا اليوم</td></tr>`;
         return;
       }
-
       tbody.innerHTML = logsArr.map(log => `
         <tr>
           <td>${log.time || '-'}</td>
@@ -1224,7 +1163,7 @@
     }
 
     /**************************************************************
-     * 5. إدارة الخزانات الأرضية (Tanks) وتوريد الصهاريج
+     * 5. الخزانات وتوريد الصهاريج
      **************************************************************/
     function renderTanksSection() {
       const container = document.getElementById('tanks-cards-container');
@@ -1237,106 +1176,81 @@
         const capacity = Math.max(1, safeNum(tank.capacity));
         const currentVol = safeNum(tank.current_volume);
         const pct = Math.min(100, Math.max(0, (currentVol / capacity) * 100));
-
-        let barColor = 'var(--success)';
-        if (pct < 20) barColor = 'var(--danger)';
-        else if (pct < 45) barColor = 'var(--warning)';
-
+        let barColor = pct < 20 ? 'var(--danger)' : (pct < 45 ? 'var(--warning)' : 'var(--success)');
         const fuelName = fuels[tank.fuel_type_id]?.name || tank.name || tankId;
 
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <div class="card-header">
-            <div class="card-title">🛢️ ${tank.name || ('خزان ' + fuelName)}</div>
-            <span class="badge">${fuelName}</span>
-          </div>
-
-          <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
-            <span>الرصيد المتبقي: <strong>${formatNum(currentVol)}</strong> لتر</span>
-            <span>السعة الكلية: <strong>${formatNum(capacity)}</strong> لتر</span>
-          </div>
-
-          <div class="tank-progress-wrap">
-            <div class="tank-progress-bar" style="width:${pct.toFixed(1)}%; background-color:${barColor};">
-              ${pct.toFixed(1)}%
+        container.innerHTML += `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🛢️ ${tank.name || fuelName}</div>
+              <span class="badge">${fuelName}</span>
             </div>
-          </div>
-
-          <div class="form-group" style="margin-top:14px;">
-            <label>توريد كمية جديدة (تفريغ صهريج باللتر):</label>
-            <div style="display:flex; gap:8px;">
-              <input type="number" id="supply_${tankId}" min="1" step="any" placeholder="أدخل الكمية الموردة..." />
-              <button class="btn btn-secondary" onclick="supplyTankVolume('${tankId}')">➕ توريد</button>
+            <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+              <span>الرصيد: <strong>${formatNum(currentVol)}</strong> لتر</span>
+              <span>السعة: <strong>${formatNum(capacity)}</strong> لتر</span>
+            </div>
+            <div class="tank-progress-wrap">
+              <div class="tank-progress-bar" style="width:${pct.toFixed(1)}%; background-color:${barColor};">${pct.toFixed(1)}%</div>
+            </div>
+            <div class="form-group" style="margin-top:14px;">
+              <label>توريد صهريج (لتر):</label>
+              <div style="display:flex; gap:8px;">
+                <input type="number" id="supply_${tankId}" min="1" step="any" placeholder="أدخل الكمية..." />
+                <button class="btn btn-secondary" onclick="supplyTankVolume('${tankId}')">➕ توريد</button>
+              </div>
             </div>
           </div>
         `;
-        container.appendChild(card);
       });
     }
 
-    async function supplyTankVolume(tankId) {
+    function supplyTankVolume(tankId) {
       const tank = appState.tanks[tankId];
       if (!tank) return;
 
       const inputEl = document.getElementById(`supply_${tankId}`);
       const addedVolume = safeNum(inputEl.value);
       if (addedVolume <= 0) {
-        showToast('يرجى إدخال كمية توريد صحيحة أكبر من الصفر', '#ef4444');
+        showToast('يرجى إدخال كمية صحيحة', '#ef4444');
         return;
       }
 
-      const newVolume = safeNum(tank.current_volume) + addedVolume;
-      try {
-        await db.ref(`tanks/${tankId}/current_volume`).set(newVolume);
-        inputEl.value = '';
-        showToast(`تمت إضافة ${formatNum(addedVolume)} لتر إلى ${tank.name} بنجاح ✅`, '#10b981');
-      } catch (err) {
-        showToast('خطأ أثناء تحديث الخزان: ' + err.message, '#ef4444');
-      }
+      db.ref(`tanks/${tankId}/current_volume`).set(safeNum(tank.current_volume) + addedVolume);
+      inputEl.value = '';
+      showToast(`تم توريد ${formatNum(addedVolume)} لتر بنجاح ✅`, '#10b981');
     }
 
     /**************************************************************
-     * 6. المصاريف التشغيلية اليومية
+     * 6. المصاريف اليومية
      **************************************************************/
-    async function handleAddExpense(e) {
+    function handleAddExpense(e) {
       e.preventDefault();
-      const desc = document.getElementById('expense-desc').value.trim();
-      const amount = safeNum(document.getElementById('expense-amount').value);
+      const descEl = document.getElementById('expense-desc');
+      const amountEl = document.getElementById('expense-amount');
+      const desc = descEl.value.trim();
+      const amount = safeNum(amountEl.value);
 
       if (!desc || amount <= 0) {
-        showToast('يرجى إدخال بيان ومبلغ صحيح للمصروف', '#ef4444');
+        showToast('يرجى إدخال بيانات صحيحة', '#ef4444');
         return;
       }
 
       const todayStr = getSyriaDateString();
       const expKey = db.ref(`expenses/${todayStr}`).push().key;
 
-      try {
-        await db.ref(`expenses/${todayStr}/${expKey}`).set({
-          id: expKey,
-          date: todayStr,
-          time: getSyriaTimeString(),
-          timestamp: Date.now(),
-          description: desc,
-          amount: amount
-        });
-        document.getElementById('expense-desc').value = '';
-        document.getElementById('expense-amount').value = '';
-        showToast('تم تسجيل المصروف بنجاح', '#10b981');
-      } catch (err) {
-        showToast('تعذر حفظ المصروف: ' + err.message, '#ef4444');
-      }
+      db.ref(`expenses/${todayStr}/${expKey}`).set({
+        id: expKey, date: todayStr, time: getSyriaTimeString(),
+        timestamp: Date.now(), description: desc, amount: amount
+      });
+
+      descEl.value = ''; amountEl.value = '';
+      showToast('تم تسجيل المصروف بنجاح ✅', '#10b981');
     }
 
-    async function deleteExpenseItem(dateStr, expId) {
-      if (!confirm('هل تريد حذف هذا المصروف الخاطئ؟')) return;
-      try {
-        await db.ref(`expenses/${dateStr}/${expId}`).remove();
-        showToast('تم حذف المصروف بنجاح', '#f59e0b');
-      } catch (err) {
-        showToast('خطأ في الحذف: ' + err.message, '#ef4444');
-      }
+    function deleteExpenseItem(dateStr, expId) {
+      if (!confirm('هل تريد حذف هذا المصروف؟')) return;
+      db.ref(`expenses/${dateStr}/${expId}`).remove();
+      showToast('تم الحذف بنجاح', '#f59e0b');
     }
 
     function renderAdminExpenses() {
@@ -1346,149 +1260,109 @@
       const list = Object.values(todayExps).sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
 
       if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">لا توجد مصاريف مسجلة اليوم</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">لا توجد مصاريف اليوم</td></tr>`;
         return;
       }
-
       tbody.innerHTML = list.map(exp => `
         <tr>
           <td>${exp.description || '-'}</td>
           <td style="color:var(--danger); font-weight:700;">${formatNum(exp.amount)}</td>
-          <td>
-            <button class="btn btn-danger btn-sm" onclick="deleteExpenseItem('${todayStr}', '${exp.id}')">حذف</button>
-          </td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteExpenseItem('${todayStr}', '${exp.id}')">حذف</button></td>
         </tr>
       `).join('');
     }
 
     /**************************************************************
-     * 7. إعدادات المحطة الديناميكية
+     * 7. الإعدادات الديناميكية
      **************************************************************/
     function renderSettingsSection() {
       const fuels = (appState.settings && appState.settings.fuels) || {};
       const meters = appState.meters || {};
 
-      // 1. قائمة الأسعار
-      const pricesContainer = document.getElementById('settings-prices-list');
-      pricesContainer.innerHTML = Object.keys(fuels).map(fId => {
-        const f = fuels[fId];
-        return `
-          <div class="form-group">
-            <label>سعر لتر (${f.name}):</label>
-            <div style="display:flex; gap:8px;">
-              <input type="number" id="price_input_${fId}" value="${safeNum(f.price)}" step="any" />
-              <button class="btn btn-primary btn-sm" onclick="updateFuelPrice('${fId}')">حفظ السعر</button>
-            </div>
+      document.getElementById('settings-prices-list').innerHTML = Object.keys(fuels).map(fId => `
+        <div class="form-group">
+          <label>سعر لتر (${fuels[fId].name}):</label>
+          <div style="display:flex; gap:8px;">
+            <input type="number" id="price_input_${fId}" value="${safeNum(fuels[fId].price)}" step="any" />
+            <button class="btn btn-primary btn-sm" onclick="updateFuelPrice('${fId}')">حفظ السعر</button>
           </div>
-        `;
-      }).join('');
+        </div>
+      `).join('');
 
-      // 2. تبديل الوقود للعدادات الحالية دون المساس بقراءتها الميكانيكية
-      const mappingContainer = document.getElementById('settings-meters-mapping');
       const fuelOptionsHtml = (selectedFuelId) => Object.keys(fuels).map(fId =>
         `<option value="${fId}" ${fId === selectedFuelId ? 'selected' : ''}>${fuels[fId].name}</option>`
       ).join('');
 
-      mappingContainer.innerHTML = Object.keys(meters).map(mId => {
-        const m = meters[mId];
-        return `
-          <div class="form-group">
-            <label>${m.name} (القراءة الحالية: ${formatNum(m.current_reading)}):</label>
-            <div style="display:flex; gap:8px;">
-              <select id="map_fuel_${mId}">
-                ${fuelOptionsHtml(m.fuel_type_id)}
-              </select>
-              <button class="btn btn-secondary btn-sm" onclick="changeMeterFuelType('${mId}')">تبديل المادة</button>
-            </div>
+      document.getElementById('settings-meters-mapping').innerHTML = Object.keys(meters).map(mId => `
+        <div class="form-group">
+          <label>${meters[mId].name}:</label>
+          <div style="display:flex; gap:8px;">
+            <select id="map_fuel_${mId}">${fuelOptionsHtml(meters[mId].fuel_type_id)}</select>
+            <button class="btn btn-secondary btn-sm" onclick="changeMeterFuelType('${mId}')">تبديل المادة</button>
           </div>
-        `;
-      }).join('');
+        </div>
+      `).join('');
 
-      // 3. تعبئة قائمة الوقود في نموذج إضافة عداد جديد
       const newMeterSelect = document.getElementById('new-meter-fuel');
-      if (newMeterSelect) {
-        newMeterSelect.innerHTML = Object.keys(fuels).map(fId =>
-          `<option value="${fId}">${fuels[fId].name}</option>`
-        ).join('');
-      }
+      if (newMeterSelect) newMeterSelect.innerHTML = fuelOptionsHtml('');
     }
 
-    async function updateFuelPrice(fuelId) {
+    function updateFuelPrice(fuelId) {
       const newPrice = safeNum(document.getElementById(`price_input_${fuelId}`).value);
       if (newPrice <= 0) {
-        showToast('يرجى إدخال سعر صحيح أكبر من الصفر', '#ef4444');
+        showToast('يرجى إدخال سعر صحيح', '#ef4444');
         return;
       }
-      await db.ref(`settings/fuels/${fuelId}/price`).set(newPrice);
-      showToast('تم تحديث سعر اللتر بنجاح ✅', '#10b981');
+      db.ref(`settings/fuels/${fuelId}/price`).set(newPrice);
+      showToast('تم حفظ السعر بنجاح ✅', '#10b981');
     }
 
-    async function changeMeterFuelType(meterId) {
+    function changeMeterFuelType(meterId) {
       const selectedFuel = document.getElementById(`map_fuel_${meterId}`).value;
-      await db.ref(`meters/${meterId}/fuel_type_id`).set(selectedFuel);
-      showToast('تم تبديل نوع الوقود المربوط بالعداد مع الحفاظ على قراءته الميكانيكية ✅', '#10b981');
+      db.ref(`meters/${meterId}/fuel_type_id`).set(selectedFuel);
+      showToast('تم تبديل المادة بنجاح ✅', '#10b981');
     }
 
-    async function handleAddNewMeter(e) {
+    function handleAddNewMeter(e) {
       e.preventDefault();
-      const name = document.getElementById('new-meter-name').value.trim();
+      const nameEl = document.getElementById('new-meter-name');
+      const name = nameEl.value.trim();
       const fuelId = document.getElementById('new-meter-fuel').value;
       const initReading = safeNum(document.getElementById('new-meter-reading').value);
 
-      const meterId = 'meter_' + Date.now();
-      await db.ref(`meters/${meterId}`).set({
-        name: name,
-        fuel_type_id: fuelId,
-        current_reading: initReading,
-        max_reading: 999999
-      });
-
-      document.getElementById('new-meter-name').value = '';
-      document.getElementById('new-meter-reading').value = '0';
-      showToast(`تمت إضافة (${name}) بنجاح ✅`, '#10b981');
+      db.ref(`meters/meter_${Date.now()}`).set({ name, fuel_type_id: fuelId, current_reading: initReading, max_reading: 999999 });
+      nameEl.value = ''; document.getElementById('new-meter-reading').value = '0';
+      showToast('تمت إضافة العداد بنجاح ✅', '#10b981');
     }
 
-    async function handleAddNewFuelAndTank(e) {
+    function handleAddNewFuelAndTank(e) {
       e.preventDefault();
-      const fuelName = document.getElementById('new-fuel-name').value.trim();
-      const fuelPrice = safeNum(document.getElementById('new-fuel-price').value);
-      const capacity = safeNum(document.getElementById('new-tank-capacity').value);
-      const initialVol = safeNum(document.getElementById('new-tank-initial').value);
+      const nameEl = document.getElementById('new-fuel-name');
+      const fuelName = nameEl.value.trim();
+      const priceEl = document.getElementById('new-fuel-price');
+      const capEl = document.getElementById('new-tank-capacity');
+      const initEl = document.getElementById('new-tank-initial');
 
       const newFuelId = 'fuel_' + Date.now();
-      const updates = {};
-      updates[`settings/fuels/${newFuelId}`] = {
-        name: fuelName,
-        price: fuelPrice
-      };
-      updates[`tanks/${newFuelId}`] = {
-        name: `خزان ${fuelName}`,
-        fuel_type_id: newFuelId,
-        capacity: capacity,
-        current_volume: initialVol
-      };
+      db.ref().update({
+        [`settings/fuels/${newFuelId}`]: { name: fuelName, price: safeNum(priceEl.value) },
+        [`tanks/${newFuelId}`]: { name: `خزان ${fuelName}`, fuel_type_id: newFuelId, capacity: safeNum(capEl.value), current_volume: safeNum(initEl.value) }
+      });
 
-      await db.ref().update(updates);
-      document.getElementById('new-fuel-name').value = '';
-      document.getElementById('new-fuel-price').value = '';
-      showToast(`تمت إضافة مادة (${fuelName}) وخزانها بنجاح ✅`, '#10b981');
+      nameEl.value = ''; priceEl.value = '';
+      showToast('تمت الإضافة بنجاح ✅', '#10b981');
     }
 
     /**************************************************************
-     * 8. واجهة المالك الرقابية والفصل المحاسبي الدقيق
+     * 8. لوحة المالك الرقابية
      **************************************************************/
     function setOwnerFilter(filterType) {
       currentOwnerFilter = filterType;
       ['today', 'week', 'month', 'custom'].forEach(t => {
         const btn = document.getElementById(`filter-btn-${t}`);
-        if (btn) {
-          btn.className = (t === filterType) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary';
-        }
+        if (btn) btn.className = (t === filterType) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary';
       });
-
-      const customBox = document.getElementById('custom-date-range');
-      customBox.style.display = filterType === 'custom' ? 'flex' : 'none';
-
+      document.getElementById('custom-date-range').style.display = filterType === 'custom' ? 'flex' : 'none';
       if (filterType === 'custom') {
         const todayStr = getSyriaDateString();
         if (!document.getElementById('owner-start-date').value) {
@@ -1502,30 +1376,19 @@
     function getFilterDateBounds() {
       const syriaNow = getSyriaDateObj();
       const todayStr = getSyriaDateString();
-
-      if (currentOwnerFilter === 'today') {
-        return { start: todayStr, end: todayStr, label: `تقرير اليوم (${todayStr})` };
-      }
-
+      if (currentOwnerFilter === 'today') return { start: todayStr, end: todayStr, label: `تقرير اليوم (${todayStr})` };
       if (currentOwnerFilter === 'week') {
         const weekAgo = new Date(syriaNow.getTime() - (6 * 24 * 3600000));
-        const year = weekAgo.getFullYear();
-        const month = String(weekAgo.getMonth() + 1).padStart(2, '0');
-        const day = String(weekAgo.getDate()).padStart(2, '0');
-        const startStr = `${year}-${month}-${day}`;
+        const startStr = `${weekAgo.getFullYear()}-${String(weekAgo.getMonth()+1).padStart(2,'0')}-${String(weekAgo.getDate()).padStart(2,'0')}`;
         return { start: startStr, end: todayStr, label: `تقرير هذا الأسبوع (${startStr} إلى ${todayStr})` };
       }
-
       if (currentOwnerFilter === 'month') {
-        const year = syriaNow.getFullYear();
-        const month = String(syriaNow.getMonth() + 1).padStart(2, '0');
-        const startStr = `${year}-${month}-01`;
-        return { start: startStr, end: todayStr, label: `تقرير هذا الشهر (${startStr} إلى ${todayStr})` };
+        const startStr = `${syriaNow.getFullYear()}-${String(syriaNow.getMonth()+1).padStart(2,'0')}-01`;
+        return { start: startStr, end: todayStr, label: `تقرير الشهر (${startStr} إلى ${todayStr})` };
       }
-
-      const customStart = document.getElementById('owner-start-date').value || todayStr;
-      const customEnd = document.getElementById('owner-end-date').value || todayStr;
-      return { start: customStart, end: customEnd, label: `تقرير مخصص (${customStart} إلى ${customEnd})` };
+      const cs = document.getElementById('owner-start-date').value || todayStr;
+      const ce = document.getElementById('owner-end-date').value || todayStr;
+      return { start: cs, end: ce, label: `تقرير مخصص (${cs} إلى ${ce})` };
     }
 
     let lastOwnerSummaryText = '';
@@ -1535,52 +1398,28 @@
       document.getElementById('report-period-label').textContent = bounds.label;
       document.getElementById('report-generated-time').textContent = `تاريخ الإصدار: ${getSyriaDateString()} - ${getSyriaTimeString()}`;
 
-      let totalSalesMoney = 0;
-      let totalExpensesMoney = 0;
-      let totalSoldLiters = 0;
-
-      // تجميع حسب fuel_type_id المخزن داخل سجل الفاتورة (daily_logs) حصراً
+      let [totalSalesMoney, totalExpensesMoney, totalSoldLiters] = [0, 0, 0];
       const fuelBreakdown = {};
       const filteredLogs = [];
       const filteredExpenses = [];
 
-      // 1. قراءة سجل الفواتير ضمن النطاق الزمني
-      const allDailyLogs = appState.daily_logs || {};
-      Object.keys(allDailyLogs).forEach(dateKey => {
+      Object.keys(appState.daily_logs || {}).forEach(dateKey => {
         if (dateKey >= bounds.start && dateKey <= bounds.end) {
-          const dayLogs = allDailyLogs[dateKey] || {};
-          Object.values(dayLogs).forEach(log => {
+          Object.values(appState.daily_logs[dateKey] || {}).forEach(log => {
             if (!log) return;
-            const netLiters = safeNum(log.net_liters);
-            const amount = safeNum(log.total_amount);
-            const historicalFuelId = log.fuel_type_id || 'unknown';
-            const historicalFuelName = log.fuel_name || appState.settings?.fuels?.[historicalFuelId]?.name || historicalFuelId;
-
-            totalSoldLiters += netLiters;
-            totalSalesMoney += amount;
-
-            if (!fuelBreakdown[historicalFuelId]) {
-              fuelBreakdown[historicalFuelId] = {
-                fuel_id: historicalFuelId,
-                name: historicalFuelName,
-                liters: 0,
-                revenue: 0
-              };
-            }
-            fuelBreakdown[historicalFuelId].liters += netLiters;
-            fuelBreakdown[historicalFuelId].revenue += amount;
-
+            const net = safeNum(log.net_liters), amt = safeNum(log.total_amount);
+            totalSoldLiters += net; totalSalesMoney += amt;
+            const fId = log.fuel_type_id || 'unknown';
+            if (!fuelBreakdown[fId]) fuelBreakdown[fId] = { fuel_id: fId, name: log.fuel_name || appState.settings?.fuels?.[fId]?.name || fId, liters: 0, revenue: 0 };
+            fuelBreakdown[fId].liters += net; fuelBreakdown[fId].revenue += amt;
             filteredLogs.push(log);
           });
         }
       });
 
-      // 2. قراءة المصاريف ضمن النطاق الزمني
-      const allExpenses = appState.expenses || {};
-      Object.keys(allExpenses).forEach(dateKey => {
+      Object.keys(appState.expenses || {}).forEach(dateKey => {
         if (dateKey >= bounds.start && dateKey <= bounds.end) {
-          const dayExps = allExpenses[dateKey] || {};
-          Object.values(dayExps).forEach(exp => {
+          Object.values(appState.expenses[dateKey] || {}).forEach(exp => {
             if (!exp) return;
             totalExpensesMoney += safeNum(exp.amount);
             filteredExpenses.push(exp);
@@ -1589,104 +1428,52 @@
       });
 
       const netCash = totalSalesMoney - totalExpensesMoney;
-
-      // تحديث البطاقات المالية الأربع
       document.getElementById('owner-total-sales').textContent = formatNum(totalSalesMoney);
       document.getElementById('owner-total-expenses').textContent = formatNum(totalExpensesMoney);
       document.getElementById('owner-net-cash').textContent = formatNum(netCash);
       document.getElementById('owner-total-liters').textContent = formatNum(totalSoldLiters);
 
-      // تحديث جدول الفصل المحاسبي حسب نوع الوقود
       const fuelTbody = document.getElementById('owner-fuel-breakdown-tbody');
       const breakdownList = Object.values(fuelBreakdown);
-      if (breakdownList.length === 0) {
-        fuelTbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">لا توجد مبيعات في هذه الفترة</td></tr>`;
-      } else {
-        fuelTbody.innerHTML = breakdownList.map(item => {
-          const tankCurrentVol = safeNum(appState.tanks?.[item.fuel_id]?.current_volume);
-          return `
-            <tr>
-              <td><span class="badge">${item.name}</span></td>
-              <td style="font-weight:700; color:var(--primary);">${formatNum(item.liters)} لتر</td>
-              <td style="font-weight:700; color:var(--success);">${formatNum(item.revenue)} ل.س</td>
-              <td>${formatNum(tankCurrentVol)} لتر</td>
-            </tr>
-          `;
-        }).join('');
-      }
+      fuelTbody.innerHTML = breakdownList.length === 0 ? `<tr><td colspan="4" style="text-align:center;">لا مبيعات</td></tr>` : breakdownList.map(item => `
+        <tr>
+          <td><span class="badge">${item.name}</span></td>
+          <td style="font-weight:700; color:var(--primary);">${formatNum(item.liters)} لتر</td>
+          <td style="font-weight:700; color:var(--success);">${formatNum(item.revenue)} ل.س</td>
+          <td>${formatNum(safeNum(appState.tanks?.[item.fuel_id]?.current_volume))} لتر</td>
+        </tr>
+      `).join('');
 
-      // تحديث جدول الفواتير التفصيلي
       filteredLogs.sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
-      const logsTbody = document.getElementById('owner-logs-tbody');
-      if (filteredLogs.length === 0) {
-        logsTbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--text-muted);">لا توجد حركات عدادات في هذه الفترة</td></tr>`;
-      } else {
-        logsTbody.innerHTML = filteredLogs.map(log => `
-          <tr>
-            <td>${log.date} <small style="color:var(--text-muted);">${log.time || ''}</small></td>
-            <td>${log.meter_name || '-'}</td>
-            <td><span class="badge">${log.fuel_name || '-'}</span></td>
-            <td>${formatNum(log.prev_reading)}</td>
-            <td>${formatNum(log.curr_reading)}</td>
-            <td>${formatNum(log.calibration_liters)}</td>
-            <td style="font-weight:700; color:var(--primary);">${formatNum(log.net_liters)}</td>
-            <td>${formatNum(log.unit_price)}</td>
-            <td style="font-weight:700; color:var(--success);">${formatNum(log.total_amount)}</td>
-          </tr>
-        `).join('');
-      }
+      document.getElementById('owner-logs-tbody').innerHTML = filteredLogs.length === 0 ? `<tr><td colspan="9" style="text-align:center;">لا حركات</td></tr>` : filteredLogs.map(log => `
+        <tr>
+          <td>${log.date}</td><td>${log.meter_name}</td><td><span class="badge">${log.fuel_name}</span></td>
+          <td>${formatNum(log.prev_reading)}</td><td>${formatNum(log.curr_reading)}</td>
+          <td>${formatNum(log.calibration_liters)}</td><td style="color:var(--primary);">${formatNum(log.net_liters)}</td>
+          <td>${formatNum(log.unit_price)}</td><td style="color:var(--success);">${formatNum(log.total_amount)}</td>
+        </tr>
+      `).join('');
 
-      // تحديث جدول المصاريف التفصيلي
       filteredExpenses.sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
-      const expTbody = document.getElementById('owner-expenses-tbody');
-      if (filteredExpenses.length === 0) {
-        expTbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">لا توجد مصاريف مسجلة في هذه الفترة</td></tr>`;
-      } else {
-        expTbody.innerHTML = filteredExpenses.map(exp => `
-          <tr>
-            <td>${exp.date}</td>
-            <td>${exp.description || '-'}</td>
-            <td style="color:var(--danger); font-weight:700;">${formatNum(exp.amount)}</td>
-          </tr>
-        `).join('');
-      }
+      document.getElementById('owner-expenses-tbody').innerHTML = filteredExpenses.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا مصاريف</td></tr>` : filteredExpenses.map(exp => `
+        <tr><td>${exp.date}</td><td>${exp.description}</td><td style="color:var(--danger); font-weight:700;">${formatNum(exp.amount)}</td></tr>
+      `).join('');
 
-      // تجهيز نص ملخص واتساب الفوري
-      const fuelsText = breakdownList.map(f => `▪️ ${f.name}: ${formatNum(f.liters)} لتر (${formatNum(f.revenue)} ل.س)`).join('\n');
-      lastOwnerSummaryText =
-        `⛽ *تقرير محطة دنيا للوقود*\n` +
-        `📅 ${bounds.label}\n` +
-        `------------------------\n` +
-        `💰 إجمالي المبيعات: ${formatNum(totalSalesMoney)} ل.س\n` +
-        `💸 إجمالي المصاريف: ${formatNum(totalExpensesMoney)} ل.س\n` +
-        `🏦 *صافي الصندوق النقدي: ${formatNum(netCash)} ل.س*\n` +
-        `🛢️ إجمالي اللترات المباعة: ${formatNum(totalSoldLiters)} لتر\n` +
-        (fuelsText ? `------------------------\n*تفصيل المواد:*\n${fuelsText}` : '');
+      lastOwnerSummaryText = `⛽ *تقرير محطة دنيا للوقود*\n📅 ${bounds.label}\n------------------------\n💰 إجمالي المبيعات: ${formatNum(totalSalesMoney)} ل.س\n💸 إجمالي المصاريف: ${formatNum(totalExpensesMoney)} ل.س\n🏦 *صافي الصندوق النقدي: ${formatNum(netCash)} ل.س*\n🛢️ إجمالي اللترات المباعة: ${formatNum(totalSoldLiters)} لتر\n` + (breakdownList.map(f => `▪️ ${f.name}: ${formatNum(f.liters)} لتر`).join('\n'));
     }
 
-    // تصدير التقرير كملف PDF
     function exportOwnerReportPDF() {
-      const element = document.getElementById('pdf-report-area');
-      const opt = {
-        margin: 8,
-        filename: `تقرير_محطة_دنيا_${getSyriaDateString()}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#1a222e' },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-      showToast('جاري تجهيز وتحميل ملف PDF...', '#1c75bc');
-      html2pdf().set(opt).from(element).save();
+      showToast('جاري التصدير...', '#1c75bc');
+      html2pdf().set({ margin: 8, filename: `تقرير_محطة_دنيا_${getSyriaDateString()}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#1a222e' }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(document.getElementById('pdf-report-area')).save();
     }
 
-    // مشاركة الملخص عبر واتساب
     function shareWhatsAppSummary() {
       if (!lastOwnerSummaryText) renderOwnerDashboard();
-      const url = `https://wa.me/?text=${encodeURIComponent(lastOwnerSummaryText)}`;
-      window.open(url, '_blank');
+      window.open(`https://wa.me/?text=${encodeURIComponent(lastOwnerSummaryText)}`, '_blank');
     }
 
     /**************************************************************
-     * 9. استعادة الجلسة وتسجيل Service Worker (Network-First)
+     * 9. استعادة الجلسة وتسجيل Service Worker
      **************************************************************/
     window.addEventListener('DOMContentLoaded', () => {
       checkLockoutStatus();
@@ -1694,9 +1481,7 @@
       if (savedRole === 'admin') switchView('admin-view');
       else if (savedRole === 'owner') switchView('owner-view');
 
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
-      }
+      if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
     });
   </script>
 </body>
