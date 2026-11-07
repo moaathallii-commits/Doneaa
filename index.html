@@ -797,7 +797,7 @@
       </div>
     </div>
 
-    <!-- تبويب 5: إعدادات المحطة الديناميكية -->
+    <!-- تبويب 5: إعدادات المحطة الديناميكية وصيانة التطبيق -->
     <div id="tab-settings" class="admin-tab-content">
       <div class="grid-2">
         <div class="card">
@@ -833,6 +833,20 @@
             </div>
             <button type="submit" class="btn btn-secondary btn-block">إضافة العداد</button>
           </form>
+        </div>
+
+        <div class="card" style="border-color: var(--danger);">
+          <div class="card-header">
+            <div class="card-title" style="color: var(--danger);">⚠️ إعادة التطبيق للصفر (مسح شامل)</div>
+          </div>
+          <p style="font-size:0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+            هذا الإجراء سيقوم بحذف جميع الفواتير، المصاريف، الديون، سجلات الصهاريج وسجلات الرقابة نهائياً وإعادة جميع العدادات والخزانات إلى نقطة الصفر. لا يمكن التراجع بعد التنفيذ!
+          </p>
+          <div class="form-group">
+            <label>لأمان العملية، أكتب كلمة (نعم) في الحقل أدناه للتأكيد:</label>
+            <input type="text" id="reset-confirm-input" placeholder="اكتب كلمة نعم هنا..." />
+          </div>
+          <button type="button" class="btn btn-danger btn-block" onclick="factoryResetApp()">🚨 مسح جميع البيانات وإعادة التطبيق للصفر</button>
         </div>
 
         <div class="card">
@@ -943,7 +957,7 @@
         </div>
       </div>
 
-      <!-- جدول جديد: إحصائيات منفصلة لكل مضخة (عداد) -->
+      <!-- جدول إحصائيات منفصلة لكل مضخة (عداد) -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">⛽ إحصائيات الأداء والمبيعات المنفصلة لكل مضخة</div>
@@ -1054,7 +1068,7 @@
         </div>
       </div>
 
-      <!-- سجل الرقابة والأمان للمالك (بدون كلمات إنجليزية تسبب تداخل في PDF) -->
+      <!-- سجل الرقابة والأمان للمالك -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">🛡️ سجل الرقابة والعمليات الحساسة</div>
@@ -1325,7 +1339,6 @@
         const meters = current.meters || defaultMeters;
         Object.keys(meters).forEach(mId => {
           meters[mId].name = String(meters[mId].name || mId);
-          // إصلاح تلقائي إذا كان العداد مربوطاً بمادة غير موجودة
           if (!meters[mId].fuel_type_id || !fuels[meters[mId].fuel_type_id]) {
             meters[mId].fuel_type_id = firstFuelId;
           }
@@ -1338,6 +1351,55 @@
           recordAuditLog('إصلاح قاعدة البيانات', 'تم تشغيل أداة التهيئة والإصلاح القياسية');
           showToast('تمت تهيئة وإصلاح قاعدة البيانات بنجاح ✅', '#10b981');
         }
+      });
+    }
+
+    // زر إعادة التطبيق للصفر (مسح شامل مع كتابة "نعم")
+    function factoryResetApp() {
+      const inputEl = document.getElementById('reset-confirm-input');
+      const val = (inputEl ? inputEl.value : '').trim();
+
+      if (val !== 'نعم') {
+        showToast('يجب كتابة كلمة (نعم) يدوياً في حقل التأكيد لإتمام المسح!', '#ef4444');
+        return;
+      }
+
+      if (!confirm('تحذير نهائي: هل أنت متأكد تماماً من مسح كافة بيانات وفواتير المحطة وتصفير العدادات والخزانات؟')) {
+        return;
+      }
+
+      // تجهيز هيكلية نظيفة تماماً للصفر
+      const defaultFuels = {
+        fuel_diesel: { name: "مازوت", price: 175 },
+        fuel_gasoline: { name: "بنزين", price: 185 }
+      };
+
+      const defaultTanks = {
+        fuel_diesel: { name: "خزان المازوت الرئيسي", fuel_type_id: "fuel_diesel", capacity: 30000, current_volume: 0 },
+        fuel_gasoline: { name: "خزان البنزين الرئيسي", fuel_type_id: "fuel_gasoline", capacity: 30000, current_volume: 0 }
+      };
+
+      const defaultMeters = {
+        meter_1: { name: "مضخة المازوت رقم 1", fuel_type_id: "fuel_diesel", current_reading: 0, max_reading: 999999 },
+        meter_2: { name: "مضخة البنزين رقم 1", fuel_type_id: "fuel_gasoline", current_reading: 0, max_reading: 999999 }
+      };
+
+      const freshData = {
+        settings: { fuels: defaultFuels },
+        tanks: defaultTanks,
+        meters: defaultMeters,
+        daily_logs: null,
+        expenses: null,
+        debts: null,
+        tank_supplies: null,
+        audit_logs: null
+      };
+
+      db.ref().set(freshData).then(() => {
+        if (inputEl) inputEl.value = '';
+        showToast('تمت إعادة ضبط التطبيق ومسح جميع البيانات بنجاح 🚨', '#ef4444');
+      }).catch(err => {
+        showToast('حدث خطأ أثناء إعادة التعيين: ' + err.message, '#ef4444');
       });
     }
 
@@ -1417,7 +1479,6 @@
 
         const hasUndo = meterLogsToday.length > 0;
 
-        // حساب إحصائية اليوم الخاصة بهذه المضخة فقط
         const pumpTodayLiters = meterLogsToday.reduce((acc, [_, l]) => acc + safeNum(l.net_liters), 0);
         const pumpTodayMoney = meterLogsToday.reduce((acc, [_, l]) => acc + safeNum(l.total_amount), 0);
 
@@ -1429,7 +1490,6 @@
             <span class="badge">${fuelObj.name} (${formatNum(unitPrice)} ل.س)</span>
           </div>
 
-          <!-- شريط إحصائية المضخة اليوم -->
           <div class="pump-mini-stats">
             <span>مبيعات المضخة اليوم: <strong style="color:var(--primary);">${formatNum(pumpTodayLiters)} لتر</strong></span>
             <span>الإجمالي: <strong style="color:var(--success);">${formatNum(pumpTodayMoney)} ل.س</strong></span>
@@ -1485,7 +1545,6 @@
       updateBatchShiftPreview();
     }
 
-    // جدول إحصائيات كل مضخة لليوم الحالي في لوحة أمين المحطة
     function renderAdminPumpStatsToday() {
       const tbody = document.getElementById('admin-pump-stats-tbody');
       if (!tbody) return;
@@ -1904,7 +1963,11 @@
       const actualVol = safeNum(inputEl.value);
       const diff = actualVol - bookVol;
 
-      if (!confirm(`الرصيد الدفتري: ${formatNum(bookVol)} لتر\nقياس السيخة الفعلي: ${formatNum(actualVol)} لتر\nالفرق: ${formatNum(diff)} لتر\n\nهل تريد اعتماد قياس السيخة كرصيد فعلي جديد للخزان وتوثيق الفرق للمالك؟`)) return;
+      if (!confirm(`الرصيد الدفتري: ${formatNum(bookVol)} لتر
+قياس السيخة الفعلي: ${formatNum(actualVol)} لتر
+الفرق: ${formatNum(diff)} لتر
+
+هل تريد اعتماد قياس السيخة كرصيد فعلي جديد للخزان وتوثيق الفرق للمالك؟`)) return;
 
       const todayStr = getSyriaDateString();
       db.ref(`tanks/${tankId}`).update({
@@ -2245,7 +2308,6 @@
       const filteredSupplies = [];
       const filteredAudits = [];
 
-      // تهيئة جميع المضخات المسجلة حالياً لتظهر في الجدول حتى لو لم تبع في الفترة
       const meters = appState.meters || {};
       const fuels = (appState.settings && appState.settings.fuels) || {};
       Object.keys(meters).forEach(mId => {
@@ -2277,7 +2339,6 @@
             totalSoldLiters += net;
             totalSalesMoney += amt;
 
-            // تجميع حسب الوقود
             const fId = log.fuel_type_id || 'unknown';
             if (!fuelBreakdown[fId]) {
               fuelBreakdown[fId] = {
@@ -2290,7 +2351,6 @@
             fuelBreakdown[fId].liters += net;
             fuelBreakdown[fId].revenue += amt;
 
-            // تجميع منفصل لكل مضخة (عداد)
             const mId = log.meter_id || 'unknown_meter';
             if (!pumpBreakdown[mId]) {
               pumpBreakdown[mId] = {
@@ -2374,7 +2434,6 @@
       document.getElementById('owner-total-liters').textContent = formatNum(totalSoldLiters);
       document.getElementById('owner-collected-debts').textContent = formatNum(periodCollectedOldDebts);
 
-      // رسم جدول إحصائيات كل مضخة على حدة
       const pumpsTbody = document.getElementById('owner-pumps-breakdown-tbody');
       const pumpsList = Object.values(pumpBreakdown);
       if (pumpsList.length === 0) {
@@ -2394,7 +2453,6 @@
         `).join('');
       }
 
-      // رسم جدول ملخص الوقود
       const fuelTbody = document.getElementById('owner-fuel-breakdown-tbody');
       const breakdownList = Object.values(fuelBreakdown);
       fuelTbody.innerHTML = breakdownList.length === 0 ? `<tr><td colspan="5" style="text-align:center;">لا توجد مبيعات في هذه الفترة</td></tr>` : breakdownList.map(item => {
@@ -2453,7 +2511,6 @@
         (breakdownList.length ? `------------------------\n*تفصيل المواد:*\n` + breakdownList.map(f => `▪️ ${f.name}: ${formatNum(f.liters)} لتر (${formatNum(f.revenue)} ل.س)`).join('\n') : '');
     }
 
-    // تصدير التقرير بوضع الطباعة الأبيض مع منع انقسام الأسطر بين الصفحات
     function exportOwnerReportPDF() {
       const reportEl = document.getElementById('pdf-report-area');
       reportEl.classList.add('pdf-print-mode');
