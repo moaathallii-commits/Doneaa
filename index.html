@@ -33,7 +33,7 @@
       --border: #3b485c;
     }
 
-    /* وضع الرؤية النهارية تحت أشعة الشمس (High-Contrast Daylight Mode) */
+    /* وضع الرؤية النهارية تحت أشعة الشمس */
     body.light-mode {
       --bg-dark: #f1f5f9;
       --card-bg: #ffffff;
@@ -43,27 +43,70 @@
       --border: #cbd5e1;
     }
 
-    /* وضع الطباعة الرسمي الأبيض لملفات PDF */
-    .pdf-print-mode,
+    /* وضع الطباعة الرسمي الأبيض لملفات PDF مع منع قص الأسطر */
+    .pdf-print-mode {
+      background: #ffffff !important;
+      color: #000000 !important;
+      padding: 10px !important;
+      width: 780px !important;
+      max-width: 780px !important;
+      margin: 0 auto !important;
+    }
     .pdf-print-mode .card,
     .pdf-print-mode .stat-card {
       background: #ffffff !important;
       color: #000000 !important;
-      border-color: #cccccc !important;
+      border: 1px solid #cbd5e1 !important;
       box-shadow: none !important;
+      margin-bottom: 12px !important;
+      padding: 12px !important;
+    }
+    .pdf-print-mode .table-responsive {
+      overflow: visible !important;
+    }
+    .pdf-print-mode table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      page-break-inside: auto !important;
+    }
+    .pdf-print-mode thead {
+      display: table-header-group !important;
+    }
+    .pdf-print-mode tr {
+      page-break-inside: avoid !important;
+      page-break-after: auto !important;
+      break-inside: avoid !important;
+    }
+    .pdf-print-mode .stat-card,
+    .pdf-print-mode .card-header,
+    .pdf-print-mode .no-break {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
     }
     .pdf-print-mode th {
-      background-color: #f3f4f6 !important;
+      background-color: #f1f5f9 !important;
       color: #000000 !important;
-      border-bottom: 2px solid #000 !important;
+      border: 1px solid #94a3b8 !important;
+      font-size: 0.82rem !important;
+      padding: 7px 6px !important;
     }
-    .pdf-print-mode td,
+    .pdf-print-mode td {
+      color: #000000 !important;
+      border: 1px solid #cbd5e1 !important;
+      font-size: 0.8rem !important;
+      padding: 6px !important;
+    }
     .pdf-print-mode .stat-title,
     .pdf-print-mode .stat-value,
     .pdf-print-mode p,
+    .pdf-print-mode h3,
     .pdf-print-mode div {
       color: #000000 !important;
-      border-color: #dddddd !important;
+    }
+    .pdf-print-mode .badge {
+      border: 1px solid #333 !important;
+      color: #000 !important;
+      background: #e2e8f0 !important;
     }
 
     * {
@@ -167,7 +210,7 @@
     }
 
     .card-title {
-      font-size: 1.05rem;
+      font-size: 1.02rem;
       font-weight: 800;
       color: var(--primary);
       display: flex;
@@ -256,7 +299,7 @@
       width: 100%;
     }
 
-    /* أزرار المصاريف السريعة (Quick Chips) */
+    /* أزرار المصاريف السريعة */
     .chips-container {
       display: flex;
       flex-wrap: wrap;
@@ -379,6 +422,18 @@
       gap: 12px;
     }
 
+    /* ملخص المضخة المصغر داخل بطاقة العداد */
+    .pump-mini-stats {
+      display: flex;
+      justify-content: space-between;
+      background-color: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 0.82rem;
+    }
+
     /* الجداول */
     .table-responsive {
       overflow-x: auto;
@@ -387,11 +442,11 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.88rem;
+      font-size: 0.86rem;
     }
 
     th, td {
-      padding: 9px 10px;
+      padding: 9px 8px;
       text-align: right;
       border-bottom: 1px solid var(--border);
     }
@@ -563,9 +618,31 @@
 
       <div id="meters-cards-container" class="grid-2"></div>
 
+      <!-- إحصائيات المضخات المنفصلة لليوم الحالي في واجهة أمين المحطة -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">📋 سجل مبيعات العدادات لليوم (<span id="admin-today-label"></span>)</div>
+          <div class="card-title">📊 ملخص مبيعات اليوم لكل مضخة على حدة</div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>المضخة / العداد</th>
+                <th>المادة الحالية</th>
+                <th>عدد الحركات اليوم</th>
+                <th>مجموع المعايرة (لتر)</th>
+                <th>الصافي المباع اليوم (لتر)</th>
+                <th>إجمالي مبلغ المضخة اليوم (ل.س)</th>
+              </tr>
+            </thead>
+            <tbody id="admin-pump-stats-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 سجل حركات العدادات لليوم (<span id="admin-today-label"></span>)</div>
         </div>
         <div class="table-responsive">
           <table>
@@ -744,7 +821,7 @@
           <form onsubmit="handleAddNewMeter(event)">
             <div class="form-group">
               <label>اسم العداد:</label>
-              <input type="text" id="new-meter-name" placeholder="مثال: عداد رقم 5" required />
+              <input type="text" id="new-meter-name" placeholder="مثال: مضخة المازوت رقم 2" required />
             </div>
             <div class="form-group">
               <label>نوع الوقود المربوط:</label>
@@ -819,9 +896,9 @@
       </div>
     </div>
 
-    <!-- منطقة التقرير القابلة للتصدير PDF (تتحول للون الأبيض عند الطباعة) -->
+    <!-- منطقة التقرير القابلة للتصدير PDF -->
     <div id="pdf-report-area">
-      <div class="card" style="display:flex; align-items:center; justify-content:space-between; border-color:var(--primary);">
+      <div class="card no-break" style="display:flex; align-items:center; justify-content:space-between; border-color:var(--primary);">
         <div style="display:flex; align-items:center; gap:12px;">
           <img src="1000065786.png" alt="Logo" style="width:52px; height:52px; border-radius:50%; background:#fff;" onerror="this.style.display='none'" />
           <div>
@@ -830,13 +907,13 @@
           </div>
         </div>
         <div style="text-align:left; font-size:0.8rem; color:var(--text-muted);">
-          <div>التوقيت المحلي: سوريا (UTC+3)</div>
+          <div>التوقيت المحلي: سوريا</div>
           <div id="report-generated-time"></div>
         </div>
       </div>
 
       <!-- البطاقات المالية الصافية -->
-      <div class="grid-4">
+      <div class="grid-4 no-break">
         <div class="stat-card">
           <div class="stat-title">إجمالي المبيعات (ل.س)</div>
           <div class="stat-value" id="owner-total-sales">0</div>
@@ -855,7 +932,7 @@
         </div>
       </div>
 
-      <div class="grid-2">
+      <div class="grid-2 no-break">
         <div class="stat-card blue" style="margin-bottom:16px;">
           <div class="stat-title">إجمالي اللترات الصافية المباعة (لتر)</div>
           <div class="stat-value" id="owner-total-liters">0</div>
@@ -866,16 +943,40 @@
         </div>
       </div>
 
-      <!-- جدول الفصل المحاسبي حسب نوع الوقود المخزن في الفاتورة -->
+      <!-- جدول جديد: إحصائيات منفصلة لكل مضخة (عداد) -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">⛽ ملخص المبيعات المفصل حسب نوع الوقود (فصل محاسبي تاريخي)</div>
+          <div class="card-title">⛽ إحصائيات الأداء والمبيعات المنفصلة لكل مضخة</div>
         </div>
         <div class="table-responsive">
           <table>
             <thead>
               <tr>
-                <th>نوع الوقود (حسب سجل الفاتورة)</th>
+                <th>اسم المضخة / العداد</th>
+                <th>الوقود الحالي</th>
+                <th>عدد العمليات</th>
+                <th>قراءة البداية</th>
+                <th>قراءة النهاية</th>
+                <th>مجموع المعايرة</th>
+                <th>الصافي المباع (لتر)</th>
+                <th>إجمالي الإيراد (ل.س)</th>
+              </tr>
+            </thead>
+            <tbody id="owner-pumps-breakdown-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- جدول الفصل المحاسبي حسب نوع الوقود المخزن في الفاتورة -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🛢️ ملخص المبيعات المفصل حسب نوع الوقود</div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>نوع الوقود (حسب الفاتورة)</th>
                 <th>صافي اللترات المباعة</th>
                 <th>إجمالي القيمة المالية (ل.س)</th>
                 <th>الرصيد الدفتري بالخزان حالياً</th>
@@ -953,10 +1054,10 @@
         </div>
       </div>
 
-      <!-- سجل الرقابة والأمان (Audit Log) للمالك -->
+      <!-- سجل الرقابة والأمان للمالك (بدون كلمات إنجليزية تسبب تداخل في PDF) -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">🛡️ سجل الرقابة والعمليات الحساسة (Audit Log)</div>
+          <div class="card-title">🛡️ سجل الرقابة والعمليات الحساسة</div>
         </div>
         <div class="table-responsive">
           <table>
@@ -1037,7 +1138,6 @@
       setTimeout(() => { toast.style.display = 'none'; }, 3500);
     }
 
-    // تبديل وضع الرؤية تحت الشمس
     function toggleDaylightMode() {
       document.body.classList.toggle('light-mode');
       const isLight = document.body.classList.contains('light-mode');
@@ -1045,7 +1145,6 @@
       showToast(isLight ? 'تم تفعيل الوضع النهاري عالي التباين ☀️' : 'تم تفعيل الوضع الداكن 🌙');
     }
 
-    // تسجيل حدث رقابي للمالك في Audit Log
     function recordAuditLog(actionType, detailsText) {
       const todayStr = getSyriaDateString();
       const logKey = db.ref(`audit_logs/${todayStr}`).push().key;
@@ -1184,7 +1283,7 @@
     }
 
     function repairDatabaseSchema() {
-      if (!confirm('سيقوم هذا الإجراء بفحص وإصلاح هيكلية القاعدة دون حذف الفواتير السابقة. هل تود المتابعة؟')) return;
+      if (!confirm('سيقوم هذا الإجراء بفحص وإصلاح هيكلية القاعدة وربط أي عداد بمادة افتراضية صحيحة دون حذف الفواتير السابقة. هل تود المتابعة؟')) return;
       buildStandardSchema(true);
     }
 
@@ -1193,15 +1292,17 @@
         const current = snap.val() || {};
 
         const defaultFuels = {
-          fuel_diesel: { name: "مازوت", price: 12000 },
-          fuel_gasoline: { name: "بنزين", price: 13500 }
+          fuel_diesel: { name: "مازوت", price: 175 },
+          fuel_gasoline: { name: "بنزين", price: 185 }
         };
 
         const fuels = (current.settings && current.settings.fuels) ? current.settings.fuels : defaultFuels;
         Object.keys(fuels).forEach(fId => {
           fuels[fId].name = String(fuels[fId].name || 'وقود');
-          fuels[fId].price = safeNum(fuels[fId].price) || 10000;
+          fuels[fId].price = safeNum(fuels[fId].price) || 175;
         });
+
+        const firstFuelId = Object.keys(fuels)[0] || 'fuel_diesel';
 
         const defaultTanks = {
           fuel_diesel: { name: "خزان المازوت الرئيسي", fuel_type_id: "fuel_diesel", capacity: 30000, current_volume: 15000 },
@@ -1212,21 +1313,22 @@
         Object.keys(tanks).forEach(tId => {
           tanks[tId].capacity = safeNum(tanks[tId].capacity) || 30000;
           tanks[tId].current_volume = safeNum(tanks[tId].current_volume);
-          tanks[tId].fuel_type_id = tanks[tId].fuel_type_id || tId;
+          tanks[tId].fuel_type_id = fuels[tanks[tId].fuel_type_id] ? tanks[tId].fuel_type_id : firstFuelId;
           tanks[tId].name = tanks[tId].name || `خزان ${fuels[tId]?.name || tId}`;
         });
 
         const defaultMeters = {
-          meter_1: { name: "عداد 1", fuel_type_id: "fuel_diesel", current_reading: 0, max_reading: 999999 },
-          meter_2: { name: "عداد 2", fuel_type_id: "fuel_diesel", current_reading: 0, max_reading: 999999 },
-          meter_3: { name: "عداد 3", fuel_type_id: "fuel_gasoline", current_reading: 0, max_reading: 999999 },
-          meter_4: { name: "عداد 4", fuel_type_id: "fuel_gasoline", current_reading: 0, max_reading: 999999 }
+          meter_1: { name: "مضخة المازوت رقم 1", fuel_type_id: "fuel_diesel", current_reading: 0, max_reading: 999999 },
+          meter_2: { name: "مضخة البنزين رقم 1", fuel_type_id: "fuel_gasoline", current_reading: 0, max_reading: 999999 }
         };
 
         const meters = current.meters || defaultMeters;
         Object.keys(meters).forEach(mId => {
           meters[mId].name = String(meters[mId].name || mId);
-          meters[mId].fuel_type_id = meters[mId].fuel_type_id || Object.keys(fuels)[0];
+          // إصلاح تلقائي إذا كان العداد مربوطاً بمادة غير موجودة
+          if (!meters[mId].fuel_type_id || !fuels[meters[mId].fuel_type_id]) {
+            meters[mId].fuel_type_id = firstFuelId;
+          }
           meters[mId].current_reading = safeNum(meters[mId].current_reading);
           meters[mId].max_reading = safeNum(meters[mId].max_reading) || 999999;
         });
@@ -1240,11 +1342,12 @@
     }
 
     /**************************************************************
-     * 4. واجهة أمين المحطة: العرض، تصفية الوردية، والبيع الفردي والجماعي
+     * 4. واجهة أمين المحطة: العرض، إحصائيات كل مضخة، والبيع
      **************************************************************/
     function renderAdminInterface() {
       renderAdminShiftSummary();
       renderMetersSection();
+      renderAdminPumpStatsToday();
       renderAdminDailyLogs();
       renderTanksSection();
       renderAdminSupplies();
@@ -1253,7 +1356,6 @@
       renderSettingsSection();
     }
 
-    // حساب شريط تصفية الوردية الفوري لأمين المحطة
     function renderAdminShiftSummary() {
       const todayStr = getSyriaDateString();
       const todayLogs = Object.values((appState.daily_logs && appState.daily_logs[todayStr]) || {});
@@ -1263,12 +1365,10 @@
       const salesSum = todayLogs.reduce((acc, l) => acc + safeNum(l?.total_amount), 0);
       const expSum = todayExps.reduce((acc, x) => acc + safeNum(x?.amount), 0);
 
-      // الديون غير المسددة المسجلة اليوم تُخصم من الكاش المطلوب تسليمه
       const todayUnpaidDebts = allDebts
         .filter(d => d && d.date === todayStr && !d.paid)
         .reduce((acc, d) => acc + safeNum(d.amount), 0);
 
-      // الديون المسددة اليوم تُضاف للكاش المطلوب تسليمه
       const todayCollectedOldDebts = allDebts
         .filter(d => d && d.paid && d.paid_date === todayStr && d.date !== todayStr)
         .reduce((acc, d) => acc + safeNum(d.amount), 0);
@@ -1288,7 +1388,6 @@
       const todayStr = getSyriaDateString();
       const todayLogs = (appState.daily_logs && appState.daily_logs[todayStr]) || {};
 
-      // حفظ القيم المدخلة مؤقتاً كي لا تضيع أثناء إعادة الرسم
       const savedInputs = {};
       Object.keys(meters).forEach(mId => {
         const currEl = document.getElementById(`curr_${mId}`);
@@ -1318,12 +1417,22 @@
 
         const hasUndo = meterLogsToday.length > 0;
 
+        // حساب إحصائية اليوم الخاصة بهذه المضخة فقط
+        const pumpTodayLiters = meterLogsToday.reduce((acc, [_, l]) => acc + safeNum(l.net_liters), 0);
+        const pumpTodayMoney = meterLogsToday.reduce((acc, [_, l]) => acc + safeNum(l.total_amount), 0);
+
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
           <div class="card-header">
             <div class="card-title">⛽ ${meter.name}</div>
             <span class="badge">${fuelObj.name} (${formatNum(unitPrice)} ل.س)</span>
+          </div>
+
+          <!-- شريط إحصائية المضخة اليوم -->
+          <div class="pump-mini-stats">
+            <span>مبيعات المضخة اليوم: <strong style="color:var(--primary);">${formatNum(pumpTodayLiters)} لتر</strong></span>
+            <span>الإجمالي: <strong style="color:var(--success);">${formatNum(pumpTodayMoney)} ل.س</strong></span>
           </div>
 
           <div class="form-group">
@@ -1354,8 +1463,8 @@
           <div id="warn_${meterId}" style="display:none; background:rgba(245,158,11,0.2); border:1px solid var(--warning); padding:8px; border-radius:6px; margin-bottom:10px; font-size:0.8rem; color:var(--warning); font-weight:700;"></div>
 
           <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; margin-bottom:12px; font-size:0.88rem;">
-            <div>الصافي المباع: <strong id="net_liters_${meterId}" style="color:var(--primary);">0</strong> لتر</div>
-            <div>المبلغ المستحق: <strong id="total_money_${meterId}" style="color:var(--success);">0</strong> ل.س</div>
+            <div>الصافي المباع للحركة: <strong id="net_liters_${meterId}" style="color:var(--primary);">0</strong> لتر</div>
+            <div>المبلغ المستحق للحركة: <strong id="total_money_${meterId}" style="color:var(--success);">0</strong> ل.س</div>
           </div>
 
           <div style="display:flex; gap:8px;">
@@ -1374,6 +1483,43 @@
       });
 
       updateBatchShiftPreview();
+    }
+
+    // جدول إحصائيات كل مضخة لليوم الحالي في لوحة أمين المحطة
+    function renderAdminPumpStatsToday() {
+      const tbody = document.getElementById('admin-pump-stats-tbody');
+      if (!tbody) return;
+      const meters = appState.meters || {};
+      const fuels = (appState.settings && appState.settings.fuels) || {};
+      const todayStr = getSyriaDateString();
+      const todayLogs = Object.values((appState.daily_logs && appState.daily_logs[todayStr]) || {});
+
+      const meterKeys = Object.keys(meters);
+      if (meterKeys.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">لا توجد مضخات مسجلة</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = meterKeys.map(mId => {
+        const m = meters[mId];
+        const fName = fuels[m.fuel_type_id]?.name || 'غير معروف';
+        const logs = todayLogs.filter(l => l && l.meter_id === mId);
+        const count = logs.length;
+        const calibSum = logs.reduce((a, b) => a + safeNum(b.calibration_liters), 0);
+        const netSum = logs.reduce((a, b) => a + safeNum(b.net_liters), 0);
+        const moneySum = logs.reduce((a, b) => a + safeNum(b.total_amount), 0);
+
+        return `
+          <tr>
+            <td><strong>${m.name}</strong></td>
+            <td><span class="badge">${fName}</span></td>
+            <td>${count}</td>
+            <td>${formatNum(calibSum)}</td>
+            <td style="font-weight:700; color:var(--primary);">${formatNum(netSum)} لتر</td>
+            <td style="font-weight:700; color:var(--success);">${formatNum(moneySum)} ل.س</td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function previewMeterCalculation(meterId) {
@@ -1410,7 +1556,6 @@
       document.getElementById(`net_liters_${meterId}`).textContent = formatNum(netLiters);
       document.getElementById(`total_money_${meterId}`).textContent = formatNum(totalAmount);
 
-      // فحص القراءات الشاذة أو تجاوز الخزان
       const tankAvail = tankObj ? safeNum(tankObj.current_volume) : 999999;
       if (!isRollover && curr < prev) {
         warnBox.style.display = 'block';
@@ -1459,7 +1604,6 @@
       if (monEl) monEl.textContent = formatNum(sumMoney);
     }
 
-    // حفظ عداد مفرد
     function submitMeterSale(meterId) {
       const result = buildMeterSaleAtomicPayload(meterId);
       if (!result) return;
@@ -1473,7 +1617,6 @@
       showToast(`تم تسجيل البيع لـ ${result.meterName} بنجاح ✅`, '#10b981');
     }
 
-    // حفظ جماعي لجميع العدادات المدخلة (إغلاق الوردية بضغطة واحدة)
     function submitAllEnteredMeters() {
       const meters = appState.meters || {};
       const combinedUpdates = {};
@@ -1485,7 +1628,7 @@
         if (!currEl || currEl.value === '') continue;
 
         const res = buildMeterSaleAtomicPayload(mId, tankDeductions);
-        if (!res) return; // توقف في حال وجود خطأ في أحد العدادات
+        if (!res) return;
 
         Object.assign(combinedUpdates, res.updates);
         processedMeters.push(mId);
@@ -1630,7 +1773,7 @@
     }
 
     /**************************************************************
-     * 5. الخزانات، فواتير الصهاريج، وجرد السيخة الفعلي (Tank Dipping)
+     * 5. الخزانات، فواتير الصهاريج، وجرد السيخة الفعلي
      **************************************************************/
     function renderTanksSection() {
       const container = document.getElementById('tanks-cards-container');
@@ -1665,7 +1808,6 @@
             </div>
             <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px;">📏 ${lastDipText}</div>
 
-            <!-- قسم توريد صهريج موثق -->
             <div style="border-top:1px solid var(--border); padding-top:10px; margin-top:8px;">
               <label style="font-size:0.85rem; font-weight:700; color:var(--secondary);">🚛 تفريغ صهريج جديد في الخزان:</label>
               <div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
@@ -1675,7 +1817,6 @@
               </div>
             </div>
 
-            <!-- قسم مطابقة السيخة (القياس الفعلي للبئر) -->
             <div style="border-top:1px solid var(--border); padding-top:10px; margin-top:12px;">
               <label style="font-size:0.85rem; font-weight:700; color:var(--warning);">📏 جرد البئر الفعلي (السيخة) وكشف التبخر/العجز:</label>
               <div style="display:flex; gap:6px; margin-top:6px;">
@@ -1865,7 +2006,7 @@
     }
 
     /**************************************************************
-     * 7. إدارة الديون والمبيعات الآجلة (الذمم)
+     * 7. إدارة الديون والمبيعات الآجلة
      **************************************************************/
     function calcDebtAmountFromLiters() {
       const fuelId = document.getElementById('debt-fuel').value;
@@ -2052,7 +2193,7 @@
     }
 
     /**************************************************************
-     * 9. لوحة المالك الرقابية والتصدير بالوضع الأبيض للطباعة
+     * 9. لوحة المالك الرقابية، إحصائيات كل مضخة، وإصلاح PDF
      **************************************************************/
     function setOwnerFilter(filterType) {
       currentOwnerFilter = filterType;
@@ -2098,20 +2239,89 @@
 
       let [totalSalesMoney, totalExpensesMoney, totalSoldLiters] = [0, 0, 0];
       const fuelBreakdown = {};
+      const pumpBreakdown = {};
       const filteredLogs = [];
       const filteredExpenses = [];
       const filteredSupplies = [];
       const filteredAudits = [];
 
+      // تهيئة جميع المضخات المسجلة حالياً لتظهر في الجدول حتى لو لم تبع في الفترة
+      const meters = appState.meters || {};
+      const fuels = (appState.settings && appState.settings.fuels) || {};
+      Object.keys(meters).forEach(mId => {
+        const m = meters[mId];
+        pumpBreakdown[mId] = {
+          meter_id: mId,
+          name: m.name || mId,
+          current_fuel: fuels[m.fuel_type_id]?.name || 'غير معروف',
+          ops_count: 0,
+          first_prev: null,
+          last_curr: safeNum(m.current_reading),
+          first_ts: Infinity,
+          last_ts: -Infinity,
+          calib_liters: 0,
+          net_liters: 0,
+          revenue: 0
+        };
+      });
+
       Object.keys(appState.daily_logs || {}).forEach(dateKey => {
         if (dateKey >= bounds.start && dateKey <= bounds.end) {
           Object.values(appState.daily_logs[dateKey] || {}).forEach(log => {
             if (!log) return;
-            const net = safeNum(log.net_liters), amt = safeNum(log.total_amount);
-            totalSoldLiters += net; totalSalesMoney += amt;
+            const net = safeNum(log.net_liters);
+            const calib = safeNum(log.calibration_liters);
+            const amt = safeNum(log.total_amount);
+            const ts = safeNum(log.timestamp);
+
+            totalSoldLiters += net;
+            totalSalesMoney += amt;
+
+            // تجميع حسب الوقود
             const fId = log.fuel_type_id || 'unknown';
-            if (!fuelBreakdown[fId]) fuelBreakdown[fId] = { fuel_id: fId, name: log.fuel_name || appState.settings?.fuels?.[fId]?.name || fId, liters: 0, revenue: 0 };
-            fuelBreakdown[fId].liters += net; fuelBreakdown[fId].revenue += amt;
+            if (!fuelBreakdown[fId]) {
+              fuelBreakdown[fId] = {
+                fuel_id: fId,
+                name: log.fuel_name || fuels[fId]?.name || fId,
+                liters: 0,
+                revenue: 0
+              };
+            }
+            fuelBreakdown[fId].liters += net;
+            fuelBreakdown[fId].revenue += amt;
+
+            // تجميع منفصل لكل مضخة (عداد)
+            const mId = log.meter_id || 'unknown_meter';
+            if (!pumpBreakdown[mId]) {
+              pumpBreakdown[mId] = {
+                meter_id: mId,
+                name: log.meter_name || mId,
+                current_fuel: log.fuel_name || '-',
+                ops_count: 0,
+                first_prev: null,
+                last_curr: null,
+                first_ts: Infinity,
+                last_ts: -Infinity,
+                calib_liters: 0,
+                net_liters: 0,
+                revenue: 0
+              };
+            }
+            const pItem = pumpBreakdown[mId];
+            pItem.ops_count += 1;
+            pItem.calib_liters += calib;
+            pItem.net_liters += net;
+            pItem.revenue += amt;
+
+            if (ts < pItem.first_ts) {
+              pItem.first_ts = ts;
+              pItem.first_prev = safeNum(log.prev_reading);
+            }
+            if (ts >= pItem.last_ts) {
+              pItem.last_ts = ts;
+              pItem.last_curr = safeNum(log.curr_reading);
+            }
+
             filteredLogs.push(log);
           });
         }
@@ -2143,7 +2353,6 @@
         }
       });
 
-      // حساب الديون غير المسددة والديون المحصلة في الفترة
       let periodUnpaidDebts = 0;
       let periodCollectedOldDebts = 0;
       Object.values(appState.debts || {}).forEach(d => {
@@ -2165,6 +2374,27 @@
       document.getElementById('owner-total-liters').textContent = formatNum(totalSoldLiters);
       document.getElementById('owner-collected-debts').textContent = formatNum(periodCollectedOldDebts);
 
+      // رسم جدول إحصائيات كل مضخة على حدة
+      const pumpsTbody = document.getElementById('owner-pumps-breakdown-tbody');
+      const pumpsList = Object.values(pumpBreakdown);
+      if (pumpsList.length === 0) {
+        pumpsTbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">لا توجد بيانات مضخات</td></tr>`;
+      } else {
+        pumpsTbody.innerHTML = pumpsList.map(p => `
+          <tr>
+            <td><strong>${p.name}</strong></td>
+            <td><span class="badge">${p.current_fuel}</span></td>
+            <td>${p.ops_count}</td>
+            <td>${p.first_prev !== null ? formatNum(p.first_prev) : '-'}</td>
+            <td>${p.last_curr !== null ? formatNum(p.last_curr) : '-'}</td>
+            <td>${formatNum(p.calib_liters)}</td>
+            <td style="font-weight:700; color:var(--primary);">${formatNum(p.net_liters)} لتر</td>
+            <td style="font-weight:700; color:var(--success);">${formatNum(p.revenue)} ل.س</td>
+          </tr>
+        `).join('');
+      }
+
+      // رسم جدول ملخص الوقود
       const fuelTbody = document.getElementById('owner-fuel-breakdown-tbody');
       const breakdownList = Object.values(fuelBreakdown);
       fuelTbody.innerHTML = breakdownList.length === 0 ? `<tr><td colspan="5" style="text-align:center;">لا توجد مبيعات في هذه الفترة</td></tr>` : breakdownList.map(item => {
@@ -2205,8 +2435,10 @@
 
       filteredAudits.sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
       document.getElementById('owner-audit-tbody').innerHTML = filteredAudits.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا توجد عمليات استثنائية مسجلة</td></tr>` : filteredAudits.map(aud => `
-        <tr><td>${aud.date} ${aud.time || ''}</td><td><span class="badge warn">${aud.action}</span></td><td>${aud.details}</td></tr>
+        <tr><td>${aud.date} - ${aud.time || ''}</td><td><span class="badge warn">${aud.action}</span></td><td>${aud.details}</td></tr>
       `).join('');
+
+      const pumpsWhatsappText = pumpsList.map(p => `🔹 ${p.name}: ${formatNum(p.net_liters)} لتر (${formatNum(p.revenue)} ل.س)`).join('\n');
 
       lastOwnerSummaryText =
         `⛽ *تقرير محطة دنيا للوقود*\n` +
@@ -2217,21 +2449,29 @@
         `📒 ديون آجلة غير مسددة: ${formatNum(periodUnpaidDebts)} ل.س\n` +
         `🏦 *صافي الصندوق النقدي الفعلي: ${formatNum(netCash)} ل.س*\n` +
         `🛢️ إجمالي اللترات المباعة: ${formatNum(totalSoldLiters)} لتر\n` +
+        (pumpsList.length ? `------------------------\n*إحصائيات المضخات:*\n${pumpsWhatsappText}\n` : '') +
         (breakdownList.length ? `------------------------\n*تفصيل المواد:*\n` + breakdownList.map(f => `▪️ ${f.name}: ${formatNum(f.liters)} لتر (${formatNum(f.revenue)} ل.س)`).join('\n') : '');
     }
 
-    // تصدير التقرير بوضع الطباعة الأبيض الرسمي (Print-Friendly PDF)
+    // تصدير التقرير بوضع الطباعة الأبيض مع منع انقسام الأسطر بين الصفحات
     function exportOwnerReportPDF() {
       const reportEl = document.getElementById('pdf-report-area');
       reportEl.classList.add('pdf-print-mode');
-      showToast('جاري تجهيز ملف PDF بخلفية بيضاء جاهزة للطباعة...', '#1c75bc');
+      showToast('جاري تجهيز ملف PDF بتنسيق صفحات سليم...', '#1c75bc');
 
       const opt = {
-        margin: 8,
+        margin: [10, 8, 10, 8],
         filename: `تقرير_محطة_دنيا_${getSyriaDateString()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          windowWidth: 820,
+          scrollY: 0
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.stat-card', '.no-break', '.card-header'] }
       };
 
       html2pdf().set(opt).from(reportEl).save().then(() => {
