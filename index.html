@@ -42,25 +42,52 @@
       --border: #cbd5e1;
     }
 
+    /* تنسيق طباعة PDF احترافي ومنظم تماماً بدون أي تداخل */
     .pdf-print-mode {
       background: #ffffff !important;
-      color: #000000 !important;
-      padding: 10px !important;
-      width: 780px !important;
-      max-width: 780px !important;
+      color: #111827 !important;
+      padding: 15px !important;
+      width: 740px !important;
+      max-width: 740px !important;
       margin: 0 auto !important;
+      font-size: 13px !important;
+      line-height: 1.5 !important;
     }
-    .pdf-print-mode .card, .pdf-print-mode .stat-card {
+    .pdf-print-mode .card {
       background: #ffffff !important;
-      color: #000000 !important;
+      color: #111827 !important;
+      border: 1px solid #e5e7eb !important;
+      box-shadow: none !important;
+      margin-bottom: 15px !important;
+      padding: 12px 16px !important;
+      border-radius: 8px !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    .pdf-print-mode .stat-card {
+      background: #f8fafc !important;
+      color: #111827 !important;
       border: 1px solid #cbd5e1 !important;
+      border-right: 4px solid var(--primary) !important;
       box-shadow: none !important;
       margin-bottom: 12px !important;
-      padding: 12px !important;
+      padding: 10px 14px !important;
+      border-radius: 6px !important;
+      page-break-inside: avoid !important;
     }
-    .pdf-print-mode table { width: 100% !important; border-collapse: collapse !important; }
-    .pdf-print-mode th { background-color: #f1f5f9 !important; color: #000000 !important; border: 1px solid #94a3b8 !important; }
-    .pdf-print-mode td { color: #000000 !important; border: 1px solid #cbd5e1 !important; }
+    .pdf-print-mode .grid-4 { display: block !important; }
+    .pdf-print-mode .stat-card { display: inline-block !important; width: 48% !important; margin: 1% !important; vertical-align: top !important; }
+    .pdf-print-mode .grid-2 { display: block !important; }
+    .pdf-print-mode .grid-2 > .card { display: block !important; width: 100% !important; margin-bottom: 12px !important; }
+    .pdf-print-mode table { width: 100% !important; border-collapse: collapse !important; margin-top: 6px !important; }
+    .pdf-print-mode th { background-color: #f1f5f9 !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important; font-size: 0.8rem !important; padding: 8px 6px !important; text-align: right !important; }
+    .pdf-print-mode td { color: #334155 !important; border: 1px solid #e2e8f0 !important; font-size: 0.78rem !important; padding: 7px 6px !important; text-align: right !important; }
+    .pdf-print-mode tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+    .pdf-print-mode h3 { font-size: 1.1rem !important; color: #1e293b !important; margin-bottom: 4px !important; }
+    .pdf-print-mode .card-title { font-size: 0.95rem !important; color: var(--primary) !important; font-weight: 800 !important; }
+    .pdf-print-mode .stat-title { font-size: 0.75rem !important; color: #64748b !important; }
+    .pdf-print-mode .stat-value { font-size: 1.15rem !important; color: #0f172a !important; font-weight: 800 !important; }
+    .pdf-print-mode .badge { border: 1px solid #94a3b8 !important; color: #1e293b !important; background: #f1f5f9 !important; font-size: 0.7rem !important; padding: 2px 6px !important; }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
 
@@ -1223,9 +1250,7 @@
       const salesSum = todayLogs.reduce((acc, l) => acc + safeNum(l?.total_amount), 0);
       const expSum = todayExps.reduce((acc, x) => acc + safeNum(x?.amount), 0);
       
-      // إجمالي الديون القائمة غير المسددة
       const totalUnpaidDebts = allDebts.filter(d => d && !d.paid).reduce((acc, d) => acc + (safeNum(d.amount) - safeNum(d.paid_amount)), 0);
-      // الديون المحصلة نقداً اليوم
       const todayCollectedDebts = allDebts.filter(d => d && d.last_paid_date === todayStr).reduce((acc, d) => acc + safeNum(d.last_paid_amount), 0);
 
       document.getElementById('admin-shift-sales').textContent = formatNum(salesSum);
@@ -1440,7 +1465,6 @@
       showToast(`تم تسجيل الدين على (${cust}) بنجاح ✅`, '#10b981');
     }
 
-    // فتح نافذة تسجيل دفعة
     function openPayDebtModal(debtId, customer, totalAmt, paidAmt) {
       const remain = totalAmt - safeNum(paidAmt);
       document.getElementById('pay-debt-id').value = debtId;
@@ -1449,7 +1473,6 @@
       document.getElementById('pay-debt-modal').style.display = 'flex';
     }
 
-    // حفظ الدفعة
     function submitPayDebt() {
       const debtId = document.getElementById('pay-debt-id').value;
       const payAmt = safeNum(document.getElementById('pay-debt-amount').value);
@@ -1473,7 +1496,6 @@
       showToast('تم تسجيل الدفعة بنجاح ✅', '#10b981');
     }
 
-    // فتح كشف حساب تفصيلي وإحصائيات خاصة بكل زبون
     function openCustomerStatsModal(customerName) {
       document.getElementById('cust-modal-title').textContent = `كشف حساب وإحصائيات: ${customerName}`;
       const allDebts = Object.values(appState.debts || {}).filter(d => d && d.customer === customerName);
@@ -1649,7 +1671,6 @@
         }
       });
 
-      // تجميع ملخص الديون لكل زبون للشامل
       Object.values(appState.debts || {}).forEach(d => {
         if (!d) return;
         const cust = d.customer || 'غير معروف';
@@ -1706,7 +1727,6 @@
         </tr>
       `).join('');
 
-      // جدول تقرير الديون الشامل للمالك
       const debtsSummaryTbody = document.getElementById('owner-debts-summary-tbody');
       const custList = Object.values(customerBreakdown);
       debtsSummaryTbody.innerHTML = custList.length === 0 ? `<tr><td colspan="5" style="text-align:center;">لا توجد ديون مسجلة</td></tr>` : custList.map(c => {
@@ -1731,7 +1751,7 @@
       `).join('');
 
       document.getElementById('owner-supplies-tbody').innerHTML = filteredSupplies.length === 0 ? `<tr><td colspan="4" style="text-align:center;">لا توريدات</td></tr>` : filteredSupplies.map(s => `
-        <tr><td>${s.date}</td><td>${s.tank_name}</td><td style="color:var(--success);">+${formatNum(s.volume)}</td><td>${s.note}</td></tr>
+        <tr><td>${s.date}</td><td>${s.tank_name}</td><td style="color:var(--success);">+${formatNum(sup.volume)}</td><td>${s.note}</td></tr>
       `).join('');
 
       document.getElementById('owner-audit-tbody').innerHTML = filteredAudits.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا عمليات</td></tr>` : filteredAudits.map(a => `
@@ -1750,15 +1770,16 @@
       return { start: todayStr, end: todayStr, label: 'تقرير اليوم' };
     }
 
-    // دالة إنشاء النسخة الاحتياطية PDF الشاملة للطباعة وحفظها على الذاكرة
+    // دالة تصحيح تنسيق الـ PDF ومنع التداخل الشامل
     function exportOwnerReportPDF() {
       const reportEl = document.getElementById('pdf-report-area');
+      
       reportEl.classList.add('pdf-print-mode');
       reportEl.style.width = '720px';
       reportEl.style.margin = '0 auto';
       reportEl.style.padding = '15px';
 
-      showToast('جاري تجهيز النسخة الاحتياطية الشاملة (PDF)...', '#1c75bc');
+      showToast('جاري تجهيز وتنسيق ملف PDF الشامل...', '#1c75bc');
 
       const opt = {
         margin: [10, 10, 10, 10],
@@ -1772,7 +1793,7 @@
       html2pdf().set(opt).from(reportEl).save().then(() => {
         reportEl.classList.remove('pdf-print-mode');
         reportEl.style.width = ''; reportEl.style.margin = ''; reportEl.style.padding = '';
-        showToast('تم حفظ النسخة الاحتياطية (PDF) على الهاتف بنجاح ✅', '#10b981');
+        showToast('تم حفظ ملف PDF الشامل ومنع التداخل بنجاح ✅', '#10b981');
       }).catch(err => {
         reportEl.classList.remove('pdf-print-mode');
         reportEl.style.width = ''; reportEl.style.margin = ''; reportEl.style.padding = '';
