@@ -42,26 +42,6 @@
       --border: #cbd5e1;
     }
 
-    .pdf-print-mode {
-      background: #ffffff !important;
-      color: #000000 !important;
-      padding: 10px !important;
-      width: 780px !important;
-      max-width: 780px !important;
-      margin: 0 auto !important;
-    }
-    .pdf-print-mode .card, .pdf-print-mode .stat-card {
-      background: #ffffff !important;
-      color: #000000 !important;
-      border: 1px solid #cbd5e1 !important;
-      box-shadow: none !important;
-      margin-bottom: 12px !important;
-      padding: 12px !important;
-    }
-    .pdf-print-mode table { width: 100% !important; border-collapse: collapse !important; }
-    .pdf-print-mode th { background-color: #f1f5f9 !important; color: #000000 !important; border: 1px solid #94a3b8 !important; }
-    .pdf-print-mode td { color: #000000 !important; border: 1px solid #cbd5e1 !important; }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
 
     body {
@@ -92,11 +72,7 @@
     .header-actions { display: flex; align-items: center; gap: 8px; }
 
     .view-section {
-      display: none;
-      max-width: 1150px;
-      margin: 18px auto;
-      padding: 0 12px;
-      animation: fadeIn 0.2s ease-in-out;
+      display: none; max-width: 1150px; margin: 18px auto; padding: 0 12px; animation: fadeIn 0.2s ease-in-out;
     }
     .view-section.active { display: block; }
 
@@ -106,12 +82,8 @@
     }
 
     .card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+      background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
     }
     .card-header {
       display: flex; justify-content: space-between; align-items: center;
@@ -199,7 +171,6 @@
       z-index: 9999; display: none; font-weight: 700; font-size: 0.9rem; max-width: 92%; text-align: center;
     }
 
-    /* نافذة منبثقة أنيقة ومميزة لإدخال قراءات العدادات اليومية عند فتح التطبيق */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px);
@@ -223,7 +194,7 @@
 </head>
 <body>
 
-  <!-- نافذة منبثقة إجبارية لأمين المحطة لادخال ارقام العدادات كل يوم -->
+  <!-- نافذة العدادات اليومية عند فتح التطبيق -->
   <div id="daily-popup-modal" class="modal-overlay" style="display: none;">
     <div class="modal-box">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid var(--border); padding-bottom:10px;">
@@ -231,11 +202,9 @@
         <span class="badge warn" id="popup-date-label">وردية اليوم</span>
       </div>
       <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">
-        أدخل القراءات الحالية لجميع العدادات لتسجيل مبيعات الوردية وتحديث الخزانات تلقائياً، أو اضغط تخطي.
+        أدخل القراءات الحالية لجميع العدادات لتسجيل المبيعات وتحديث الخزانات تلقائياً، أو اضغط تخطي.
       </p>
-      
       <div id="popup-meters-inputs-container"></div>
-
       <div style="display:flex; gap:10px; margin-top:18px;">
         <button class="btn btn-success" style="flex:2;" onclick="submitPopupReadings()">✅ موافق واعتماد الحفظ</button>
         <button class="btn btn-secondary" style="flex:1;" onclick="closeDailyPopup()">⏭️ تخطي</button>
@@ -243,40 +212,45 @@
     </div>
   </div>
 
-  <!-- معالجة إعداد أولية (Setup Wizard) تظهر في المرة الأولى تماماً -->
-  <div id="first-setup-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-box" style="max-width: 600px;">
-      <div style="border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:14px;">
-        <h3 style="color:var(--primary);">🚀 المعالجة الأولية لإعداد المحطة (أول مرة)</h3>
-        <p style="font-size:0.82rem; color:var(--text-muted);">يرجى تعبئة بيانات المحطة والعدادات والأسعار للبدء بدقة 100%</p>
+  <!-- المعالجة الأولية الخطوة 1: الخزانات والأسعار وعدد العدادات -->
+  <div id="setup-step-1" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="max-width: 580px;">
+      <h3 style="color:var(--primary); margin-bottom:8px;">🚀 الخطوة 1 من 2: الخزانات والأسعار والمضخات</h3>
+      <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:14px;">حدد عدد الخزانات، أسعار المواد، وعدد العدادات الإجمالي في المحطة.</p>
+      
+      <div class="form-group">
+        <label>عدد الخزانات الأرضية:</label>
+        <select id="s1-tanks-count" onchange="renderSetupTankInputs()">
+          <option value="1">1 خزان</option>
+          <option value="2" selected>2 خزانات</option>
+          <option value="3">3 خزانات</option>
+          <option value="4">4 خزانات</option>
+        </select>
       </div>
-      <form onsubmit="handleFirstSetupSubmit(event)">
-        <div class="form-group">
-          <label>سعر لتر المازوت (ل.س):</label>
-          <input type="number" id="setup-diesel-price" value="175" min="1" required />
-        </div>
-        <div class="form-group">
-          <label>سعر لتر البنزين (ل.س):</label>
-          <input type="number" id="setup-gasoline-price" value="185" min="1" required />
-        </div>
-        <div class="form-group">
-          <label>رصيد خزان المازوت الحالي (لتر):</label>
-          <input type="number" id="setup-diesel-tank" value="15000" min="0" required />
-        </div>
-        <div class="form-group">
-          <label>رصيد خزان البنزين الحالي (لتر):</label>
-          <input type="number" id="setup-gasoline-tank" value="15000" min="0" required />
-        </div>
-        <div class="form-group">
-          <label>قراءة مضخة المازوت رقم 1 الابتدائية:</label>
-          <input type="number" id="setup-m1-reading" value="0" min="0" required />
-        </div>
-        <div class="form-group">
-          <label>قراءة مضخة البنزين رقم 1 الابتدائية:</label>
-          <input type="number" id="setup-m2-reading" value="0" min="0" required />
-        </div>
-        <button type="submit" class="btn btn-primary btn-block" style="margin-top:10px;">💾 حفظ وإطلاق النظام</button>
-      </form>
+
+      <div id="s1-tanks-dynamic-container"></div>
+
+      <div class="form-group" style="margin-top:12px;">
+        <label>عدد العدادات / المضخات الإجمالي في المحطة:</label>
+        <input type="number" id="s1-meters-count" value="2" min="1" max="10" />
+      </div>
+
+      <button class="btn btn-primary btn-block" style="margin-top:14px;" onclick="goToSetupStep2()">التالي ⬅️</button>
+    </div>
+  </div>
+
+  <!-- المعالجة الأولية الخطوة 2: أسماء وتفاصيل العدادات وقراءاتها الابتدائية -->
+  <div id="setup-step-2" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="max-width: 580px;">
+      <h3 style="color:var(--primary); margin-bottom:8px;">⛽ الخطوة 2 من 2: تسمية وربط العدادات وقراءاتها</h3>
+      <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:14px;">حدد اسم كل عداد، نوع الوقود التابع له، وقراءته الميكانيكية الحالية.</p>
+      
+      <div id="s2-meters-dynamic-container"></div>
+
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <button class="btn btn-secondary" onclick="backToSetupStep1()">⬅️ السابق</button>
+        <button class="btn btn-success" style="flex:2;" onclick="completeFirstSetup()">💾 حفظ وإطلاق النظام نهائياً</button>
+      </div>
     </div>
   </div>
 
@@ -586,7 +560,7 @@
           <div class="form-group">
             <input type="text" id="reset-confirm-input" placeholder="اكتب كلمة نعم هنا..." />
           </div>
-          <button type="button" class="btn btn-danger btn-block" onclick="factoryResetApp()">🚨 مسح جميع البيانات</button>
+          <button type="button" class="btn btn-danger btn-block" onclick="factoryResetApp()">🚨 مسح جميع البيانات وإعادة الإعداد</button>
         </div>
       </div>
     </div>
@@ -741,9 +715,7 @@
           </div>
           <div class="table-responsive">
             <table>
-              <thead>
-                <tr><th>التاريخ</th><th>البيان</th><th>المبلغ (ل.س)</th></tr>
-              </thead>
+              <thead><tr><th>التاريخ</th><th>البيان</th><th>المبلغ (ل.س)</th></tr></thead>
               <tbody id="owner-expenses-tbody"></tbody>
             </table>
           </div>
@@ -754,9 +726,7 @@
           </div>
           <div class="table-responsive">
             <table>
-              <thead>
-                <tr><th>التاريخ</th><th>الخزان</th><th>الكمية (لتر)</th><th>الفاتورة/البيان</th></tr>
-              </thead>
+              <thead><tr><th>التاريخ</th><th>الخزان</th><th>الكمية (لتر)</th><th>الفاتورة/البيان</th></tr></thead>
               <tbody id="owner-supplies-tbody"></tbody>
             </table>
           </div>
@@ -769,9 +739,7 @@
         </div>
         <div class="table-responsive">
           <table>
-            <thead>
-              <tr><th>التاريخ والوقت</th><th>نوع الإجراء</th><th>التفاصيل الرقابية</th></tr>
-            </thead>
+            <thead><tr><th>التاريخ والوقت</th><th>نوع الإجراء</th><th>التفاصيل الرقابية</th></tr></thead>
             <tbody id="owner-audit-tbody"></tbody>
           </table>
         </div>
@@ -919,15 +887,19 @@
 
     let appState = { settings: { fuels: {} }, meters: {}, tanks: {}, daily_logs: {}, expenses: {}, debts: {}, tank_supplies: {}, audit_logs: {} };
     let currentOwnerFilter = 'today';
+    let tempSetupData = {}; // لحفظ بيانات الخطوة 1 مؤقتاً
 
     db.ref('/').on('value', (snapshot) => {
       const data = snapshot.val();
       if (!data || !data.settings || !data.meters || !data.tanks) {
-        // القاعدة فارغة تماماً -> عرض معالجة الإعداد الأولية
-        document.getElementById('first-setup-modal').style.display = 'flex';
+        // القاعدة فارغة -> إظهار المعالجة الأولية الخطوة 1
+        renderSetupTankInputs();
+        document.getElementById('setup-step-1').style.display = 'flex';
+        document.getElementById('setup-step-2').style.display = 'none';
         return;
       }
-      document.getElementById('first-setup-modal').style.display = 'none';
+      document.getElementById('setup-step-1').style.display = 'none';
+      document.getElementById('setup-step-2').style.display = 'none';
 
       appState = {
         settings: data.settings || { fuels: {} },
@@ -944,40 +916,123 @@
       if (document.getElementById('owner-view').classList.contains('active')) renderOwnerDashboard();
     });
 
-    // إرسال الإعداد الأولية عند فتح التطبيق لأول مرة
-    function handleFirstSetupSubmit(e) {
-      e.preventDefault();
-      const dieselPrice = safeNum(document.getElementById('setup-diesel-price').value);
-      const gasolinePrice = safeNum(document.getElementById('setup-gasoline-price').value);
-      const dieselTank = safeNum(document.getElementById('setup-diesel-tank').value);
-      const gasolineTank = safeNum(document.getElementById('setup-gasoline-tank').value);
-      const m1Read = safeNum(document.getElementById('setup-m1-reading').value);
-      const m2Read = safeNum(document.getElementById('setup-m2-reading').value);
+    // توليد حقول الخزانات ديناميكياً في الخطوة 1
+    function renderSetupTankInputs() {
+      const count = safeNum(document.getElementById('s1-tanks-count').value);
+      const container = document.getElementById('s1-tanks-dynamic-container');
+      let html = '';
 
-      const freshData = {
-        settings: {
-          fuels: {
-            fuel_diesel: { name: "مازوت", price: dieselPrice },
-            fuel_gasoline: { name: "بنزين", price: gasolinePrice }
-          }
-        },
-        tanks: {
-          fuel_diesel: { name: "خزان المازوت الرئيسي", fuel_type_id: "fuel_diesel", capacity: 30000, current_volume: dieselTank },
-          fuel_gasoline: { name: "خزان البنزين الرئيسي", fuel_type_id: "fuel_gasoline", capacity: 30000, current_volume: gasolineTank }
-        },
-        meters: {
-          meter_1: { name: "مضخة المازوت رقم 1", fuel_type_id: "fuel_diesel", current_reading: m1Read, max_reading: 999999 },
-          meter_2: { name: "مضخة البنزين رقم 1", fuel_type_id: "fuel_gasoline", current_reading: m2Read, max_reading: 999999 }
-        }
+      for (let i = 1; i <= count; i++) {
+        html += `
+          <div style="background:var(--input-bg); border:1px solid var(--border); padding:10px; border-radius:8px; margin-bottom:8px;">
+            <div style="font-weight:700; color:var(--primary); margin-bottom:6px;">الخزان رقم ${i}:</div>
+            <div class="grid-2" style="gap:6px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:0.8rem;">اسم المادة:</label>
+                <input type="text" id="s1_t_name_${i}" value="${i === 1 ? 'مازوت' : (i === 2 ? 'بنزين' : 'مادة ' + i)}" required />
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:0.8rem;">سعر اللتر (ل.س):</label>
+                <input type="number" id="s1_t_price_${i}" value="${i === 1 ? 175 : 185}" min="1" required />
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:0.8rem;">السعة الكلية (لتر):</label>
+                <input type="number" id="s1_t_cap_${i}" value="30000" min="100" required />
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:0.8rem;">الرصيد الحالي (لتر):</label>
+                <input type="number" id="s1_t_vol_${i}" value="15000" min="0" required />
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    // الانتقال من الخطوة 1 إلى الخطوة 2 بناءً على عدد العدادات
+    function goToSetupStep2() {
+      const tanksCount = safeNum(document.getElementById('s1-tanks-count').value);
+      const metersCount = safeNum(document.getElementById('s1-meters-count').value);
+
+      // جمع بيانات الخزانات والأسعار مؤقتاً
+      tempSetupData.tanks = {};
+      tempSetupData.fuels = {};
+      tempSetupData.fuelsList = [];
+
+      for (let i = 1; i <= tanksCount; i++) {
+        const name = document.getElementById(`s1_t_name_${i}`).value.trim() || `مادة ${i}`;
+        const price = safeNum(document.getElementById(`s1_t_price_${i}`).value);
+        const cap = safeNum(document.getElementById(`s1_t_cap_${i}`).value);
+        const vol = safeNum(document.getElementById(`s1_t_vol_${i}`).value);
+        const fId = `fuel_${i}`;
+
+        tempSetupData.fuels[fId] = { name, price };
+        tempSetupData.fuelsList.push({ id: fId, name });
+        tempSetupData.tanks[fId] = { name: `خزان ${name}`, fuel_type_id: fId, capacity: cap, current_volume: vol };
+      }
+
+      tempSetupData.metersCount = metersCount;
+
+      // بناء حقول الخطوة 2 (تسمية كل عداد وربطه بالمادة)
+      const container = document.getElementById('s2-meters-dynamic-container');
+      let html = '';
+      const optionsHtml = tempSetupData.fuelsList.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+
+      for (let j = 1; j <= metersCount; j++) {
+        html += `
+          <div style="background:var(--input-bg); border:1px solid var(--border); padding:10px; border-radius:8px; margin-bottom:8px;">
+            <div style="font-weight:700; color:var(--secondary); margin-bottom:6px;">المضخة / العداد رقم ${j}:</div>
+            <div class="form-group">
+              <label style="font-size:0.8rem;">اسم العداد:</label>
+              <input type="text" id="s2_m_name_${j}" value="مضخة رقم ${j}" required />
+            </div>
+            <div class="form-group">
+              <label style="font-size:0.8rem;">مادة الوقود المربوطة:</label>
+              <select id="s2_m_fuel_${j}">${optionsHtml}</select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label style="font-size:0.8rem;">القراءة الابتدائية:</label>
+              <input type="number" id="s2_m_read_${j}" value="0" min="0" required />
+            </div>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+
+      document.getElementById('setup-step-1').style.display = 'none';
+      document.getElementById('setup-step-2').style.display = 'flex';
+    }
+
+    function backToSetupStep1() {
+      document.getElementById('setup-step-2').style.display = 'none';
+      document.getElementById('setup-step-1').style.display = 'flex';
+    }
+
+    // إتمام الإعداد الأولية وحفظ البيانات في Firebase
+    function completeFirstSetup() {
+      const metersCount = tempSetupData.metersCount;
+      const meters = {};
+
+      for (let j = 1; j <= metersCount; j++) {
+        const mName = document.getElementById(`s2_m_name_${j}`).value.trim() || `عداد ${j}`;
+        const fId = document.getElementById(`s2_m_fuel_${j}`).value;
+        const read = safeNum(document.getElementById(`s2_m_read_${j}`).value);
+        meters[`meter_${j}`] = { name: mName, fuel_type_id: fId, current_reading: read, max_reading: 999999 };
+      }
+
+      const finalData = {
+        settings: { fuels: tempSetupData.fuels },
+        tanks: tempSetupData.tanks,
+        meters: meters
       };
 
-      db.ref().set(freshData).then(() => {
-        document.getElementById('first-setup-modal').style.display = 'none';
-        showToast('تم إعداد المحطة بنجاح وانطلاق النظام ✅', '#10b981');
+      db.ref().set(finalData).then(() => {
+        document.getElementById('setup-step-2').style.display = 'none';
+        showToast('تم إعداد المحطة وتسمية المضخات بنجاح 🚀', '#10b981');
       });
     }
 
-    // فحص ما إذا فتح الأمين التطبيق اليوم ليظهر له النافذة المنبثقة البسيطة للعدادات
     function checkDailyPopupTrigger() {
       const todayStr = getSyriaDateString();
       const lastPromptDate = localStorage.getItem('donea_last_prompt_date');
@@ -1013,7 +1068,6 @@
       localStorage.setItem('donea_last_prompt_date', getSyriaDateString());
     }
 
-    // اعتماد قراءات النافذة المنبثقة البسيطة وإغلاق الوردية
     function submitPopupReadings() {
       const meters = appState.meters || {};
       const combinedUpdates = {};
@@ -1078,21 +1132,12 @@
     function buildStandardSchema(isManualRepair) {
       db.ref('/').once('value').then((snap) => {
         const current = snap.val() || {};
-        const defaultFuels = { fuel_diesel: { name: "مازوت", price: 175 }, fuel_gasoline: { name: "بنزين", price: 185 } };
-        const fuels = current.settings?.fuels || defaultFuels;
-        const firstFuelId = Object.keys(fuels)[0] || 'fuel_diesel';
-        const defaultTanks = {
-          fuel_diesel: { name: "خزان المازوت الرئيسي", fuel_type_id: "fuel_diesel", capacity: 30000, current_volume: 15000 },
-          fuel_gasoline: { name: "خزان البنزين الرئيسي", fuel_type_id: "fuel_gasoline", capacity: 30000, current_volume: 15000 }
-        };
-        const tanks = current.tanks || defaultTanks;
-        const defaultMeters = {
-          meter_1: { name: "مضخة المازوت رقم 1", fuel_type_id: "fuel_diesel", current_reading: 0, max_reading: 999999 },
-          meter_2: { name: "مضخة البنزين رقم 1", fuel_type_id: "fuel_gasoline", current_reading: 0, max_reading: 999999 }
-        };
-        const meters = current.meters || defaultMeters;
-        db.ref().update({ 'settings/fuels': fuels, 'tanks': tanks, 'meters': meters });
-        if (isManualRepair) showToast('تمت التهيئة بنجاح ✅', '#10b981');
+        if (!current || !current.settings) {
+          renderSetupTankInputs();
+          document.getElementById('setup-step-1').style.display = 'flex';
+          return;
+        }
+        if (isManualRepair) showToast('القاعدة سليمة ✅', '#10b981');
       });
     }
 
