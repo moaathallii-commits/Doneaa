@@ -42,25 +42,25 @@
       --border: #cbd5e1;
     }
 
-    /* تنسيق طباعة PDF احترافي ومنظم تماماً بدون أي تداخل */
+    /* تنسيق طباعة PDF احترافي ومنظم تماماً بدون أي تداخل أو قص */
     .pdf-print-mode {
       background: #ffffff !important;
       color: #111827 !important;
-      padding: 15px !important;
-      width: 740px !important;
-      max-width: 740px !important;
+      padding: 10px !important;
+      width: 720px !important;
+      max-width: 720px !important;
       margin: 0 auto !important;
-      font-size: 13px !important;
-      line-height: 1.5 !important;
+      font-size: 11px !important;
+      line-height: 1.4 !important;
     }
     .pdf-print-mode .card {
       background: #ffffff !important;
       color: #111827 !important;
-      border: 1px solid #e5e7eb !important;
+      border: 1px solid #d1d5db !important;
       box-shadow: none !important;
-      margin-bottom: 15px !important;
-      padding: 12px 16px !important;
-      border-radius: 8px !important;
+      margin-bottom: 12px !important;
+      padding: 10px 12px !important;
+      border-radius: 6px !important;
       page-break-inside: avoid !important;
       break-inside: avoid !important;
     }
@@ -70,24 +70,45 @@
       border: 1px solid #cbd5e1 !important;
       border-right: 4px solid var(--primary) !important;
       box-shadow: none !important;
-      margin-bottom: 12px !important;
-      padding: 10px 14px !important;
+      margin-bottom: 10px !important;
+      padding: 8px 10px !important;
       border-radius: 6px !important;
       page-break-inside: avoid !important;
     }
     .pdf-print-mode .grid-4 { display: block !important; }
     .pdf-print-mode .stat-card { display: inline-block !important; width: 48% !important; margin: 1% !important; vertical-align: top !important; }
     .pdf-print-mode .grid-2 { display: block !important; }
-    .pdf-print-mode .grid-2 > .card { display: block !important; width: 100% !important; margin-bottom: 12px !important; }
-    .pdf-print-mode table { width: 100% !important; border-collapse: collapse !important; margin-top: 6px !important; }
-    .pdf-print-mode th { background-color: #f1f5f9 !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important; font-size: 0.8rem !important; padding: 8px 6px !important; text-align: right !important; }
-    .pdf-print-mode td { color: #334155 !important; border: 1px solid #e2e8f0 !important; font-size: 0.78rem !important; padding: 7px 6px !important; text-align: right !important; }
+    .pdf-print-mode .grid-2 > .card { display: block !important; width: 100% !important; margin-bottom: 10px !important; }
+    .pdf-print-mode table {
+      width: 100% !important;
+      table-layout: fixed !important;
+      border-collapse: collapse !important;
+      margin-top: 4px !important;
+      word-wrap: break-word !important;
+    }
+    .pdf-print-mode th {
+      background-color: #f1f5f9 !important;
+      color: #1e293b !important;
+      border: 1px solid #94a3b8 !important;
+      font-size: 0.75rem !important;
+      padding: 6px 4px !important;
+      text-align: right !important;
+      overflow: hidden !important;
+    }
+    .pdf-print-mode td {
+      color: #334155 !important;
+      border: 1px solid #cbd5e1 !important;
+      font-size: 0.72rem !important;
+      padding: 5px 4px !important;
+      text-align: right !important;
+      overflow: hidden !important;
+    }
     .pdf-print-mode tr { page-break-inside: avoid !important; break-inside: avoid !important; }
-    .pdf-print-mode h3 { font-size: 1.1rem !important; color: #1e293b !important; margin-bottom: 4px !important; }
-    .pdf-print-mode .card-title { font-size: 0.95rem !important; color: var(--primary) !important; font-weight: 800 !important; }
-    .pdf-print-mode .stat-title { font-size: 0.75rem !important; color: #64748b !important; }
-    .pdf-print-mode .stat-value { font-size: 1.15rem !important; color: #0f172a !important; font-weight: 800 !important; }
-    .pdf-print-mode .badge { border: 1px solid #94a3b8 !important; color: #1e293b !important; background: #f1f5f9 !important; font-size: 0.7rem !important; padding: 2px 6px !important; }
+    .pdf-print-mode h3 { font-size: 1rem !important; color: #1e293b !important; margin-bottom: 2px !important; }
+    .pdf-print-mode .card-title { font-size: 0.88rem !important; color: var(--primary) !important; font-weight: 800 !important; }
+    .pdf-print-mode .stat-title { font-size: 0.7rem !important; color: #64748b !important; }
+    .pdf-print-mode .stat-value { font-size: 1.05rem !important; color: #0f172a !important; font-weight: 800 !important; }
+    .pdf-print-mode .badge { border: 1px solid #94a3b8 !important; color: #1e293b !important; background: #f1f5f9 !important; font-size: 0.65rem !important; padding: 2px 4px !important; }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
 
@@ -1750,12 +1771,12 @@
         <tr><td>${e.date}</td><td>${e.description}</td><td style="color:var(--danger);">${formatNum(e.amount)}</td></tr>
       `).join('');
 
-      document.getElementById('owner-supplies-tbody').innerHTML = filteredSupplies.length === 0 ? `<tr><td colspan="4" style="text-align:center;">لا توريدات</td></tr>` : filteredSupplies.map(s => `
-        <tr><td>${s.date}</td><td>${s.tank_name}</td><td style="color:var(--success);">+${formatNum(sup.volume)}</td><td>${s.note}</td></tr>
+      document.getElementById('owner-supplies-tbody').innerHTML = filteredSupplies.length === 0 ? `<tr><td colspan="4" style="text-align:center;">لا توريدات</td></tr>` : filteredSupplies.map(sup => `
+        <tr><td>${sup.date}</td><td>${sup.tank_name}</td><td style="color:var(--success);">+${formatNum(sup.volume)}</td><td>${sup.note}</td></tr>
       `).join('');
 
-      document.getElementById('owner-audit-tbody').innerHTML = filteredAudits.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا عمليات</td></tr>` : filteredAudits.map(a => `
-        <tr><td>${a.date}</td><td><span class="badge warn">${a.action}</span></td><td>${a.details}</td></tr>
+      document.getElementById('owner-audit-tbody').innerHTML = filteredAudits.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا عمليات</td></tr>` : filteredAudits.map(aud => `
+        <tr><td>${aud.date}</td><td><span class="badge warn">${aud.action}</span></td><td>${aud.details}</td></tr>
       `).join('');
     }
 
@@ -1770,22 +1791,22 @@
       return { start: todayStr, end: todayStr, label: 'تقرير اليوم' };
     }
 
-    // دالة تصحيح تنسيق الـ PDF ومنع التداخل الشامل
+    // دالة تصحيح تنسيق الـ PDF وملاءمة الجداول والعرض تماماً لعدم التداخل
     function exportOwnerReportPDF() {
       const reportEl = document.getElementById('pdf-report-area');
       
       reportEl.classList.add('pdf-print-mode');
-      reportEl.style.width = '720px';
+      reportEl.style.width = '700px';
       reportEl.style.margin = '0 auto';
-      reportEl.style.padding = '15px';
+      reportEl.style.padding = '10px';
 
-      showToast('جاري تجهيز وتنسيق ملف PDF الشامل...', '#1c75bc');
+      showToast('جاري تجهيز وتنسيق ملف PDF الشامل بدون تداخل...', '#1c75bc');
 
       const opt = {
-        margin: [10, 10, 10, 10],
+        margin: [8, 8, 8, 8],
         filename: `النسخة_الاحتياطية_الشاملة_محطة_دنيا_${getSyriaDateString()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 780, scrollY: 0 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 760, scrollY: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.stat-card', '.no-break', '.card', 'table'] }
       };
