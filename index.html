@@ -198,7 +198,7 @@
     }
     .modal-box {
       background: var(--card-bg); border: 2px solid var(--primary); border-radius: 16px;
-      width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; padding: 22px;
+      width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; padding: 22px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: scaleUp 0.25s ease-in-out;
     }
     @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -249,6 +249,42 @@
     </div>
   </div>
 
+  <!-- نافذة تسجيل دفعة لدين زبون -->
+  <div id="pay-debt-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+      <h3 style="color:var(--primary); margin-bottom:10px;">💵 تسجيل دفعة نقدية لدين</h3>
+      <div id="pay-debt-info" style="font-size:0.9rem; margin-bottom:12px; color:var(--text-muted);"></div>
+      <input type="hidden" id="pay-debt-id" />
+      <div class="form-group">
+        <label>المبلغ المراد دفعه (ل.س):</label>
+        <input type="number" id="pay-debt-amount" min="1" step="any" placeholder="أدخل المبلغ المسدد..." />
+      </div>
+      <div style="display:flex; gap:10px; margin-top:16px;">
+        <button class="btn btn-success" style="flex:1;" onclick="submitPayDebt()">تأكيد واستلام الدفعة</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('pay-debt-modal').style.display='none'">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة إحصائيات وكشف حساب زبون محدد -->
+  <div id="customer-stats-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="max-width: 600px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+        <h3 style="color:var(--primary);" id="cust-modal-title">كشف حساب زبون</h3>
+        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('customer-stats-modal').style.display='none'">إغلاق ✕</button>
+      </div>
+      <div id="cust-modal-summary" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:14px;"></div>
+      <div class="table-responsive" style="max-height:350px; overflow-y:auto;">
+        <table>
+          <thead>
+            <tr><th>التاريخ</th><th>المادة</th><th>اللترات</th><th>المبلغ (ل.س)</th><th>الحالة</th></tr>
+          </thead>
+          <tbody id="cust-modal-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- المعالجة الأولية الخطوة 1 -->
   <div id="setup-step-1" class="modal-overlay" style="display: none;">
     <div class="modal-box" style="max-width: 580px;">
@@ -264,14 +300,11 @@
           <option value="4">4 خزانات</option>
         </select>
       </div>
-
       <div id="s1-tanks-dynamic-container"></div>
-
       <div class="form-group" style="margin-top:12px;">
         <label>عدد العدادات / المضخات الإجمالي في المحطة:</label>
         <input type="number" id="s1-meters-count" value="2" min="1" max="10" />
       </div>
-
       <button class="btn btn-primary btn-block" style="margin-top:14px;" onclick="goToSetupStep2()">التالي ⬅️</button>
     </div>
   </div>
@@ -281,9 +314,7 @@
     <div class="modal-box" style="max-width: 580px;">
       <h3 style="color:var(--primary); margin-bottom:8px;">⛽ الخطوة 2 من 2: تسمية وربط العدادات وقراءاتها</h3>
       <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:14px;">حدد اسم كل عداد، نوع الوقود التابع له، وقراءته الميكانيكية الحالية.</p>
-      
       <div id="s2-meters-dynamic-container"></div>
-
       <div style="display:flex; gap:10px; margin-top:14px;">
         <button class="btn btn-secondary" onclick="backToSetupStep1()">⬅️ السابق</button>
         <button class="btn btn-success" style="flex:2;" onclick="completeFirstSetup()">💾 حفظ وإطلاق النظام نهائياً</button>
@@ -335,7 +366,10 @@
   <section id="admin-view" class="view-section">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
       <h2>👨‍🔧 لوحة عمليات أمين المحطة</h2>
-      <button class="btn btn-warning btn-sm" onclick="repairDatabaseSchema()">⚙️ تهيئة وإصلاح القاعدة</button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-primary btn-sm" onclick="exportOwnerReportPDF()">📥 نسخة احتياطية PDF شاملة</button>
+        <button class="btn btn-warning btn-sm" onclick="repairDatabaseSchema()">⚙️ تهيئة وإصلاح</button>
+      </div>
     </div>
 
     <!-- شريط خلاصة صندوق الوردية المباشر -->
@@ -362,7 +396,7 @@
       <button class="tab-btn active" onclick="switchAdminTab('tab-meters', this)">⛽ العدادات والوردية</button>
       <button class="tab-btn" onclick="switchAdminTab('tab-tanks', this)">🛢️ الخزانات والسيخة</button>
       <button class="tab-btn" onclick="switchAdminTab('tab-expenses', this)">💸 المصاريف</button>
-      <button class="tab-btn" onclick="switchAdminTab('tab-debts', this)">📒 الديون الآجلة</button>
+      <button class="tab-btn" onclick="switchAdminTab('tab-debts', this)">📒 الديون الآجلة والزبائن</button>
       <button class="tab-btn" onclick="switchAdminTab('tab-settings', this)">⚙️ الإعدادات</button>
     </div>
 
@@ -498,12 +532,12 @@
       </div>
     </div>
 
-    <!-- تبويب 4: الديون الآجلة -->
+    <!-- تبويب 4: الديون الآجلة والزبائن -->
     <div id="tab-debts" class="admin-tab-content">
       <div class="grid-2">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">📝 تسجيل مسحوبات وقود آجلة (دين على زبون)</div>
+            <div class="card-title">📝 تسجيل مسحوبات وقود آجلة (دين جديد)</div>
           </div>
           <form onsubmit="handleAddDebt(event)">
             <div class="form-group">
@@ -512,15 +546,15 @@
             </div>
             <div class="form-group">
               <label>نوع الوقود المسحوب:</label>
-              <select id="debt-fuel" onchange="calcDebtAmountFromLiters()"></select>
+              <select id="debt-fuel" required onchange="calcDebtAmountFromLiters()"></select>
             </div>
             <div class="form-group">
               <label>الكمية باللتر:</label>
-              <input type="number" id="debt-liters" min="0" step="any" placeholder="0" oninput="calcDebtAmountFromLiters()" />
+              <input type="number" id="debt-liters" min="0" step="any" placeholder="0" required oninput="calcDebtAmountFromLiters()" />
             </div>
             <div class="form-group">
-              <label>المبلغ المستحق (ل.س):</label>
-              <input type="number" id="debt-amount" min="1" step="any" placeholder="0" required />
+              <label>المبلغ الإجمالي (حساب تلقائي):</label>
+              <input type="number" id="debt-amount" min="1" step="any" placeholder="0" readonly />
             </div>
             <div class="form-group">
               <label>ملاحظة إضافية:</label>
@@ -529,20 +563,24 @@
             <button type="submit" class="btn btn-primary btn-block">تسجيل الدين الآجل</button>
           </form>
         </div>
+
         <div class="card">
           <div class="card-header">
-            <div class="card-title">📒 دفتر الديون والذمم القائمة</div>
+            <div class="card-title">📒 دفتر الديون والبحث عن زبون</div>
           </div>
-          <div class="table-responsive">
+          <div class="form-group">
+            <input type="text" id="customer-search-input" placeholder="🔍 ابحث عن اسم الزبون..." oninput="renderAdminDebts()" />
+          </div>
+          <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
             <table>
               <thead>
                 <tr>
                   <th>التاريخ</th>
                   <th>الزبون</th>
-                  <th>المادة</th>
-                  <th>المبلغ (ل.س)</th>
+                  <th>المادة واللترات</th>
+                  <th>المبلغ</th>
                   <th>الحالة</th>
-                  <th>إجراء</th>
+                  <th>إجراءات</th>
                 </tr>
               </thead>
               <tbody id="admin-debts-tbody"></tbody>
@@ -611,7 +649,7 @@
       <div class="card-header">
         <div class="card-title">📊 لوحة الرقابة المالية والتقارير (المالك)</div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn btn-secondary btn-sm" onclick="exportOwnerReportPDF()">📄 تصدير PDF للطباعة</button>
+          <button class="btn btn-primary btn-sm" onclick="exportOwnerReportPDF()">📥 نسخة احتياطية PDF شاملة</button>
           <button class="btn btn-success btn-sm" onclick="shareWhatsAppSummary()">💬 ملخص واتساب</button>
         </div>
       </div>
@@ -633,13 +671,13 @@
       </div>
     </div>
 
-    <!-- منطقة التقرير الخفية أو الظاهرة المستخدمة في تصدير PDF الإلزامي والمالك -->
+    <!-- منطقة التقرير الشاملة لتصدير PDF -->
     <div id="pdf-report-area">
       <div class="card no-break" style="display:flex; align-items:center; justify-content:space-between; border-color:var(--primary);">
         <div style="display:flex; align-items:center; gap:12px;">
           <img src="1000065786.png" alt="Logo" style="width:52px; height:52px; border-radius:50%; background:#fff;" onerror="this.style.display='none'" />
           <div>
-            <h3 style="color:var(--primary);">التقرير المالي والرقابي - محطة دنيا للوقود</h3>
+            <h3 style="color:var(--primary);">التقرير الشامل والنسخة الاحتياطية - محطة دنيا للوقود</h3>
             <p id="report-period-label" style="font-size:0.85rem; color:var(--text-muted);"></p>
           </div>
         </div>
@@ -718,6 +756,26 @@
               </tr>
             </thead>
             <tbody id="owner-fuel-breakdown-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📒 تقرير الديون والذمم الشامل للزبائن</div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>الزبون</th>
+                <th>إجمالي المسحوبات (ل.س)</th>
+                <th>المسدد (ل.س)</th>
+                <th>المتبقي ذمم (ل.س)</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody id="owner-debts-summary-tbody"></tbody>
           </table>
         </div>
       </div>
@@ -955,7 +1013,6 @@
       if (document.getElementById('owner-view').classList.contains('active')) renderOwnerDashboard();
     });
 
-    // الفحص الإلزامي اليومي: هل حفظ الأمين نسخة PDF إحصائيات العدادات لليوم الحالي؟
     function checkMandatoryDailyPDFTrigger() {
       const todayStr = getSyriaDateString();
       const lastArchivedDate = localStorage.getItem('donea_last_pdf_archived_date');
@@ -967,63 +1024,30 @@
       }
     }
 
-    // تنفيذ تصدير وحفظ ملف الـ PDF الإلزامي تلقائياً على ذاكرة الهاتف
     function executeMandatoryDailyPDFExport() {
       const todayStr = getSyriaDateString();
-      setOwnerFilter('today'); // ضبط فلتر التقرير على اليوم الحالي
-
-      const reportEl = document.getElementById('pdf-report-area');
-      reportEl.classList.add('pdf-print-mode');
-      showToast('جاري حفظ نسخة إحصائيات العدادات الدقيقة (PDF) على ذاكرة الهاتف...', '#f26f22');
-
-      const opt = {
-        margin: [10, 8, 10, 8],
-        filename: `إحصائيات_العدادات_محطة_دنيا_${todayStr}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 820, scrollY: 0 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.stat-card', '.no-break', '.card-header'] }
-      };
-
-      html2pdf().set(opt).from(reportEl).save().then(() => {
-        reportEl.classList.remove('pdf-print-mode');
-        localStorage.setItem('donea_last_pdf_archived_date', todayStr);
-        document.getElementById('mandatory-daily-pdf-modal').style.display = 'none';
-        recordAuditLog('أرشفة PDF إلزامية يومية', `تم حفظ وتوثيق نسخة إحصائيات العدادات لليوم ${todayStr} على ذاكرة الهاتف بنجاح`);
-        showToast('تم حفظ نسختك اليومية (PDF) بنجاح ✅', '#10b981');
-        checkDailyPopupTrigger();
-      }).catch(err => {
-        reportEl.classList.remove('pdf-print-mode');
-        showToast('فشل التصدير التلقائي: ' + err.message, '#ef4444');
-      });
+      setOwnerFilter('today');
+      exportOwnerReportPDF();
+      localStorage.setItem('donea_last_pdf_archived_date', todayStr);
+      document.getElementById('mandatory-daily-pdf-modal').style.display = 'none';
+      recordAuditLog('أرشفة PDF إلزامية يومية', `تم حفظ وتوثيق النسخة الاحتياطية الشاملة لليوم ${todayStr}`);
+      showToast('تم حفظ نسختك اليومية (PDF) بنجاح ✅', '#10b981');
+      checkDailyPopupTrigger();
     }
 
     function renderSetupTankInputs() {
       const count = safeNum(document.getElementById('s1-tanks-count').value);
       const container = document.getElementById('s1-tanks-dynamic-container');
       let html = '';
-
       for (let i = 1; i <= count; i++) {
         html += `
           <div style="background:var(--input-bg); border:1px solid var(--border); padding:10px; border-radius:8px; margin-bottom:8px;">
             <div style="font-weight:700; color:var(--primary); margin-bottom:6px;">الخزان رقم ${i}:</div>
             <div class="grid-2" style="gap:6px;">
-              <div class="form-group" style="margin-bottom:0;">
-                <label style="font-size:0.8rem;">اسم المادة:</label>
-                <input type="text" id="s1_t_name_${i}" value="${i === 1 ? 'مازوت' : (i === 2 ? 'بنزين' : 'مادة ' + i)}" required />
-              </div>
-              <div class="form-group" style="margin-bottom:0;">
-                <label style="font-size:0.8rem;">سعر اللتر (ل.س):</label>
-                <input type="number" id="s1_t_price_${i}" value="${i === 1 ? 175 : 185}" min="1" required />
-              </div>
-              <div class="form-group" style="margin-bottom:0;">
-                <label style="font-size:0.8rem;">السعة الكلية (لتر):</label>
-                <input type="number" id="s1_t_cap_${i}" value="30000" min="100" required />
-              </div>
-              <div class="form-group" style="margin-bottom:0;">
-                <label style="font-size:0.8rem;">الرصيد الحالي (لتر):</label>
-                <input type="number" id="s1_t_vol_${i}" value="15000" min="0" required />
-              </div>
+              <div class="form-group" style="margin-bottom:0;"><label style="font-size:0.8rem;">اسم المادة:</label><input type="text" id="s1_t_name_${i}" value="${i === 1 ? 'مازوت' : (i === 2 ? 'بنزين' : 'مادة ' + i)}" required /></div>
+              <div class="form-group" style="margin-bottom:0;"><label style="font-size:0.8rem;">سعر اللتر (ل.س):</label><input type="number" id="s1_t_price_${i}" value="${i === 1 ? 175 : 185}" min="1" required /></div>
+              <div class="form-group" style="margin-bottom:0;"><label style="font-size:0.8rem;">السعة الكلية (لتر):</label><input type="number" id="s1_t_cap_${i}" value="30000" min="100" required /></div>
+              <div class="form-group" style="margin-bottom:0;"><label style="font-size:0.8rem;">الرصيد الحالي (لتر):</label><input type="number" id="s1_t_vol_${i}" value="15000" min="0" required /></div>
             </div>
           </div>
         `;
@@ -1034,10 +1058,7 @@
     function goToSetupStep2() {
       const tanksCount = safeNum(document.getElementById('s1-tanks-count').value);
       const metersCount = safeNum(document.getElementById('s1-meters-count').value);
-
-      tempSetupData.tanks = {};
-      tempSetupData.fuels = {};
-      tempSetupData.fuelsList = [];
+      tempSetupData.tanks = {}; tempSetupData.fuels = {}; tempSetupData.fuelsList = [];
 
       for (let i = 1; i <= tanksCount; i++) {
         const name = document.getElementById(`s1_t_name_${i}`).value.trim() || `مادة ${i}`;
@@ -1045,39 +1066,26 @@
         const cap = safeNum(document.getElementById(`s1_t_cap_${i}`).value);
         const vol = safeNum(document.getElementById(`s1_t_vol_${i}`).value);
         const fId = `fuel_${i}`;
-
         tempSetupData.fuels[fId] = { name, price };
         tempSetupData.fuelsList.push({ id: fId, name });
         tempSetupData.tanks[fId] = { name: `خزان ${name}`, fuel_type_id: fId, capacity: cap, current_volume: vol };
       }
-
       tempSetupData.metersCount = metersCount;
 
       const container = document.getElementById('s2-meters-dynamic-container');
       let html = '';
       const optionsHtml = tempSetupData.fuelsList.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
-
       for (let j = 1; j <= metersCount; j++) {
         html += `
           <div style="background:var(--input-bg); border:1px solid var(--border); padding:10px; border-radius:8px; margin-bottom:8px;">
             <div style="font-weight:700; color:var(--secondary); margin-bottom:6px;">المضخة / العداد رقم ${j}:</div>
-            <div class="form-group">
-              <label style="font-size:0.8rem;">اسم العداد:</label>
-              <input type="text" id="s2_m_name_${j}" value="مضخة رقم ${j}" required />
-            </div>
-            <div class="form-group">
-              <label style="font-size:0.8rem;">مادة الوقود المربوطة:</label>
-              <select id="s2_m_fuel_${j}">${optionsHtml}</select>
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label style="font-size:0.8rem;">القراءة الابتدائية:</label>
-              <input type="number" id="s2_m_read_${j}" value="0" min="0" required />
-            </div>
+            <div class="form-group"><label style="font-size:0.8rem;">اسم العداد:</label><input type="text" id="s2_m_name_${j}" value="مضخة رقم ${j}" required /></div>
+            <div class="form-group"><label style="font-size:0.8rem;">مادة الوقود المربوطة:</label><select id="s2_m_fuel_${j}">${optionsHtml}</select></div>
+            <div class="form-group" style="margin-bottom:0;"><label style="font-size:0.8rem;">القراءة الابتدائية:</label><input type="number" id="s2_m_read_${j}" value="0" min="0" required /></div>
           </div>
         `;
       }
       container.innerHTML = html;
-
       document.getElementById('setup-step-1').style.display = 'none';
       document.getElementById('setup-step-2').style.display = 'flex';
     }
@@ -1090,30 +1098,21 @@
     function completeFirstSetup() {
       const metersCount = tempSetupData.metersCount;
       const meters = {};
-
       for (let j = 1; j <= metersCount; j++) {
         const mName = document.getElementById(`s2_m_name_${j}`).value.trim() || `عداد ${j}`;
         const fId = document.getElementById(`s2_m_fuel_${j}`).value;
         const read = safeNum(document.getElementById(`s2_m_read_${j}`).value);
         meters[`meter_${j}`] = { name: mName, fuel_type_id: fId, current_reading: read, max_reading: 999999 };
       }
-
-      const finalData = {
-        settings: { fuels: tempSetupData.fuels },
-        tanks: tempSetupData.tanks,
-        meters: meters
-      };
-
-      db.ref().set(finalData).then(() => {
+      db.ref().set({ settings: { fuels: tempSetupData.fuels }, tanks: tempSetupData.tanks, meters }).then(() => {
         document.getElementById('setup-step-2').style.display = 'none';
-        showToast('تم إعداد المحطة وتسمية المضخات بنجاح 🚀', '#10b981');
+        showToast('تم إعداد المحطة بنجاح 🚀', '#10b981');
       });
     }
 
     function checkDailyPopupTrigger() {
       const todayStr = getSyriaDateString();
-      const lastPromptDate = localStorage.getItem('donea_last_prompt_date');
-      if (lastPromptDate !== todayStr && Object.keys(appState.meters || {}).length > 0) {
+      if (localStorage.getItem('donea_last_prompt_date') !== todayStr && Object.keys(appState.meters || {}).length > 0) {
         openDailyPopup();
       }
     }
@@ -1122,7 +1121,6 @@
       const container = document.getElementById('popup-meters-inputs-container');
       const meters = appState.meters || {};
       const fuels = appState.settings?.fuels || {};
-
       container.innerHTML = Object.keys(meters).map(mId => {
         const m = meters[mId];
         const fName = fuels[m.fuel_type_id]?.name || 'وقود';
@@ -1136,7 +1134,6 @@
           </div>
         `;
       }).join('');
-
       document.getElementById('daily-popup-modal').style.display = 'flex';
     }
 
@@ -1154,23 +1151,16 @@
       for (const mId of Object.keys(meters)) {
         const inputEl = document.getElementById(`popup_curr_${mId}`);
         if (!inputEl || inputEl.value === '') continue;
-
         const currVal = safeNum(inputEl.value);
         const m = meters[mId];
         const prev = safeNum(m.current_reading);
-
-        if (currVal < prev) {
-          showToast(`خطأ في ${m.name}: القراءة الحالية أقل من السابقة!`, '#ef4444');
-          return;
-        }
+        if (currVal < prev) { showToast(`خطأ في ${m.name}: القراءة أقل من السابقة!`, '#ef4444'); return; }
 
         const netLiters = currVal - prev;
         const fuelId = m.fuel_type_id;
         const fuelObj = appState.settings?.fuels?.[fuelId] || { name: 'وقود', price: 0 };
         const tankObj = appState.tanks?.[fuelId] || null;
-        const unitPrice = safeNum(fuelObj.price);
-        const totalPrice = netLiters * unitPrice;
-
+        const totalPrice = netLiters * safeNum(fuelObj.price);
         const todayStr = getSyriaDateString();
         const logId = db.ref(`daily_logs/${todayStr}`).push().key;
 
@@ -1182,53 +1172,33 @@
         combinedUpdates[`daily_logs/${todayStr}/${logId}`] = {
           log_id: logId, date: todayStr, time: getSyriaTimeString(), timestamp: Date.now(),
           meter_id: mId, meter_name: m.name, fuel_type_id: fuelId, fuel_name: fuelObj.name,
-          unit_price: unitPrice, prev_reading: prev, curr_reading: currVal,
-          calibration_liters: 0, raw_liters: netLiters, net_liters: netLiters,
-          total_amount: totalPrice, is_rollover: false
+          unit_price: fuelObj.price, prev_reading: prev, curr_reading: currVal,
+          calibration_liters: 0, raw_liters: netLiters, net_liters: netLiters, total_amount: totalPrice, is_rollover: false
         };
         combinedUpdates[`meters/${mId}/current_reading`] = currVal;
         if (tankObj) combinedUpdates[`tanks/${fuelId}/current_volume`] = updatedTankVol;
         count++;
       }
 
-      if (count === 0) {
-        showToast('لم تقم بإدخال أي قراءة في النافذة!', '#ef4444');
-        return;
-      }
-
+      if (count === 0) { showToast('لم تدخل أي قراءة!', '#ef4444'); return; }
       db.ref().update(combinedUpdates);
       closeDailyPopup();
-      showToast(`تم تسجيل وردية العدادات (${count}) بنجاح واعتماد الحفظ ✅`, '#10b981');
+      showToast(`تم تسجيل وردية العدادات (${count}) بنجاح ✅`, '#10b981');
     }
 
     function repairDatabaseSchema() {
       if (!confirm('فحص وإصلاح هيكلية القاعدة؟')) return;
-      buildStandardSchema(true);
-    }
-
-    function buildStandardSchema(isManualRepair) {
-      db.ref('/').once('value').then((snap) => {
-        const current = snap.val() || {};
-        if (!current || !current.settings) {
-          renderSetupTankInputs();
-          document.getElementById('setup-step-1').style.display = 'flex';
-          return;
-        }
-        if (isManualRepair) showToast('القاعدة سليمة ✅', '#10b981');
-      });
+      showToast('القاعدة سليمة ✅', '#10b981');
     }
 
     function factoryResetApp() {
       const val = (document.getElementById('reset-confirm-input').value || '').trim();
-      if (val !== 'نعم') {
-        showToast('أكتب كلمة (نعم) في حقل التأكيد لإتمام المسح!', '#ef4444');
-        return;
-      }
-      if (!confirm('تحذير: هل تريد مسح كل بيانات المحطة تماماً؟')) return;
+      if (val !== 'نعم') { showToast('أكتب كلمة (نعم) في حقل التأكيد!', '#ef4444'); return; }
+      if (!confirm('تحذير: مسح كل بيانات المحطة تماماً؟')) return;
       db.ref().set(null).then(() => {
         localStorage.removeItem('donea_last_prompt_date');
         localStorage.removeItem('donea_last_pdf_archived_date');
-        showToast('تمت مسح البيانات وإعادة التطبيق للصفر 🚨', '#ef4444');
+        showToast('تم مسح البيانات وإعادة التطبيق للصفر 🚨', '#ef4444');
       });
     }
 
@@ -1252,13 +1222,16 @@
 
       const salesSum = todayLogs.reduce((acc, l) => acc + safeNum(l?.total_amount), 0);
       const expSum = todayExps.reduce((acc, x) => acc + safeNum(x?.amount), 0);
-      const todayUnpaidDebts = allDebts.filter(d => d && d.date === todayStr && !d.paid).reduce((acc, d) => acc + safeNum(d.amount), 0);
-      const todayCollectedOldDebts = allDebts.filter(d => d && d.paid && d.paid_date === todayStr && d.date !== todayStr).reduce((acc, d) => acc + safeNum(d.amount), 0);
+      
+      // إجمالي الديون القائمة غير المسددة
+      const totalUnpaidDebts = allDebts.filter(d => d && !d.paid).reduce((acc, d) => acc + (safeNum(d.amount) - safeNum(d.paid_amount)), 0);
+      // الديون المحصلة نقداً اليوم
+      const todayCollectedDebts = allDebts.filter(d => d && d.last_paid_date === todayStr).reduce((acc, d) => acc + safeNum(d.last_paid_amount), 0);
 
       document.getElementById('admin-shift-sales').textContent = formatNum(salesSum);
       document.getElementById('admin-shift-expenses').textContent = formatNum(expSum);
-      document.getElementById('admin-shift-debts').textContent = formatNum(todayUnpaidDebts);
-      document.getElementById('admin-shift-net-cash').textContent = formatNum(salesSum - expSum - todayUnpaidDebts + todayCollectedOldDebts);
+      document.getElementById('admin-shift-debts').textContent = formatNum(totalUnpaidDebts);
+      document.getElementById('admin-shift-net-cash').textContent = formatNum(salesSum - expSum + todayCollectedDebts);
     }
 
     function renderMetersSection() {
@@ -1288,18 +1261,9 @@
             <span>مبيعات اليوم: <strong style="color:var(--primary);">${formatNum(pumpTodayLiters)} لتر</strong></span>
             <span>الإجمالي: <strong style="color:var(--success);">${formatNum(pumpTodayMoney)} ل.س</strong></span>
           </div>
-          <div class="form-group">
-            <label>القراءة السابقة:</label>
-            <input type="number" value="${prevReading}" readonly />
-          </div>
-          <div class="form-group">
-            <label>القراءة الحالية للعداد:</label>
-            <input type="number" id="curr_${meterId}" step="any" placeholder="القراءة الحالية..." oninput="previewMeterCalculation('${meterId}')" />
-          </div>
-          <div class="form-group">
-            <label>المعايرة المسترجعة (لتر):</label>
-            <input type="number" id="calib_${meterId}" value="0" step="any" oninput="previewMeterCalculation('${meterId}')" />
-          </div>
+          <div class="form-group"><label>القراءة السابقة:</label><input type="number" value="${prevReading}" readonly /></div>
+          <div class="form-group"><label>القراءة الحالية للعداد:</label><input type="number" id="curr_${meterId}" step="any" placeholder="القراءة الحالية..." oninput="previewMeterCalculation('${meterId}')" /></div>
+          <div class="form-group"><label>المعايرة المسترجعة (لتر):</label><input type="number" id="calib_${meterId}" value="0" step="any" oninput="previewMeterCalculation('${meterId}')" /></div>
           <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; margin-bottom:12px; font-size:0.88rem;">
             <div>الصافي: <strong id="net_liters_${meterId}" style="color:var(--primary);">0</strong> لتر</div>
             <div>المبلغ: <strong id="total_money_${meterId}" style="color:var(--success);">0</strong> ل.س</div>
@@ -1441,25 +1405,143 @@
       tb.innerHTML = exps.length === 0 ? `<tr><td colspan="4" style="text-align:center;">لا مصاريف</td></tr>` : exps.map(e => `<tr><td>${e.time}</td><td>${e.description}</td><td style="color:var(--danger);">${formatNum(e.amount)}</td><td>-</td></tr>`).join('');
     }
 
+    // حساب تلقائي لسعر الدين بناء على اللترات ونوع الوقود
     function calcDebtAmountFromLiters() {
       const fId = document.getElementById('debt-fuel').value;
       const lit = safeNum(document.getElementById('debt-liters').value);
       const pr = safeNum(appState.settings?.fuels?.[fId]?.price);
-      if (lit > 0 && pr > 0) document.getElementById('debt-amount').value = lit * pr;
+      if (lit > 0 && pr > 0) {
+        document.getElementById('debt-amount').value = lit * pr;
+      }
     }
+
     function handleAddDebt(e) {
       e.preventDefault();
+      const cust = document.getElementById('debt-customer').value.trim();
+      const fId = document.getElementById('debt-fuel').value;
+      const fuelObj = appState.settings?.fuels?.[fId] || { name: 'وقود', price: 0 };
+      const liters = safeNum(document.getElementById('debt-liters').value);
+      const amount = safeNum(document.getElementById('debt-amount').value);
+      const note = document.getElementById('debt-note').value.trim();
+
+      if (!cust || amount <= 0) { showToast('يرجى إدخال اسم الزبون والمبلغ', '#ef4444'); return; }
+
       const k = db.ref('debts').push().key;
       db.ref(`debts/${k}`).set({
-        id: k, date: getSyriaDateString(), customer: document.getElementById('debt-customer').value,
-        fuel_id: document.getElementById('debt-fuel').value, amount: safeNum(document.getElementById('debt-amount').value), paid: false
+        id: k, date: getSyriaDateString(), time: getSyriaTimeString(), timestamp: Date.now(),
+        customer: cust, fuel_id: fId, fuel_name: fuelObj.name, liters: liters, amount: amount,
+        paid_amount: 0, paid: false, note: note
       });
-      showToast('تم تسجيل الدين ✅', '#10b981');
+
+      document.getElementById('debt-customer').value = '';
+      document.getElementById('debt-liters').value = '';
+      document.getElementById('debt-amount').value = '';
+      document.getElementById('debt-note').value = '';
+      showToast(`تم تسجيل الدين على (${cust}) بنجاح ✅`, '#10b981');
     }
+
+    // فتح نافذة تسجيل دفعة
+    function openPayDebtModal(debtId, customer, totalAmt, paidAmt) {
+      const remain = totalAmt - safeNum(paidAmt);
+      document.getElementById('pay-debt-id').value = debtId;
+      document.getElementById('pay-debt-info').innerHTML = `الزبون: <strong>${customer}</strong><br/>المتبقي عليه: <strong style="color:var(--warning);">${formatNum(remain)} ل.س</strong>`;
+      document.getElementById('pay-debt-amount').value = remain;
+      document.getElementById('pay-debt-modal').style.display = 'flex';
+    }
+
+    // حفظ الدفعة
+    function submitPayDebt() {
+      const debtId = document.getElementById('pay-debt-id').value;
+      const payAmt = safeNum(document.getElementById('pay-debt-amount').value);
+      const debtItem = appState.debts?.[debtId];
+
+      if (!debtItem || payAmt <= 0) { showToast('مبلغ غير صحيح', '#ef4444'); return; }
+      const totalAmt = safeNum(debtItem.amount);
+      const currentPaid = safeNum(debtItem.paid_amount);
+      const newPaid = currentPaid + payAmt;
+      const isFullyPaid = newPaid >= totalAmt;
+
+      db.ref(`debts/${debtId}`).update({
+        paid_amount: newPaid,
+        paid: isFullyPaid,
+        last_paid_amount: payAmt,
+        last_paid_date: getSyriaDateString()
+      });
+
+      document.getElementById('pay-debt-modal').style.display = 'none';
+      recordAuditLog('تسديد دفعة دين', `تحصيل دفعة بقيمة ${formatNum(payAmt)} ل.س من الزبون (${debtItem.customer})`);
+      showToast('تم تسجيل الدفعة بنجاح ✅', '#10b981');
+    }
+
+    // فتح كشف حساب تفصيلي وإحصائيات خاصة بكل زبون
+    function openCustomerStatsModal(customerName) {
+      document.getElementById('cust-modal-title').textContent = `كشف حساب وإحصائيات: ${customerName}`;
+      const allDebts = Object.values(appState.debts || {}).filter(d => d && d.customer === customerName);
+      
+      let totalReq = 0, totalPaid = 0;
+      const tbody = document.getElementById('cust-modal-tbody');
+
+      tbody.innerHTML = allDebts.map(d => {
+        const amt = safeNum(d.amount);
+        const paid = safeNum(d.paid_amount);
+        totalReq += amt; totalPaid += paid;
+        return `
+          <tr>
+            <td>${d.date}</td>
+            <td>${d.fuel_name} ${d.liters ? `(${formatNum(d.liters)} لتر)` : ''}</td>
+            <td>${formatNum(amt)}</td>
+            <td>${formatNum(paid)}</td>
+            <td>${d.paid ? '<span class="badge ok">مسدد بالكامل</span>' : '<span class="badge err">ذمم غير مسددة</span>'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const remain = totalReq - totalPaid;
+      document.getElementById('cust-modal-summary').innerHTML = `
+        <div style="background:var(--input-bg); padding:10px; border-radius:8px; text-align:center;"><div style="font-size:0.75rem; color:var(--text-muted);">إجمالي المسحوبات</div><div style="font-weight:800; color:var(--primary);">${formatNum(totalReq)} ل.س</div></div>
+        <div style="background:var(--input-bg); padding:10px; border-radius:8px; text-align:center;"><div style="font-size:0.75rem; color:var(--text-muted);">إجمالي المسدد</div><div style="font-weight:800; color:var(--success);">${formatNum(totalPaid)} ل.س</div></div>
+        <div style="background:var(--input-bg); padding:10px; border-radius:8px; text-align:center;"><div style="font-size:0.75rem; color:var(--text-muted);">المتبقي ذمم</div><div style="font-weight:800; color:var(--danger);">${formatNum(remain)} ل.س</div></div>
+      `;
+
+      document.getElementById('customer-stats-modal').style.display = 'flex';
+    }
+
     function renderAdminDebts() {
       const tb = document.getElementById('admin-debts-tbody');
-      const debts = Object.values(appState.debts || {});
-      tb.innerHTML = debts.length === 0 ? `<tr><td colspan="6" style="text-align:center;">لا ديون</td></tr>` : debts.map(d => `<tr><td>${d.date}</td><td>${d.customer}</td><td>-</td><td>${formatNum(d.amount)}</td><td>${d.paid?'مسدد':'غير مسدد'}</td><td>-</td></tr>`).join('');
+      const searchTxt = (document.getElementById('customer-search-input')?.value || '').trim().toLowerCase();
+      let debts = Object.values(appState.debts || {});
+
+      if (searchTxt) {
+        debts = debts.filter(d => d && d.customer && d.customer.toLowerCase().includes(searchTxt));
+      }
+
+      debts.sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
+
+      if (debts.length === 0) {
+        tb.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">لا توجد ديون مطابقة للبحث</td></tr>`;
+        return;
+      }
+
+      tb.innerHTML = debts.map(d => {
+        const total = safeNum(d.amount);
+        const paid = safeNum(d.paid_amount);
+        const remain = total - paid;
+        return `
+          <tr>
+            <td>${d.date}</td>
+            <td><strong style="cursor:pointer; color:var(--secondary);" onclick="openCustomerStatsModal('${d.customer}')">${d.customer} 🔍</strong></td>
+            <td>${d.fuel_name} ${d.liters ? `(${formatNum(d.liters)} لتر)` : ''}</td>
+            <td>إجمالي: ${formatNum(total)}<br/><span style="color:var(--danger);">متبقي: ${formatNum(remain)}</span></td>
+            <td>${d.paid ? '<span class="badge ok">مسدد</span>' : '<span class="badge err">جاري</span>'}</td>
+            <td>
+              <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                ${!d.paid ? `<button class="btn btn-success btn-sm" onclick="openPayDebtModal('${d.id}', '${d.customer}', ${total}, ${paid})">💵 دفعة</button>` : ''}
+                <button class="btn btn-secondary btn-sm" onclick="openCustomerStatsModal('${d.customer}')">📊 كشف</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function renderSettingsSection() {
@@ -1467,6 +1549,11 @@
       document.getElementById('settings-prices-list').innerHTML = Object.keys(fuels).map(fId => `
         <div class="form-group"><label>سعر ${fuels[fId].name}:</label><input type="number" id="p_${fId}" value="${fuels[fId].price}" /><button class="btn btn-primary btn-sm" style="margin-top:5px;" onclick="savePrice('${fId}')">حفظ</button></div>
       `).join('');
+
+      const fuelOptionsHtml = Object.keys(fuels).map(fId => `<option value="${fId}">${fuels[fId].name}</option>`).join('');
+      const debtFuelSelect = document.getElementById('debt-fuel');
+      if (debtFuelSelect) debtFuelSelect.innerHTML = fuelOptionsHtml;
+      calcDebtAmountFromLiters();
     }
     function savePrice(fId) {
       const pr = safeNum(document.getElementById(`p_${fId}`).value);
@@ -1491,6 +1578,7 @@
       let [totalSalesMoney, totalExpensesMoney, totalSoldLiters] = [0, 0, 0];
       const fuelBreakdown = {};
       const pumpBreakdown = {};
+      const customerBreakdown = {};
       const filteredLogs = [];
       const filteredExpenses = [];
       const filteredSupplies = [];
@@ -1561,15 +1649,28 @@
         }
       });
 
+      // تجميع ملخص الديون لكل زبون للشامل
+      Object.values(appState.debts || {}).forEach(d => {
+        if (!d) return;
+        const cust = d.customer || 'غير معروف';
+        if (!customerBreakdown[cust]) {
+          customerBreakdown[cust] = { customer: cust, total_req: 0, total_paid: 0 };
+        }
+        customerBreakdown[cust].total_req += safeNum(d.amount);
+        customerBreakdown[cust].total_paid += safeNum(d.paid_amount);
+      });
+
       let periodUnpaidDebts = 0;
       let periodCollectedOldDebts = 0;
       Object.values(appState.debts || {}).forEach(d => {
         if (!d) return;
-        if (d.date >= bounds.start && d.date <= bounds.end && !d.paid) periodUnpaidDebts += safeNum(d.amount);
-        if (d.paid && d.paid_date >= bounds.start && d.paid_date <= bounds.end && d.date < bounds.start) periodCollectedOldDebts += safeNum(d.amount);
+        periodUnpaidDebts += (safeNum(d.amount) - safeNum(d.paid_amount));
+        if (d.last_paid_date >= bounds.start && d.last_paid_date <= bounds.end) {
+          periodCollectedOldDebts += safeNum(d.last_paid_amount);
+        }
       });
 
-      const netCash = totalSalesMoney - totalExpensesMoney - periodUnpaidDebts + periodCollectedOldDebts;
+      const netCash = totalSalesMoney - totalExpensesMoney + periodCollectedOldDebts;
 
       document.getElementById('owner-total-sales').textContent = formatNum(totalSalesMoney);
       document.getElementById('owner-total-expenses').textContent = formatNum(totalExpensesMoney);
@@ -1605,6 +1706,22 @@
         </tr>
       `).join('');
 
+      // جدول تقرير الديون الشامل للمالك
+      const debtsSummaryTbody = document.getElementById('owner-debts-summary-tbody');
+      const custList = Object.values(customerBreakdown);
+      debtsSummaryTbody.innerHTML = custList.length === 0 ? `<tr><td colspan="5" style="text-align:center;">لا توجد ديون مسجلة</td></tr>` : custList.map(c => {
+        const remain = c.total_req - c.total_paid;
+        return `
+          <tr>
+            <td><strong>${c.customer}</strong></td>
+            <td>${formatNum(c.total_req)} ل.س</td>
+            <td>${formatNum(c.total_paid)} ل.س</td>
+            <td style="color:var(--danger); font-weight:700;">${formatNum(remain)} ل.س</td>
+            <td>${remain <= 0 ? '<span class="badge ok">مسدد بالكامل</span>' : '<span class="badge err">ذمم قائمة</span>'}</td>
+          </tr>
+        `;
+      }).join('');
+
       document.getElementById('owner-logs-tbody').innerHTML = filteredLogs.length === 0 ? `<tr><td colspan="9" style="text-align:center;">لا حركات</td></tr>` : filteredLogs.map(l => `
         <tr><td>${l.date}</td><td>${l.meter_name}</td><td>${l.fuel_name}</td><td>${formatNum(l.prev_reading)}</td><td>${formatNum(l.curr_reading)}</td><td>0</td><td style="color:var(--primary);">${formatNum(l.net_liters)}</td><td>${formatNum(l.unit_price)}</td><td style="color:var(--success);">${formatNum(l.total_amount)}</td></tr>
       `).join('');
@@ -1633,21 +1750,38 @@
       return { start: todayStr, end: todayStr, label: 'تقرير اليوم' };
     }
 
+    // دالة إنشاء النسخة الاحتياطية PDF الشاملة للطباعة وحفظها على الذاكرة
     function exportOwnerReportPDF() {
       const reportEl = document.getElementById('pdf-report-area');
       reportEl.classList.add('pdf-print-mode');
-      showToast('جاري تصدير PDF...', '#1c75bc');
-      html2pdf().set({
-        margin: [10, 8, 10, 8],
-        filename: `تقرير_محطة_دنيا_${getSyriaDateString()}.pdf`,
+      reportEl.style.width = '720px';
+      reportEl.style.margin = '0 auto';
+      reportEl.style.padding = '15px';
+
+      showToast('جاري تجهيز النسخة الاحتياطية الشاملة (PDF)...', '#1c75bc');
+
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `النسخة_الاحتياطية_الشاملة_محطة_دنيا_${getSyriaDateString()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 820 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      }).from(reportEl).save().then(() => { reportEl.classList.remove('pdf-print-mode'); });
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 780, scrollY: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.stat-card', '.no-break', '.card', 'table'] }
+      };
+
+      html2pdf().set(opt).from(reportEl).save().then(() => {
+        reportEl.classList.remove('pdf-print-mode');
+        reportEl.style.width = ''; reportEl.style.margin = ''; reportEl.style.padding = '';
+        showToast('تم حفظ النسخة الاحتياطية (PDF) على الهاتف بنجاح ✅', '#10b981');
+      }).catch(err => {
+        reportEl.classList.remove('pdf-print-mode');
+        reportEl.style.width = ''; reportEl.style.margin = ''; reportEl.style.padding = '';
+        showToast('فشل التصدير: ' + err.message, '#ef4444');
+      });
     }
 
     function shareWhatsAppSummary() {
-      window.open(`https://wa.me/?text=` + encodeURIComponent("ملخص محطة دنيا للوقود"));
+      window.open(`https://wa.me/?text=` + encodeURIComponent("ملخص محطة دنيا للوقود والديون"));
     }
 
     window.addEventListener('DOMContentLoaded', () => {
