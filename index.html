@@ -719,174 +719,131 @@
       </div>
     </div>
 
-    <!-- منطقة التقرير الشاملة لتصدير PDF -->
+    <!-- منطقة التقرير الشاملة المنظمة للـ PDF -->
     <div id="pdf-report-area">
-      <div class="card no-break" style="display:flex; align-items:center; justify-content:space-between; border-color:var(--primary);">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <img src="1000065786.png" alt="Logo" style="width:52px; height:52px; border-radius:50%; background:#fff;" onerror="this.style.display='none'" />
-          <div>
-            <h3 style="color:var(--primary);">التقرير الشامل والنسخة الاحتياطية - محطة دنيا للوقود</h3>
-            <p id="report-period-label" style="font-size:0.85rem; color:var(--text-muted);"></p>
-          </div>
+      <div class="pdf-header-box">
+        <div>
+          <h3 style="color:var(--primary); font-size:12pt; font-weight:800;">التقرير الشامل والنسخة الاحتياطية - محطة دنيا للوقود</h3>
+          <p id="report-period-label" style="font-size:8.5pt; color:#64748b; margin-top:2px;"></p>
         </div>
-        <div style="text-align:left; font-size:0.8rem; color:var(--text-muted);">
+        <div style="text-align: left; font-size: 8pt; color: #64748b;">
           <div>التوقيت المحلي: سوريا</div>
           <div id="report-generated-time"></div>
         </div>
       </div>
 
-      <div class="grid-4 no-break">
-        <div class="stat-card">
+      <!-- إحصائيات سريعة للبطاقات -->
+      <div class="pdf-stats-grid">
+        <div class="pdf-stat-box">
           <div class="stat-title">إجمالي المبيعات (ل.س)</div>
           <div class="stat-value" id="owner-total-sales">0</div>
         </div>
-        <div class="stat-card red">
+        <div class="pdf-stat-box red">
           <div class="stat-title">إجمالي المصاريف (ل.س)</div>
           <div class="stat-value" id="owner-total-expenses">0</div>
         </div>
-        <div class="stat-card yellow">
-          <div class="stat-title">ديون غير مسددة للفترة (ل.س)</div>
+        <div class="pdf-stat-box yellow">
+          <div class="stat-title">ديون غير مسددة (ل.س)</div>
           <div class="stat-value" id="owner-total-unpaid-debts">0</div>
         </div>
-        <div class="stat-card green">
-          <div class="stat-title">صافي الصندوق النقدي الفعلي (ل.س)</div>
+        <div class="pdf-stat-box green">
+          <div class="stat-title">صافي الصندوق الفعلي (ل.س)</div>
           <div class="stat-value" id="owner-net-cash">0</div>
         </div>
       </div>
 
-      <div class="grid-2 no-break">
-        <div class="stat-card blue" style="margin-bottom:16px;">
-          <div class="stat-title">إجمالي اللترات الصافية المباعة (لتر)</div>
+      <!-- بطاقة إضافية للترات -->
+      <div class="pdf-stats-grid" style="margin-bottom: 10px;">
+        <div class="pdf-stat-box" style="width: 48% !important; border-right-color: var(--secondary) !important;">
+          <div class="stat-title">إجمالي اللترات المباعة (لتر)</div>
           <div class="stat-value" id="owner-total-liters">0</div>
         </div>
-        <div class="stat-card green" style="margin-bottom:16px;">
-          <div class="stat-title">ديون سابقة تم تحصيلها نقداً (ل.س)</div>
+        <div class="pdf-stat-box" style="width: 48% !important; border-right-color: var(--success) !important;">
+          <div class="stat-title">ديون محصلة نقداً (ل.س)</div>
           <div class="stat-value" id="owner-collected-debts">0</div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">⛽ إحصائيات الأداء والمبيعات المنفصلة لكل مضخة</div>
-        </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>اسم المضخة / العداد</th>
-                <th>الوقود الحالي</th>
-                <th>عدد العمليات</th>
-                <th>قراءة البداية</th>
-                <th>قراءة النهاية</th>
-                <th>مجموع المعايرة</th>
-                <th>الصافي المباع (لتر)</th>
-                <th>إجمالي الإيراد (ل.س)</th>
-              </tr>
-            </thead>
-            <tbody id="owner-pumps-breakdown-tbody"></tbody>
-          </table>
-        </div>
+      <!-- جدول إحصائيات المضخات -->
+      <div class="pdf-section-card">
+        <div class="pdf-section-title">⛽ إحصائيات الأداء والمبيعات المنفصلة لكل مضخة</div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 20%;">اسم المضخة</th>
+              <th style="width: 12%;">الوقود</th>
+              <th style="width: 10%;">الحركات</th>
+              <th style="width: 12%;">البداية</th>
+              <th style="width: 12%;">النهاية</th>
+              <th style="width: 10%;">معايرة</th>
+              <th style="width: 12%;">الصافي (لتر)</th>
+              <th style="width: 12%;">الإيراد (ل.س)</th>
+            </tr>
+          </thead>
+          <tbody id="owner-pumps-breakdown-tbody"></tbody>
+        </table>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">🛢️ ملخص المبيعات المفصل حسب نوع الوقود</div>
-        </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>نوع الوقود (حسب الفاتورة)</th>
-                <th>صافي اللترات المباعة</th>
-                <th>إجمالي القيمة المالية (ل.س)</th>
-                <th>الرصيد الدفتري بالخزان حالياً</th>
-                <th>آخر مطابقة سيخة مسجلة</th>
-              </tr>
-            </thead>
-            <tbody id="owner-fuel-breakdown-tbody"></tbody>
-          </table>
-        </div>
+      <!-- جدول ملخص الوقود -->
+      <div class="pdf-section-card">
+        <div class="pdf-section-title">🛢️ ملخص المبيعات المفصل حسب نوع الوقود</div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 25%;">نوع الوقود</th>
+              <th style="width: 20%;">اللترات المباعة</th>
+              <th style="width: 25%;">القيمة المالية (ل.س)</th>
+              <th style="width: 30%;">الرصيد الدفتري الحالي</th>
+            </tr>
+          </thead>
+          <tbody id="owner-fuel-breakdown-tbody"></tbody>
+        </table>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">📒 تقرير الديون والذمم الشامل للزبائن</div>
-        </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>الزبون</th>
-                <th>إجمالي المسحوبات (ل.س)</th>
-                <th>المسدد (ل.س)</th>
-                <th>المتبقي ذمم (ل.س)</th>
-                <th>الحالة</th>
-              </tr>
-            </thead>
-            <tbody id="owner-debts-summary-tbody"></tbody>
-          </table>
-        </div>
+      <!-- جدول تقرير الديون -->
+      <div class="pdf-section-card">
+        <div class="pdf-section-title">📒 تقرير الديون والذمم الشامل للزبائن</div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 30%;">الزبون</th>
+              <th style="width: 22%;">المسحوبات (ل.س)</th>
+              <th style="width: 20%;">المسدد (ل.س)</th>
+              <th style="width: 28%;">المتبقي (ل.س) والحالة</th>
+            </tr>
+          </thead>
+          <tbody id="owner-debts-summary-tbody"></tbody>
+        </table>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">📑 سجل حركات العدادات التفصيلي للفترة</div>
-        </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>التاريخ</th>
-                <th>العداد</th>
-                <th>الوقود وقت البيع</th>
-                <th>السابقة</th>
-                <th>الحالية</th>
-                <th>معايرة</th>
-                <th>الصافي (لتر)</th>
-                <th>السعر</th>
-                <th>الإجمالي (ل.س)</th>
-              </tr>
-            </thead>
-            <tbody id="owner-logs-tbody"></tbody>
-          </table>
-        </div>
+      <!-- جدول سجل المصاريف والصهاريج -->
+      <div class="pdf-section-card">
+        <div class="pdf-section-title">💸 سجل المصاريف التشغيلية وتوريد الصهاريج</div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 20%;">التاريخ</th>
+              <th style="width: 50%;">البيان / تفاصيل الحركة</th>
+              <th style="width: 30%;">المبلغ / الكمية (لتر)</th>
+            </tr>
+          </thead>
+          <tbody id="owner-expenses-and-supplies-tbody"></tbody>
+        </table>
       </div>
 
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">💸 سجل المصاريف التشغيلية</div>
-          </div>
-          <div class="table-responsive">
-            <table>
-              <thead><tr><th>التاريخ</th><th>البيان</th><th>المبلغ (ل.س)</th></tr></thead>
-              <tbody id="owner-expenses-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">🚛 سجل توريد الصهاريج للفترة</div>
-          </div>
-          <div class="table-responsive">
-            <table>
-              <thead><tr><th>التاريخ</th><th>الخزان</th><th>الكمية (لتر)</th><th>الفاتورة/البيان</th></tr></thead>
-              <tbody id="owner-supplies-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">🛡️ سجل الرقابة والعمليات الحساسة</div>
-        </div>
-        <div class="table-responsive">
-          <table>
-            <thead><tr><th>التاريخ والوقت</th><th>نوع الإجراء</th><th>التفاصيل الرقابية</th></tr></thead>
-            <tbody id="owner-audit-tbody"></tbody>
-          </table>
-        </div>
+      <!-- جدول الرقابة -->
+      <div class="pdf-section-card">
+        <div class="pdf-section-title">🛡️ سجل الرقابة والعمليات الحساسة</div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 25%;">التاريخ والوقت</th>
+              <th style="width: 25%;">نوع الإجراء</th>
+              <th style="width: 50%;">التفاصيل الرقابية</th>
+            </tr>
+          </thead>
+          <tbody id="owner-audit-tbody"></tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -1622,9 +1579,7 @@
       const fuelBreakdown = {};
       const pumpBreakdown = {};
       const customerBreakdown = {};
-      const filteredLogs = [];
-      const filteredExpenses = [];
-      const filteredSupplies = [];
+      const filteredExpensesAndSupplies = [];
       const filteredAudits = [];
 
       const meters = appState.meters || {};
@@ -1668,21 +1623,28 @@
 
             if (ts < pItem.first_ts) { pItem.first_ts = ts; pItem.first_prev = safeNum(log.prev_reading); }
             if (ts >= pItem.last_ts) { pItem.last_ts = ts; pItem.last_curr = safeNum(log.curr_reading); }
-
-            filteredLogs.push(log);
           });
         }
       });
 
       Object.keys(appState.expenses || {}).forEach(dateKey => {
         if (dateKey >= bounds.start && dateKey <= bounds.end) {
-          Object.values(appState.expenses[dateKey] || {}).forEach(exp => { if (exp) filteredExpenses.push(exp); totalExpensesMoney += safeNum(exp.amount); });
+          Object.values(appState.expenses[dateKey] || {}).forEach(exp => {
+            if (exp) {
+              totalExpensesMoney += safeNum(exp.amount);
+              filteredExpensesAndSupplies.push({ date: exp.date, desc: `مصروف: ${exp.description}`, val: formatNum(exp.amount) + ' ل.س' });
+            }
+          });
         }
       });
 
       Object.keys(appState.tank_supplies || {}).forEach(dateKey => {
         if (dateKey >= bounds.start && dateKey <= bounds.end) {
-          Object.values(appState.tank_supplies[dateKey] || {}).forEach(sup => { if (sup) filteredSupplies.push(sup); });
+          Object.values(appState.tank_supplies[dateKey] || {}).forEach(sup => {
+            if (sup) {
+              filteredExpensesAndSupplies.push({ date: sup.date, desc: `توريد صهريج (${sup.tank_name}): ${sup.note}`, val: '+' + formatNum(sup.volume) + ' لتر' });
+            }
+          });
         }
       });
 
@@ -1731,8 +1693,8 @@
           <td>${p.first_prev !== null ? formatNum(p.first_prev) : '-'}</td>
           <td>${p.last_curr !== null ? formatNum(p.last_curr) : '-'}</td>
           <td>${formatNum(p.calib_liters)}</td>
-          <td style="font-weight:700; color:var(--primary);">${formatNum(p.net_liters)} لتر</td>
-          <td style="font-weight:700; color:var(--success);">${formatNum(p.revenue)} ل.س</td>
+          <td style="font-weight:700;">${formatNum(p.net_liters)} لتر</td>
+          <td style="font-weight:700;">${formatNum(p.revenue)} ل.س</td>
         </tr>
       `).join('');
 
@@ -1741,8 +1703,8 @@
       fuelTbody.innerHTML = breakdownList.length === 0 ? `<tr><td colspan="5" style="text-align:center;">لا مبيعات</td></tr>` : breakdownList.map(item => `
         <tr>
           <td><span class="badge">${item.name}</span></td>
-          <td style="font-weight:700; color:var(--primary);">${formatNum(item.liters)} لتر</td>
-          <td style="font-weight:700; color:var(--success);">${formatNum(item.revenue)} ل.س</td>
+          <td style="font-weight:700;">${formatNum(item.liters)} لتر</td>
+          <td style="font-weight:700;">${formatNum(item.revenue)} ل.س</td>
           <td>${formatNum(safeNum(appState.tanks?.[item.fuel_id]?.current_volume))} لتر</td>
           <td>-</td>
         </tr>
@@ -1757,26 +1719,28 @@
             <td><strong>${c.customer}</strong></td>
             <td>${formatNum(c.total_req)} ل.س</td>
             <td>${formatNum(c.total_paid)} ل.س</td>
-            <td style="color:var(--danger); font-weight:700;">${formatNum(remain)} ل.س</td>
-            <td>${remain <= 0 ? '<span class="badge ok">مسدد بالكامل</span>' : '<span class="badge err">ذمم قائمة</span>'}</td>
+            <td style="font-weight:700;">${formatNum(remain)} ل.س</td>
+            <td>${remain <= 0 ? 'مسدد بالكامل' : 'ذمم قائمة'}</td>
           </tr>
         `;
       }).join('');
 
-      document.getElementById('owner-logs-tbody').innerHTML = filteredLogs.length === 0 ? `<tr><td colspan="9" style="text-align:center;">لا حركات</td></tr>` : filteredLogs.map(l => `
-        <tr><td>${l.date}</td><td>${l.meter_name}</td><td>${l.fuel_name}</td><td>${formatNum(l.prev_reading)}</td><td>${formatNum(l.curr_reading)}</td><td>0</td><td style="color:var(--primary);">${formatNum(l.net_liters)}</td><td>${formatNum(l.unit_price)}</td><td style="color:var(--success);">${formatNum(l.total_amount)}</td></tr>
+      const expSupTbody = document.getElementById('owner-expenses-and-supplies-tbody');
+      expSupTbody.innerHTML = filteredExpensesAndSupplies.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا مصاريف أو توريدات</td></tr>` : filteredExpensesAndSupplies.map(es => `
+        <tr>
+          <td>${es.date}</td>
+          <td>${es.desc}</td>
+          <td>${es.val}</td>
+        </tr>
       `).join('');
 
-      document.getElementById('owner-expenses-tbody').innerHTML = filteredExpenses.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا مصاريف</td></tr>` : filteredExpenses.map(e => `
-        <tr><td>${e.date}</td><td>${e.description}</td><td style="color:var(--danger);">${formatNum(e.amount)}</td></tr>
-      `).join('');
-
-      document.getElementById('owner-supplies-tbody').innerHTML = filteredSupplies.length === 0 ? `<tr><td colspan="4" style="text-align:center;">لا توريدات</td></tr>` : filteredSupplies.map(sup => `
-        <tr><td>${sup.date}</td><td>${sup.tank_name}</td><td style="color:var(--success);">+${formatNum(sup.volume)}</td><td>${sup.note}</td></tr>
-      `).join('');
-
-      document.getElementById('owner-audit-tbody').innerHTML = filteredAudits.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا عمليات</td></tr>` : filteredAudits.map(aud => `
-        <tr><td>${aud.date}</td><td><span class="badge warn">${aud.action}</span></td><td>${aud.details}</td></tr>
+      const auditTbody = document.getElementById('owner-audit-tbody');
+      auditTbody.innerHTML = filteredAudits.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا عمليات رقابية</td></tr>` : filteredAudits.map(aud => `
+        <tr>
+          <td>${aud.date} ${aud.time || ''}</td>
+          <td>${aud.action}</td>
+          <td>${aud.details}</td>
+        </tr>
       `).join('');
     }
 
@@ -1791,33 +1755,27 @@
       return { start: todayStr, end: todayStr, label: 'تقرير اليوم' };
     }
 
-    // دالة تصحيح تنسيق الـ PDF وملاءمة الجداول والعرض تماماً لعدم التداخل
+    // دالة تصدير الـ PDF المحسنة تماماً لتجنب التداخل والقص
     function exportOwnerReportPDF() {
       const reportEl = document.getElementById('pdf-report-area');
       
       reportEl.classList.add('pdf-print-mode');
-      reportEl.style.width = '700px';
-      reportEl.style.margin = '0 auto';
-      reportEl.style.padding = '10px';
-
-      showToast('جاري تجهيز وتنسيق ملف PDF الشامل بدون تداخل...', '#1c75bc');
+      showToast('جاري تجهيز وتصدير النسخة الاحتياطية (PDF)...', '#1c75bc');
 
       const opt = {
-        margin: [8, 8, 8, 8],
+        margin: [5, 5, 5, 5],
         filename: `النسخة_الاحتياطية_الشاملة_محطة_دنيا_${getSyriaDateString()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 760, scrollY: 0 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 800, scrollY: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.stat-card', '.no-break', '.card', 'table'] }
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.pdf-stat-box', '.pdf-section-card', 'table'] }
       };
 
       html2pdf().set(opt).from(reportEl).save().then(() => {
         reportEl.classList.remove('pdf-print-mode');
-        reportEl.style.width = ''; reportEl.style.margin = ''; reportEl.style.padding = '';
-        showToast('تم حفظ ملف PDF الشامل ومنع التداخل بنجاح ✅', '#10b981');
+        showToast('تم حفظ النسخة الاحتياطية (PDF) بنجاح ✅', '#10b981');
       }).catch(err => {
         reportEl.classList.remove('pdf-print-mode');
-        reportEl.style.width = ''; reportEl.style.margin = ''; reportEl.style.padding = '';
         showToast('فشل التصدير: ' + err.message, '#ef4444');
       });
     }
