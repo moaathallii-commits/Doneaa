@@ -36,7 +36,7 @@ body.light-mode {
   --border: #cbd5e1;
 }
 
-/* تنسيق محسّن لطباعة وتصدير ملفات الرفع والتقارير PDF لمنع أي تداخل */
+/* تنسيق محسّن لطباعة وتصدير ملفات التقارير PDF */
 .pdf-print-mode, .pdf-print-mode * {
   box-sizing: border-box !important;
 }
@@ -265,7 +265,12 @@ th { background-color: rgba(0, 0, 0, 0.15); color: var(--primary); font-weight: 
   </div>
   <div id="tab-settings" class="admin-tab-content">
     <div class="card">
-      <button class="btn btn-secondary" onclick="exportOwnerReportPDF()">تحميل نسخة احتياطية تقرير PDF</button>
+      <h3 style="color:var(--primary); margin-bottom:10px;">إعدادات وتصدير التقارير</h3>
+      <button class="btn btn-secondary" onclick="exportOwnerReportPDF()" style="margin-bottom: 15px;">تحميل نسخة احتياطية تقرير PDF</button>
+      <hr style="border-color:var(--border); margin:15px 0;" />
+      <h3 style="color:var(--danger); margin-bottom:10px;">منطقة خطر: إعادة ضبط النظام</h3>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">حذف كافة البيانات وإعادة التطبيق للصفر وإعادة معالج الإعدادات الأولي.</p>
+      <button class="btn btn-danger" onclick="resetAppToZero()">إعادة التطبيق للصفر</button>
     </div>
   </div>
 </section>
@@ -437,6 +442,22 @@ function completeFirstSetup() {
   });
 }
 
+function resetAppToZero() {
+  const confirmation = prompt('إعادة التطبيق للصفر ستقوم بحذف كافة البيانات والإعدادات نهائياً.
+لأكيد العملية، يكتب الحرف أو الكلمة: نعم');
+  if (confirmation === 'نعم') {
+    db.ref().remove().then(() => {
+      localStorage.removeItem('donea_mand_date');
+      showToast('تم تصفير النظام وإعادة ضبطه بنجاح', '#10b981');
+      location.reload();
+    }).catch(err => {
+      showToast('حدث خطأ أثناء التصفير', '#ef4444');
+    });
+  } else if (confirmation !== null) {
+    showToast('لم يتم تأكيد التصفير (يجب كتابة كلمة نعم بالضبط)', '#ef4444');
+  }
+}
+
 function checkMandatoryDailyPrompt() {
   const today = getSyriaDateString();
   if (localStorage.getItem('donea_mand_date') !== today && Object.keys(appState.meters || {}).length > 0) {
@@ -580,7 +601,6 @@ function handleAddExpense(e) {
   });
 }
 
-// دالة إدارة الديون المحسنة (إضافة، بحث، وتوثيق دفعات)
 function renderAdminDebts() {
   const filter = (document.getElementById('debt-search-input')?.value || '').toLowerCase();
   const debtsObj = appState.debts || {};
@@ -616,7 +636,6 @@ function addNewDebtRecord() {
     return;
   }
 
-  // Check if customer already exists
   const debtsObj = appState.debts || {};
   let existingId = Object.keys(debtsObj).find(id => debtsObj[id].name.toLowerCase() === name.toLowerCase());
 
@@ -675,26 +694,50 @@ function renderOwnerReport() {
   const exps = Object.values(appState.expenses?.[today] || {});
   const tanks = Object.values(appState.tanks || {});
   const meters = Object.values(appState.meters || {});
+  const debts = Object.values(appState.debts || {});
 
-  let h = `<div style="margin-bottom:12px;"><strong>تاريخ التقرير:</strong> ${today}</div>`;
+  const totalSales = logs.reduce((a, b) => a + safeNum(b.total_amount), 0);
+  const totalExp = exps.reduce((a, b) => a + safeNum(b.amount), 0);
+  const totalDebts = debts.reduce((a, b) => a + safeNum(b.balance), 0);
+
+  let h = `<div style="margin-bottom:14px; font-size:0.95rem;"><strong>تاريخ التقرير اليومي:</strong> ${today}</div>`;
   
-  h += `<h4 style="color:var(--secondary); margin-top:10px; margin-bottom:6px;">موقف الخزانات</h4><table style="width:100%; border-collapse:collapse; margin-bottom:10px;"><tr><th>الخزان</th><th>الرصيد الحالي (لتر)</th></tr>`;
-  tanks.forEach(t => {
-    h += `<tr><td>${t.name}</td><td>${formatNum(t.current_volume)}</td></tr>`;
-  });
-  h += `</table>`;
+  h += `<div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; margin-bottom:16px;">
+    <div style="background:var(--input-bg); padding:10px; border-radius:8px;">إجمالي المبيعات: <strong>${formatNum(totalSales)} ل.س</strong></div>
+    <div style="background:var(--input-bg); padding:10px; border-radius:8px;">إجمالي المصاريف: <strong>${formatNum(totalExp)} ل.س</strong></div>
+    <div style="background:var(--input-bg); padding:10px; border-radius:8px;">الديون غير المسددة: <strong>${formatNum(totalDebts)} ل.س</strong></div>
+    <div style="background:var(--input-bg); padding:10px; border-radius:8px;">الصافي النقدي: <strong>${formatNum(totalSales - totalExp)} ل.س</strong></div>
+  </div>`;
 
-  h += `<h4 style="color:var(--secondary); margin-top:10px; margin-bottom:6px;">مبيعات العدادات اليومية</h4><table style="width:100%; border-collapse:collapse; margin-bottom:10px;"><tr><th>العداد</th><th>لترات مباعة</th><th>الإجمالي (ل.س)</th></tr>`;
-  logs.forEach(l => {
-    h += `<tr><td>${l.meter_name}</td><td>${formatNum(l.net_liters)}</td><td>${formatNum(l.total_amount)}</td></tr>`;
-  });
-  h += `</table>`;
+  h += `<h4 style="color:var(--secondary); margin-top:10px; margin-bottom:6px;">موقف الخزانات الحالية</h4>`;
+  if (tanks.length > 0) {
+    h += `<table style="width:100%; border-collapse:collapse; margin-bottom:14px;"><tr><th>الخزان</th><th>الرصيد الحالي (لتر)</th></tr>`;
+    tanks.forEach(t => {
+      h += `<tr><td>${t.name}</td><td>${formatNum(t.current_volume)}</td></tr>`;
+    });
+    h += `</table>`;
+  } else {
+    h += `<p style="color:var(--text-muted); margin-bottom:14px;">لا توجد خزانات مسجلة</p>`;
+  }
+
+  h += `<h4 style="color:var(--secondary); margin-top:10px; margin-bottom:6px;">مبيعات العدادات اليومية</h4>`;
+  if (logs.length > 0) {
+    h += `<table style="width:100%; border-collapse:collapse; margin-bottom:14px;"><tr><th>العداد</th><th>لترات مباعة</th><th>الإجمالي (ل.س)</th></tr>`;
+    logs.forEach(l => {
+      h += `<tr><td>${l.meter_name}</td><td>${formatNum(l.net_liters)}</td><td>${formatNum(l.total_amount)}</td></tr>`;
+    });
+    h += `</table>`;
+  } else {
+    h += `<p style="color:var(--text-muted); margin-bottom:14px;">لا توجد حركات مبيعات مسجلة اليوم</p>`;
+  }
 
   content.innerHTML = h;
 }
 
-// دالة التصدير PDF المحسنة لمنع تداخل التنسيقات
 function exportOwnerReportPDF() {
+  // Ensure the report content is fully rendered before export
+  renderOwnerReport();
+  
   const element = document.getElementById('owner-view');
   element.classList.add('pdf-print-mode');
   
@@ -708,7 +751,7 @@ function exportOwnerReportPDF() {
 
   html2pdf().from(element).set(opt).save().then(() => {
     element.classList.remove('pdf-print-mode');
-    showToast('تم تصدار التقرير PDF بنجاح', '#10b981');
+    showToast('تم تصدير التقرير PDF بنجاح', '#10b981');
   }).catch(err => {
     element.classList.remove('pdf-print-mode');
     showToast('حدث خطأ أثناء تصدير PDF', '#ef4444');
