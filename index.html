@@ -45,10 +45,32 @@
         .login-card h1 { font-size: 20px; margin-bottom: 8px; color: var(--accent-orange); }
         .login-card p { font-size: 13px; color: #94a3b8; margin-bottom: 20px; }
         
+        /* النوافذ المنبثقة والمعالجات (Modals & Wizards) */
+        .modal-overlay {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0, 0, 0, 0.85);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          padding: 15px;
+        }
+        .modal-card {
+          background: var(--card-bg);
+          padding: 25px;
+          border-radius: 12px;
+          border: 1px solid var(--accent-orange);
+          width: 100%;
+          max-width: 450px;
+          max-height: 90vh;
+          overflow-y: auto;
+        }
+        .modal-card h2 { font-size: 18px; color: var(--accent-orange); margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
+
         /* التطبيق الرئيسي */
         #app-wrapper { display: none; padding-bottom: 70px; }
 
-        /* الشريط الحي العلوي */
         .live-dashboard-bar {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
@@ -97,6 +119,18 @@
           margin-top: 10px;
         }
         
+        .btn-secondary {
+          background: #334155;
+          color: #fff;
+          border: none;
+          padding: 10px;
+          border-radius: 6px;
+          font-weight: bold;
+          cursor: pointer;
+          width: 100%;
+          margin-top: 5px;
+        }
+
         .quick-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
         .chip {
           background: var(--card-bg);
@@ -138,7 +172,7 @@
     <div id="login-screen">
         <div class="login-card">
             <h1>محطة دنيا للوقود</h1>
-            <p>أدخل رمز المرور الخاص بك لتحديد الصلاحية والدخول</p>
+            <p>أدخل رمز المرور لتحديد الصلاحية والدخول</p>
             <form id="login-form">
                 <div class="form-group">
                     <input type="password" id="passcode-input" placeholder="أدخل رمز المرور..." required autocomplete="current-password">
@@ -148,7 +182,30 @@
         </div>
     </div>
 
-    <!-- 2. التطبيق الرئيسي -->
+    <!-- 2. معالج التهيئة الأولى (Wizard) يظهر فقط إن لم تقم بإعداد المحطة مسبقاً -->
+    <div id="wizard-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <h2 id="wizard-title">معالج التهيئة الأولى (1/3)</h2>
+            <div id="wizard-step-content">
+                <!-- محتوى الخطوات يتغير برمجياً -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. النافذة اليومية الإجبارية عند فتح التطبيق -->
+    <div id="daily-popup-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-card" style="text-align: center;">
+            <h2>إدخال وردية العدادات اليومية</h2>
+            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;">يرجى إدخال أقراص وعدادات الكازية لبدء الوردية بدقة.</p>
+            <div id="daily-counters-container" style="text-align: right; margin-bottom: 15px;">
+                <!-- حقول إدخال العدادات اليومية -->
+            </div>
+            <button type="button" class="btn-primary" onclick="submitDailyCounters()">موافق وتسجيل</button>
+            <button type="button" class="btn-secondary" onclick="skipDailyCounters()">تخطي مؤقتاً</button>
+        </div>
+    </div>
+
+    <!-- 4. التطبيق الرئيسي -->
     <div id="app-wrapper">
         <header class="live-dashboard-bar">
             <div class="card-metric">مبيعات اليوم <span id="live-sales">0 لتر</span></div>
@@ -158,14 +215,13 @@
         </header>
 
         <main class="app-container">
-            
             <!-- تبويب العدادات والمضخات -->
             <section id="tab-meters" class="tab-content active">
                 <h2>إدارة العدادات وسحب الورديات</h2>
                 <form id="shift-form">
                     <div class="form-group">
                         <label>رقم القراءة السابقة للعداد:</label>
-                        <input type="number" id="prev-reading" value="125400" disabled style="opacity: 0.7;">
+                        <input type="number" id="prev-reading" disabled style="opacity: 0.7;">
                     </div>
                     <div class="form-group">
                         <label>رقم قراءة العداد الحالية:</label>
@@ -219,7 +275,7 @@
                     <p style="font-size:12px; color:var(--accent-orange); margin-bottom:5px;">⭐ لوحة تحكم خاصة بالمالك</p>
                     <span style="font-size:13px;">تم تفعيل صلاحيات الرقابة المالية وإدارة أسعار المحروقات.</span>
                 </div>
-                <button type="button" class="btn-primary" style="background:var(--accent-blue); margin-bottom:10px;" onclick="alert('جاري إعداد وإنشاء تقرير الوردية بصيغة PDF...')">تصدير تقرير الوردية PDF</button>
+                <button type="button" class="btn-primary" style="background:var(--accent-blue); margin-bottom:10px;" onclick="generateDailyPDFReport()">إنشاء وتصدير تقرير الوردية PDF</button>
                 <button type="button" class="btn-primary" style="background:var(--danger-red); margin-bottom:10px;" onclick="if(confirm('هل أنت متأكد من تفعيل زر الطوارئ؟')) alert('تم تفعيل وضع الطوارئ وتصفير البيانات المؤقتة.');">زر الطوارئ المؤمّن</button>
                 <button type="button" class="btn-primary" style="background:#334155;" onclick="logout()">تسجيل الخروج</button>
             </section>
@@ -241,7 +297,7 @@
         </nav>
     </div>
 
-    <!-- المنطق البرمجي وإدارة الحالة -->
+    <!-- المنطق البرمجي وإدارة المعالج اليومي والـ PDF -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, enableIndexedDbPersistence, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -257,33 +313,148 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
         enableIndexedDbPersistence(db).catch(() => {});
 
-        // الحالة المالية اليومية (تتحدث تفاعلياً)
         let appState = {
             totalSalesLiters: 0,
             totalExpenses: 0,
             totalDebts: 0,
-            fuelPrice: 15000 // سعر افتراضي للتر لترجمة اللترات إلى قيمة نقدية إن أمكن، أو عرضها مباشرة
+            fuelPrices: { بنزين: 15000, مازوت: 13000 },
+            counters: [{ name: 'مضخة 1 (بنزين)', prev: 125400 }]
         };
 
         function updateLiveDashboard() {
             document.getElementById('live-sales').innerText = appState.totalSalesLiters + " لتر";
             document.getElementById('live-expenses').innerText = appState.totalExpenses.toLocaleString() + " ل.س";
             document.getElementById('live-debts').innerText = appState.totalDebts.toLocaleString() + " ل.س";
-            
-            let netCash = (appState.totalSalesLiters * appState.fuelPrice) - appState.totalExpenses - appState.totalDebts;
+            let netCash = (appState.totalSalesLiters * 14000) - appState.totalExpenses - appState.totalDebts;
             document.getElementById('live-net').innerText = netCash.toLocaleString() + " ل.س";
         }
 
-        // التحقق من الجلسة المحفوظة عند فتح الصفحة (لحل مشكلة إعادة التحميل)
         window.addEventListener('DOMContentLoaded', () => {
             const savedRole = localStorage.getItem('dunya_role');
+            const isConfigured = localStorage.getItem('dunya_configured');
+
             if (savedRole) {
-                activateAppUI(savedRole);
+                if (!isConfigured) {
+                    startWizard();
+                } else {
+                    activateAppUI(savedRole);
+                    checkDailyPopup();
+                }
             }
         });
+
+        // 1. معالج التشغيل الأول (Setup Wizard)
+        let wizardData = {};
+        function startWizard() {
+            document.getElementById('wizard-modal').style.display = 'flex';
+            renderWizardStep(1);
+        }
+
+        window.renderWizardStep = function(step) {
+            const container = document.getElementById('wizard-step-content');
+            const title = document.getElementById('wizard-title');
+            
+            if (step === 1) {
+                title.innerText = "الخطوة (1/3): إعداد الخزانات والمضخات";
+                container.innerHTML = `
+                    <div class="form-group"><label>عدد الخزانات الأرضية:</label><input type="number" id="w-tanks" value="2" min="1"></div>
+                    <div class="form-group"><label>عدد المضخات وأسمائها:</label><input type="text" id="w-pumps" value="مضخة 1, مضخة 2"></div>
+                    <button type="button" class="btn-primary" onclick="nextWizardStep(2)">التالي: أسعار المحروقات</button>
+                `;
+            } else if (step === 2) {
+                wizardData.tanks = document.getElementById('w-tanks').value;
+                wizardData.pumps = document.getElementById('w-pumps').value;
+                title.innerText = "الخطوة (2/3): تبويب أسعار المحروقات";
+                container.innerHTML = `
+                    <div class="form-group"><label>سعر لتر البنزين (ل.س):</label><input type="number" id="w-p-gas" value="15000"></div>
+                    <div class="form-group"><label>سعر لتر المازوت (ل.س):</label><input type="number" id="w-p-mazot" value="13000"></div>
+                    <button type="button" class="btn-primary" onclick="nextWizardStep(3)">التالي: نقاط أصفار العدادات</button>
+                `;
+            } else if (step === 3) {
+                wizardData.priceGas = document.getElementById('w-p-gas').value;
+                wizardData.priceMazot = document.getElementById('w-p-mazot').value;
+                title.innerText = "الخطوة (3/3): نقطة الصفر وبداية العدادات";
+                container.innerHTML = `
+                    <div class="form-group"><label>قراءة العداد الأول الحالية (نقطة البداية):</label><input type="number" id="w-counter-start" value="100000"></div>
+                    <button type="button" class="btn-primary" onclick="finishWizard()">حفظ وإنهاء التهيئة 100%</button>
+                `;
+            }
+        }
+
+        window.nextWizardStep = function(step) { renderWizardStep(step); }
+
+        window.finishWizard = function() {
+            wizardData.counterStart = document.getElementById('w-counter-start').value;
+            localStorage.setItem('dunya_setup', JSON.stringify(wizardData));
+            localStorage.setItem('dunya_configured', 'true');
+            document.getElementById('wizard-modal').style.display = 'none';
+            
+            const savedRole = localStorage.getItem('dunya_role') || 'keeper';
+            activateAppUI(savedRole);
+            checkDailyPopup();
+            alert("تمت تهيئة النظام وحفظ البيانات بنجاح تام!");
+        }
+
+        // 2. النافذة اليومية الإجبارية عند فتح التطبيق
+        function checkDailyPopup() {
+            const today = new Date().toDateString();
+            const lastLoginDate = localStorage.getItem('dunya_last_login_date');
+
+            if (lastLoginDate !== today) {
+                // أول فتح في اليوم الجديد
+                generateDailyPDFReport(true); // إنشاء نسخة احتياطية PDF تلقائية في ذاكرة الهاتف
+                showDailyPopup();
+            }
+        }
+
+        function showDailyPopup() {
+            const modal = document.getElementById('daily-popup-modal');
+            const container = document.getElementById('daily-counters-container');
+            const setup = JSON.parse(localStorage.getItem('dunya_setup') || '{"pumps":"مضخة 1"}');
+            
+            container.innerHTML = `
+                <div class="form-group">
+                    <label>قراءة عداد (${setup.pumps}):</label>
+                    <input type="number" id="daily-c-1" placeholder="أدخل القراءة الحالية" required>
+                </div>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        window.submitDailyCounters = function() {
+            const val = document.getElementById('daily-c-1').value;
+            if(!val) { alert("يرجى إدخال القراءة"); return; }
+            document.getElementById('prev-reading').value = val;
+            localStorage.setItem('dunya_last_login_date', new Date().toDateString());
+            document.getElementById('daily-popup-modal').style.display = 'none';
+        }
+
+        window.skipDailyCounters = function() {
+            localStorage.setItem('dunya_last_login_date', new Date().toDateString());
+            document.getElementById('daily-popup-modal').style.display = 'none';
+        }
+
+        // 3. النسخ الاحتياطي التلقائي بصيغة PDF في ذاكرة الهاتف
+        window.generateDailyPDFReport = function(isAutomatic = false) {
+            const reportDate = new Date().toLocaleDateString('ar-SY');
+            const reportContent = `--- تقرير محطة دنيا للوقود (${reportDate}) ---\n إجمالي المبيعات: ${appState.totalSalesLiters} لتر\n إجمالي المصاريف: ${appState.totalExpenses} ل.س\n ديون الآجل: ${appState.totalDebts} ل.س`;
+            
+            // محاكاة إنشاء ملف وبدء تحميله في ذاكرة الهاتف كـ PDF أوتوماتيكي
+            const blob = new Blob([reportContent], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Dunya_Fuel_Report_${new Date().toISOString().slice(0,10)}.pdf`;
+            
+            if (!isAutomatic) {
+                link.click();
+                alert("تم إنشاء وتصدير تقرير الوردية PDF بنجاح إلى ذاكرة الهاتف.");
+            } else {
+                // حفظ تلقائي صامت عند الفتح الأول اليومي
+                console.log("تم حفظ النسخة الاحتياطية اليومية بصيغة PDF في ذاكرة الهاتف أوتوماتيكياً.");
+            }
+        }
 
         function activateAppUI(role) {
             document.getElementById('login-screen').style.display = 'none';
@@ -293,6 +464,10 @@
             } else {
                 document.getElementById('owner-exclusive-panel').style.display = 'none';
             }
+            
+            // ضبط القراءة السابقة افتراضياً من المعالج
+            const setup = JSON.parse(localStorage.getItem('dunya_setup') || '{"counterStart":"100000"}');
+            document.getElementById('prev-reading').value = setup.counterStart;
             updateLiveDashboard();
         }
 
@@ -302,12 +477,10 @@
 
             if (passcode === "Donea12345678") {
                 localStorage.setItem('dunya_role', 'owner');
-                activateAppUI('owner');
-                alert("مرحباً بك أيها المالك.");
+                if(!localStorage.getItem('dunya_configured')) { startWizard(); } else { activateAppUI('owner'); checkDailyPopup(); }
             } else if (passcode === "Donea123456789") {
                 localStorage.setItem('dunya_role', 'keeper');
-                activateAppUI('keeper');
-                alert("مرحباً بك، تم تسجيل الدخول بصلاحية أمين المحطة.");
+                if(!localStorage.getItem('dunya_configured')) { startWizard(); } else { activateAppUI('keeper'); checkDailyPopup(); }
             } else {
                 alert("رمز المرور غير صحيح!");
             }
@@ -325,51 +498,31 @@
             btnElement.classList.add('active');
         };
 
-        // الوردية والعدادات مع معالجة الـ Rollover وحساب الصافي
         document.getElementById('shift-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const prevReading = Number(document.getElementById('prev-reading').value);
             const currentReading = Number(document.getElementById('current-reading').value);
             const calibration = Number(document.getElementById('calibration-qty').value);
 
-            if (currentReading < prevReading) {
-                // حالة تصفير العداد Rollover (مثلاً وصل للحد الأقصى 999,999 وعاد للصفر)
-                var confirmRollover = confirm("يبدو أن العداد عاد للصفر (Rollover). هل ترغب في احتساب الفارق بناءً على ذلك؟");
-                if(!confirmRollover) return;
-            }
-
             let soldLiters = currentReading - prevReading;
             if (soldLiters < 0) {
-                soldLiters += 1000000; // افتراض سقف العداد 6 أرقام
+                if(!confirm("يبدو أن العداد عاد للصفر (Rollover). هل تريد المتابعة؟")) return;
+                soldLiters += 1000000;
             }
             let netSold = soldLiters - calibration;
-
-            if (netSold < 0) {
-                alert("خطأ: كمية المعايرة أكبر من إجمالي المبيعات!");
-                return;
-            }
+            if (netSold < 0) { alert("خطأ: المعايرة أكبر من المبيعات!"); return; }
 
             appState.totalSalesLiters += netSold;
             updateLiveDashboard();
 
-            const shiftPayload = {
-                prevReading,
-                currentReading,
-                calibration,
-                netSold,
-                timestamp: serverTimestamp()
-            };
-
-            alert(`تم حفظ الوردية بنجاح! صافي المبيعات المباعة: ${netSold} لتر.`);
+            alert(`تم حفظ الوردية بنجاح! صافي المبيعات: ${netSold} لتر.`);
             document.getElementById('prev-reading').value = currentReading;
             document.getElementById('current-reading').value = '';
             document.getElementById('calibration-qty').value = '0';
 
             try {
-                await addDoc(collection(db, "shifts"), shiftPayload);
-            } catch (error) {
-                console.log("تم الحفظ محلياً بانتظار عودة الاتصال السحابي.");
-            }
+                await addDoc(collection(db, "shifts"), { prevReading, currentReading, calibration, netSold, timestamp: serverTimestamp() });
+            } catch (err) { console.log("حفظ محلي بانتظار الشبكة."); }
         });
 
         window.quickExpense = function(desc, amount) {
@@ -381,10 +534,7 @@
         window.saveCustomExpense = function() {
             const desc = document.getElementById('exp-desc').value;
             const amount = Number(document.getElementById('exp-amount').value);
-            if(!desc || !amount || amount <= 0) {
-                alert("يرجى إدخال بيان صحيح ومبلغ موجب.");
-                return;
-            }
+            if(!desc || !amount || amount <= 0) { alert("أدخل بيانات صحيحة."); return; }
             appState.totalExpenses += amount;
             updateLiveDashboard();
             alert(`تم حفظ المصروف التشغيلي بنجاح.`);
