@@ -42,13 +42,15 @@
       --border: #cbd5e1;
     }
 
+    /* تنسيق الطباعة لملف PDF متناسق وغير مقصوص */
     .pdf-print-mode {
       background: #ffffff !important;
       color: #000000 !important;
-      padding: 10px !important;
-      width: 780px !important;
-      max-width: 780px !important;
+      padding: 5px !important;
+      width: 100% !important;
+      max-width: 190mm !important;
       margin: 0 auto !important;
+      font-size: 11px !important;
     }
     .pdf-print-mode .card,
     .pdf-print-mode .stat-card {
@@ -56,18 +58,17 @@
       color: #000000 !important;
       border: 1px solid #cbd5e1 !important;
       box-shadow: none !important;
-      margin-bottom: 12px !important;
-      padding: 12px !important;
+      margin-bottom: 8px !important;
+      padding: 8px !important;
     }
-    .pdf-print-mode .table-responsive { overflow: visible !important; }
-    .pdf-print-mode table { width: 100% !important; border-collapse: collapse !important; page-break-inside: auto !important; }
+    .pdf-print-mode .table-responsive { overflow: visible !important; width: 100% !important; }
+    .pdf-print-mode table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; word-break: break-word !important; }
     .pdf-print-mode thead { display: table-header-group !important; }
     .pdf-print-mode tr { page-break-inside: avoid !important; page-break-after: auto !important; break-inside: avoid !important; }
-    .pdf-print-mode .stat-card, .pdf-print-mode .card-header, .pdf-print-mode .no-break { page-break-inside: avoid !important; break-inside: avoid !important; }
-    .pdf-print-mode th { background-color: #f1f5f9 !important; color: #000000 !important; border: 1px solid #94a3b8 !important; font-size: 0.82rem !important; padding: 7px 6px !important; }
-    .pdf-print-mode td { color: #000000 !important; border: 1px solid #cbd5e1 !important; font-size: 0.8rem !important; padding: 6px !important; }
+    .pdf-print-mode th { background-color: #f1f5f9 !important; color: #000000 !important; border: 1px solid #94a3b8 !important; font-size: 9px !important; padding: 5px 3px !important; }
+    .pdf-print-mode td { color: #000000 !important; border: 1px solid #cbd5e1 !important; font-size: 8.5px !important; padding: 4px 3px !important; }
     .pdf-print-mode .stat-title, .pdf-print-mode .stat-value, .pdf-print-mode p, .pdf-print-mode h3, .pdf-print-mode div { color: #000000 !important; }
-    .pdf-print-mode .badge { border: 1px solid #333 !important; color: #000 !important; background: #e2e8f0 !important; }
+    .pdf-print-mode .badge { border: 1px solid #333 !important; color: #000 !important; background: #e2e8f0 !important; font-size: 8px !important; padding: 2px 4px !important; }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
     body { background-color: var(--bg-dark); color: var(--text-light); min-height: 100vh; padding-bottom: 80px; transition: background-color 0.2s, color 0.2s; }
@@ -166,7 +167,7 @@
 </head>
 <body>
 
-  <!-- Modal Wizard Wizard for First-Time Setup -->
+  <!-- Modal Wizard for First-Time Setup -->
   <div id="setup-wizard-modal" class="modal-overlay" style="display:none;">
     <div class="modal-box">
       <div style="text-align:center; margin-bottom:15px;">
@@ -177,17 +178,17 @@
     </div>
   </div>
 
-  <!-- Daily Startup Prompt Modal (For Subsequent Logins) -->
+  <!-- Daily Prompt Modal (For EVERY Login or Every Session / Every Day) with Skip and Submit buttons -->
   <div id="daily-prompt-modal" class="modal-overlay" style="display:none;">
     <div class="modal-box" style="max-width:600px;">
       <div style="text-align:center; margin-bottom:15px;">
         <h2 style="color:var(--primary); font-size:1.3rem;">⚡ تسجيل قراءات العدادات اليومية</h2>
-        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">يرجى إدخال القراءات الحالية لجميع عدادات المحطة لبدء الوردية اليومية:</p>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">يرجى إدخال القراءات الحالية لجميع عدادات المحطة لبدء الوردية:</p>
       </div>
       <div id="daily-prompt-meters-container" style="margin-bottom:15px;"></div>
       <div style="display:flex; gap:10px;">
-        <button type="button" class="btn btn-secondary" style="flex:1;" onclick="closeDailyPrompt(true)">تخطي الآن</button>
-        <button type="button" class="btn btn-primary" style="flex:2;" onclick="submitDailyPromptReadings()">موافق وحفظ القراءات</button>
+        <button type="button" class="btn btn-secondary" style="flex:1;" onclick="closeDailyPrompt(true)">تخطي</button>
+        <button type="button" class="btn btn-primary" style="flex:2;" onclick="submitDailyPromptReadings()">موافق</button>
       </div>
     </div>
   </div>
@@ -420,15 +421,19 @@
             </div>
             <div class="form-group">
               <label>نوع الوقود المسحوب:</label>
-              <select id="debt-fuel" onchange="calcDebtAmountFromLiters()"></select>
+              <select id="debt-fuel" onchange="calcDebtAmountFromInputs()"></select>
             </div>
             <div class="form-group">
-              <label>الكمية باللتر (اختياري لحساب المبلغ تلقائياً):</label>
-              <input type="number" id="debt-liters" min="0" step="any" placeholder="0" oninput="calcDebtAmountFromLiters()" />
+              <label>الكمية باللتر:</label>
+              <input type="number" id="debt-liters" min="0" step="any" placeholder="0" oninput="calcDebtAmountFromInputs()" required />
             </div>
             <div class="form-group">
-              <label>المبلغ المستحق بالليرة السورية (ل.س):</label>
-              <input type="number" id="debt-amount" min="1" step="any" placeholder="0" required />
+              <label>سعر اللتر للبيع بالدين (اتركه فارغاً لاستخدام السعر القياسي):</label>
+              <input type="number" id="debt-custom-price" min="0" step="any" placeholder="سعر مختلف أو خاص (اختياري)" oninput="calcDebtAmountFromInputs()" />
+            </div>
+            <div class="form-group">
+              <label>المبلغ الإجمالي المستحق (ل.س) (يُحسب تلقائياً):</label>
+              <input type="number" id="debt-amount" min="1" step="any" placeholder="0" readonly required style="background:var(--input-bg); color:var(--success); font-weight:800;" />
             </div>
             <div class="form-group">
               <label>ملاحظة إضافية:</label>
@@ -573,67 +578,70 @@
       </div>
     </div>
 
+    <!-- منطقة التقرير القابلة للتصدير PDF بتنسيق متناسق ومضغوط مانع للقص -->
     <div id="pdf-report-area">
-      <div class="card no-break" style="display:flex; align-items:center; justify-content:space-between; border-color:var(--primary);">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <img src="1000065786.png" alt="Logo" style="width:52px; height:52px; border-radius:50%; background:#fff;" onerror="this.style.display='none'" />
+      <div class="card no-break" style="display:flex; align-items:center; justify-content:space-between; border-color:var(--primary); padding:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <img src="1000065786.png" alt="Logo" style="width:42px; height:42px; border-radius:50%; background:#fff;" onerror="this.style.display='none'" />
           <div>
-            <h3 style="color:var(--primary);">التقرير المالي والرقابي - محطة دنيا للوقود</h3>
-            <p id="report-period-label" style="font-size:0.85rem; color:var(--text-muted);"></p>
+            <h3 style="color:var(--primary); font-size:0.95rem;">التقرير المالي - محطة دنيا للوقود</h3>
+            <p id="report-period-label" style="font-size:0.75rem; color:var(--text-muted);"></p>
           </div>
         </div>
-        <div style="text-align:left; font-size:0.8rem; color:var(--text-muted);">
+        <div style="text-align:left; font-size:0.75rem; color:var(--text-muted);">
           <div>التوقيت المحلي: سوريا</div>
           <div id="report-generated-time"></div>
         </div>
       </div>
 
-      <div class="grid-4 no-break">
-        <div class="stat-card">
-          <div class="stat-title">إجمالي المبيعات (ل.س)</div>
-          <div class="stat-value" id="owner-total-sales">0</div>
+      <!-- البطاقات المالية الصافية -->
+      <div class="grid-4 no-break" style="gap:8px; margin-bottom:10px;">
+        <div class="stat-card" style="padding:10px;">
+          <div class="stat-title" style="font-size:0.75rem;">إجمالي المبيعات (ل.س)</div>
+          <div class="stat-value" id="owner-total-sales" style="font-size:1.1rem;">0</div>
         </div>
-        <div class="stat-card red">
-          <div class="stat-title">إجمالي المصاريف (ل.س)</div>
-          <div class="stat-value" id="owner-total-expenses">0</div>
+        <div class="stat-card red" style="padding:10px;">
+          <div class="stat-title" style="font-size:0.75rem;">إجمالي المصاريف (ل.س)</div>
+          <div class="stat-value" id="owner-total-expenses" style="font-size:1.1rem;">0</div>
         </div>
-        <div class="stat-card yellow">
-          <div class="stat-title">ديون غير مسددة للفترة (ل.س)</div>
-          <div class="stat-value" id="owner-total-unpaid-debts">0</div>
+        <div class="stat-card yellow" style="padding:10px;">
+          <div class="stat-title" style="font-size:0.75rem;">ديون غير مسددة (ل.س)</div>
+          <div class="stat-value" id="owner-total-unpaid-debts" style="font-size:1.1rem;">0</div>
         </div>
-        <div class="stat-card green">
-          <div class="stat-title">صافي الصندوق النقدي الفعلي (ل.س)</div>
-          <div class="stat-value" id="owner-net-cash">0</div>
-        </div>
-      </div>
-
-      <div class="grid-2 no-break">
-        <div class="stat-card blue" style="margin-bottom:16px;">
-          <div class="stat-title">إجمالي اللترات الصافية المباعة (لتر)</div>
-          <div class="stat-value" id="owner-total-liters">0</div>
-        </div>
-        <div class="stat-card green" style="margin-bottom:16px;">
-          <div class="stat-title">ديون سابقة تم تحصيلها نقداً في الفترة (ل.س)</div>
-          <div class="stat-value" id="owner-collected-debts">0</div>
+        <div class="stat-card green" style="padding:10px;">
+          <div class="stat-title" style="font-size:0.75rem;">صافي الصندوق النقدي (ل.س)</div>
+          <div class="stat-value" id="owner-net-cash" style="font-size:1.1rem;">0</div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">⛽ إحصائيات الأداء والمبيعات المنفصلة لكل مضخة</div>
+      <div class="grid-2 no-break" style="gap:8px; margin-bottom:10px;">
+        <div class="stat-card blue" style="padding:10px;">
+          <div class="stat-title" style="font-size:0.75rem;">إجمالي اللترات المباعة (لتر)</div>
+          <div class="stat-value" id="owner-total-liters" style="font-size:1.1rem;">0</div>
+        </div>
+        <div class="stat-card green" style="padding:10px;">
+          <div class="stat-title" style="font-size:0.75rem;">ديون سابقة تم تحصيلها (ل.س)</div>
+          <div class="stat-value" id="owner-collected-debts" style="font-size:1.1rem;">0</div>
+        </div>
+      </div>
+
+      <!-- جدول إحصائيات منفصلة لكل مضخة -->
+      <div class="card" style="padding:10px;">
+        <div class="card-header" style="margin-bottom:8px; padding-bottom:6px;">
+          <div class="card-title" style="font-size:0.9rem;">⛽ إحصائيات الأداء والمبيعات المنفصلة لكل مضخة</div>
         </div>
         <div class="table-responsive">
           <table>
             <thead>
               <tr>
-                <th>اسم المضخة / العداد</th>
-                <th>الوقود الحالي</th>
-                <th>عدد العمليات</th>
-                <th>قراءة البداية</th>
-                <th>قراءة النهاية</th>
-                <th>مجموع المعايرة</th>
-                <th>الصافي المباع (لتر)</th>
-                <th>إجمالي الإيراد (ل.س)</th>
+                <th>المضخة</th>
+                <th>المادة</th>
+                <th>حركات</th>
+                <th>بداية</th>
+                <th>نهاية</th>
+                <th>معايرة</th>
+                <th>الصافي (لتر)</th>
+                <th>الإيراد (ل.س)</th>
               </tr>
             </thead>
             <tbody id="owner-pumps-breakdown-tbody"></tbody>
@@ -641,19 +649,20 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">🛢️ ملخص المبيعات المفصل حسب نوع الوقود</div>
+      <!-- جدول ملخص الوقود -->
+      <div class="card" style="padding:10px;">
+        <div class="card-header" style="margin-bottom:8px; padding-bottom:6px;">
+          <div class="card-title" style="font-size:0.9rem;">🛢️ ملخص المبيعات حسب نوع الوقود</div>
         </div>
         <div class="table-responsive">
           <table>
             <thead>
               <tr>
-                <th>نوع الوقود (حسب الفاتورة)</th>
-                <th>صافي اللترات المباعة</th>
-                <th>إجمالي القيمة المالية (ل.س)</th>
-                <th>الرصيد الدفتري بالخزان حالياً</th>
-                <th>آخر مطابقة سيخة مسجلة</th>
+                <th>نوع الوقود</th>
+                <th>صافي اللترات</th>
+                <th>الإيراد (ل.س)</th>
+                <th>رصيد الخزان</th>
+                <th>السيخة</th>
               </tr>
             </thead>
             <tbody id="owner-fuel-breakdown-tbody"></tbody>
@@ -661,9 +670,10 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">📑 سجل حركات العدادات التفصيلي للفترة</div>
+      <!-- جدول الحركات التفصيلي -->
+      <div class="card" style="padding:10px;">
+        <div class="card-header" style="margin-bottom:8px; padding-bottom:6px;">
+          <div class="card-title" style="font-size:0.9rem;">📑 سجل حركات العدادات التفصيلي</div>
         </div>
         <div class="table-responsive">
           <table>
@@ -671,13 +681,13 @@
               <tr>
                 <th>التاريخ</th>
                 <th>العداد</th>
-                <th>الوقود وقت البيع</th>
+                <th>الوقود</th>
                 <th>السابقة</th>
                 <th>الحالية</th>
                 <th>معايرة</th>
-                <th>الصافي (لتر)</th>
+                <th>الصافي</th>
                 <th>السعر</th>
-                <th>الإجمالي (ل.س)</th>
+                <th>الإجمالي</th>
               </tr>
             </thead>
             <tbody id="owner-logs-tbody"></tbody>
@@ -685,10 +695,10 @@
         </div>
       </div>
 
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">💸 سجل المصاريف التشغيلية</div>
+      <div class="grid-2" style="gap:8px;">
+        <div class="card" style="padding:10px;">
+          <div class="card-header" style="margin-bottom:8px; padding-bottom:6px;">
+            <div class="card-title" style="font-size:0.9rem;">💸 سجل المصاريف</div>
           </div>
           <div class="table-responsive">
             <table>
@@ -696,7 +706,7 @@
                 <tr>
                   <th>التاريخ</th>
                   <th>البيان</th>
-                  <th>المبلغ (ل.س)</th>
+                  <th>المبلغ</th>
                 </tr>
               </thead>
               <tbody id="owner-expenses-tbody"></tbody>
@@ -704,9 +714,9 @@
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">🚛 سجل توريد الصهاريج للفترة</div>
+        <div class="card" style="padding:10px;">
+          <div class="card-header" style="margin-bottom:8px; padding-bottom:6px;">
+            <div class="card-title" style="font-size:0.9rem;">🚛 توريد الصهاريج</div>
           </div>
           <div class="table-responsive">
             <table>
@@ -714,8 +724,8 @@
                 <tr>
                   <th>التاريخ</th>
                   <th>الخزان</th>
-                  <th>الكمية (لتر)</th>
-                  <th>الفاتورة/البيان</th>
+                  <th>الكمية</th>
+                  <th>البيان</th>
                 </tr>
               </thead>
               <tbody id="owner-supplies-tbody"></tbody>
@@ -724,17 +734,17 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">🛡️ سجل الرقابة والعمليات الحساسة</div>
+      <div class="card" style="padding:10px;">
+        <div class="card-header" style="margin-bottom:8px; padding-bottom:6px;">
+          <div class="card-title" style="font-size:0.9rem;">🛡️ سجل الرقابة والعمليات الحساسة</div>
         </div>
         <div class="table-responsive">
           <table>
             <thead>
               <tr>
-                <th>التاريخ والوقت</th>
-                <th>نوع الإجراء</th>
-                <th>التفاصيل الرقابية</th>
+                <th>التاريخ</th>
+                <th>الإجراء</th>
+                <th>التفاصيل</th>
               </tr>
             </thead>
             <tbody id="owner-audit-tbody"></tbody>
@@ -913,7 +923,7 @@
     }
 
     /**************************************************************
-     * 3. الحالة السحابية وميزة معالج التهيئة الأولية والنافذة اليومية
+     * 3. الحالة السحابية ومعالج التهيئة ونافذة العدادات اليومية في كل فتح
      **************************************************************/
     let appState = {
       settings: { fuels: {} },
@@ -1010,36 +1020,25 @@
       });
     }
 
-    // فحص ما إذا كانت هذه هي المرة الأولى لفتح التطبيق، أو نافذة الإدخال اليومية
+    // فحص ما إذا كانت هذه هي المرة الأولى، أو عرض نافذة العدادات المطلوبة في كل فتح جديد
     function checkFirstTimeSetupOrDailyPrompt() {
-      // نتحقق مما إذا تم ضبط البيانات أول مرة عبر علامة في الـ localStorage أو اذا كانت القاعدة فارغة تماماً
       const isConfigured = localStorage.getItem('donea_first_setup_done');
       if (!isConfigured) {
         startFirstTimeWizard();
         return;
       }
 
-      // المرات القادمة: التحقق مما إذا ظهرت نافذة اليوم بالفعل
-      const todayStr = getSyriaDateString();
-      const lastPromptDate = localStorage.getItem('donea_last_daily_prompt');
-      if (lastPromptDate !== todayStr) {
-        showDailyPromptModal();
-      }
+      // في كل مرة يفتح الأمين التطبيق (أو عند كل جلسة)، تظهر نافذة أنيقة بسيطة تطلب أرقام جميع العدادات مع زرين (تخطي) أو (موافق)
+      showDailyPromptModal();
 
-      // خطوة إلزامية: إنشاء وتنزيل ملف PDF يومي في ذاكرة الهاتف عند الفتح أول مرة كل يوم
-      checkAndGenerateDailyPDFBackup(todayStr);
+      // إنشاء وتنزيل ملف PDF يومي في ذاكرة الهاتف عند الفتح
+      checkAndGenerateDailyPDFBackup(getSyriaDateString());
     }
 
     // ----------------------------------------------------
     // معالج التهيئة الأولية للمرة الأولى (Wizard)
     // ----------------------------------------------------
-    let wizardData = {
-      tanksCount: 2,
-      tanks: [],
-      metersCount: 2,
-      meters: [],
-      prices: {}
-    };
+    let wizardData = { tanksCount: 2, tanks: [], metersCount: 2, meters: [], prices: {} };
 
     function startFirstTimeWizard() {
       const modal = document.getElementById('setup-wizard-modal');
@@ -1148,6 +1147,7 @@
 
     function generateWizardMetersInputs() {
       const count = safeNum(document.getElementById('w_meters_count').value) || 2;
+      wizardData.metersCount = count;
       const listEl = document.getElementById('w_meters_dynamic_list');
       const fuelKeys = Object.keys(wizardData.fuels || {});
       
@@ -1216,7 +1216,7 @@
     }
 
     // ----------------------------------------------------
-    // نافذة إدخال القراءات اليومية عند كل فتح جديد (Daily Prompt Modal)
+    // نافذة إدخال القراءات اليومية عند كل فتح (Daily Prompt Modal) مع تخطي أو موافق
     // ----------------------------------------------------
     function showDailyPromptModal() {
       const modal = document.getElementById('daily-prompt-modal');
@@ -1236,8 +1236,8 @@
               <strong>${m.name}</strong>
               <span class="badge">${fName}</span>
             </div>
-            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:6px;">القراءة السابقة المسجلة: ${formatNum(m.current_reading)}</div>
-            <input type="number" id="prompt_curr_${mId}" step="any" placeholder="أدخل القراءة الحالية الآن..." required />
+            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:6px;">القراءة السابقة: ${formatNum(m.current_reading)}</div>
+            <input type="number" id="prompt_curr_${mId}" step="any" placeholder="أدخل القراءة الحالية الآن..." />
           </div>
         `;
       });
@@ -1247,10 +1247,8 @@
 
     function closeDailyPrompt(isSkipped) {
       document.getElementById('daily-prompt-modal').style.display = 'none';
-      const todayStr = getSyriaDateString();
-      localStorage.setItem('donea_last_daily_prompt', todayStr);
       if (isSkipped) {
-        showToast('تم تخطي الإدخال السريع. يمكنك الإدخال من تبويب العدادات.', '#f59e0b');
+        showToast('تم التخطي. يمكنك الإدخال في أي وقت من تبويب العدادات.', '#f59e0b');
       }
     }
 
@@ -1264,7 +1262,6 @@
         const inputEl = document.getElementById(`prompt_curr_${mId}`);
         if (!inputEl || inputEl.value === '') continue;
 
-        // سنقوم مؤقتاً بحقن القراءة في حقل الصفحة العادية لتنفيذ دالة البناء الذري
         const normalCurrInput = document.getElementById(`curr_${mId}`);
         if (normalCurrInput) {
           normalCurrInput.value = inputEl.value;
@@ -1278,23 +1275,24 @@
       }
 
       if (countEntered === 0) {
-        showToast('لم تقم بإدخال أي قراءة في النافذة!', '#ef4444');
+        showToast('لم تقم بإدخال أي قراءة في النافذة، تم التخطي.', '#f59e0b');
+        closeDailyPrompt(true);
         return;
       }
 
       db.ref().update(combinedUpdates);
-      closeDailyPrompt(false);
-      showToast(`تم تسجيل وردية اليوم لـ (${countEntered}) عدادات بنجاح ✅`, '#10b981');
+      document.getElementById('daily-prompt-modal').style.display = 'none';
+      showToast(`تم تسجيل وردية العدادات (${countEntered}) بنجاح ✅`, '#10b981');
     }
 
     // ----------------------------------------------------
-    // خطوة إلزامية: إنشاء وتنزيل ملف PDF يومي تلقائياً في ذاكرة الهاتف
+    // إنشاء وتنزيل ملف PDF يومي تلقائياً في ذاكرة الهاتف (النسخة الاحتياطية)
     // ----------------------------------------------------
     function checkAndGenerateDailyPDFBackup(todayStr) {
       const lastBackupDate = localStorage.getItem('donea_last_pdf_backup');
-      if (lastBackupDate === todayStr) return; // تم الإنشاء مسبقاً اليوم
+      if (lastBackupDate === todayStr) return;
 
-      // ننتظر قليلاً حتى يتم تحميل عناصر DOM والبيانات لتجهيز التقرير
+      // تأخير طفيف لضمان امتلاء عناصر DOM بالبيانات المحدثة قبل التصدير
       setTimeout(() => {
         try {
           renderOwnerDashboard();
@@ -1303,8 +1301,8 @@
           reportEl.classList.add('pdf-print-mode');
 
           const opt = {
-            margin: [10, 8, 10, 8],
-            filename: `تقرير_محطة_دنيا_النسخة_اليومية_${todayStr}.pdf`,
+            margin: [8, 6, 8, 6],
+            filename: `تقرير_محطة_دنيا_النسخة_الاحتياطية_${todayStr}.pdf`,
             image: { type: 'jpeg', quality: 0.95 },
             html2canvas: { scale: 1.5, useCORS: true, backgroundColor: '#ffffff', windowWidth: 820, scrollY: 0 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -1313,14 +1311,14 @@
           html2pdf().set(opt).from(reportEl).save().then(() => {
             reportEl.classList.remove('pdf-print-mode');
             localStorage.setItem('donea_last_pdf_backup', todayStr);
-            showToast(`تم إنشاء حفظ تلقائي لملف PDF اليومي في ذاكرة هاتفك 📥`, '#1c75bc');
+            showToast(`تم حفظ النسخة الاحتياطية PDF بنجاح في ذاكرة هاتفك 📥`, '#1c75bc');
           }).catch(() => {
             reportEl.classList.remove('pdf-print-mode');
           });
         } catch (err) {
           console.error("Auto PDF backup error:", err);
         }
-      }, 3000);
+      }, 3500);
     }
 
     // زر إعادة التطبيق للصفر (مسح شامل مع كتابة "نعم")
@@ -1338,7 +1336,6 @@
       }
 
       localStorage.removeItem('donea_first_setup_done');
-      localStorage.removeItem('donea_last_daily_prompt');
       localStorage.removeItem('donea_last_pdf_backup');
 
       const defaultFuels = {
@@ -2041,15 +2038,18 @@
     }
 
     /**************************************************************
-     * 7. إدارة الديون الآجلة
+     * 7. إدارة الديون الآجلة (مع السعر القياسي والمخصص والاحتساب التلقائي)
      **************************************************************/
-    function calcDebtAmountFromLiters() {
+    function calcDebtAmountFromInputs() {
       const fuelId = document.getElementById('debt-fuel').value;
       const liters = safeNum(document.getElementById('debt-liters').value);
-      const price = safeNum(appState.settings?.fuels?.[fuelId]?.price);
-      if (liters > 0 && price > 0) {
-        document.getElementById('debt-amount').value = liters * price;
-      }
+      const customPriceInput = document.getElementById('debt-custom-price').value;
+      
+      const standardPrice = safeNum(appState.settings?.fuels?.[fuelId]?.price);
+      const activePrice = (customPriceInput !== '') ? safeNum(customPriceInput) : standardPrice;
+
+      const total = liters * activePrice;
+      document.getElementById('debt-amount').value = total > 0 ? total : '';
     }
 
     function handleAddDebt(e) {
@@ -2057,6 +2057,7 @@
       const custEl = document.getElementById('debt-customer');
       const fuelEl = document.getElementById('debt-fuel');
       const litEl = document.getElementById('debt-liters');
+      const customPriceEl = document.getElementById('debt-custom-price');
       const amtEl = document.getElementById('debt-amount');
       const noteEl = document.getElementById('debt-note');
 
@@ -2064,11 +2065,12 @@
       const fuelId = fuelEl.value;
       const fuelName = appState.settings?.fuels?.[fuelId]?.name || 'وقود';
       const liters = safeNum(litEl.value);
+      const customPrice = customPriceEl.value !== '' ? safeNum(customPriceEl.value) : null;
       const amount = safeNum(amtEl.value);
       const note = noteEl.value.trim();
 
-      if (!customer || amount <= 0) {
-        showToast('يرجى إدخال اسم الزبون والمبلغ', '#ef4444');
+      if (!customer || amount <= 0 || liters <= 0) {
+        showToast('يرجى إدخال اسم الزبون وكمية اللترات بشكل صحيح', '#ef4444');
         return;
       }
 
@@ -2084,14 +2086,15 @@
         fuel_id: fuelId,
         fuel_name: fuelName,
         liters: liters,
+        custom_price: customPrice,
         amount: amount,
         note: note,
         paid: false,
         paid_date: null
       });
 
-      custEl.value = ''; litEl.value = ''; amtEl.value = ''; noteEl.value = '';
-      showToast(`تم تسجيل دين آجل على (${customer}) بنجاح ✅`, '#10b981');
+      custEl.value = ''; litEl.value = ''; customPriceEl.value = ''; amtEl.value = ''; noteEl.value = '';
+      showToast(`تم تسجيل دين آجل على (${customer}) بمبلغ ${formatNum(amount)} ل.س ✅`, '#10b981');
     }
 
     function markDebtAsPaid(debtId, customer, amount) {
@@ -2123,7 +2126,7 @@
         <tr>
           <td>${d.date}</td>
           <td><strong>${d.customer}</strong><br/><small style="color:var(--text-muted);">${d.note || ''}</small></td>
-          <td>${d.fuel_name} ${d.liters ? `(${formatNum(d.liters)} لتر)` : ''}</td>
+          <td>${d.fuel_name} (${formatNum(d.liters)} لتر) ${d.custom_price ? `<br/><small style="color:var(--warning);">بسعر خاص: ${formatNum(d.custom_price)}</small>` : ''}</td>
           <td style="font-weight:700; color:var(--warning);">${formatNum(d.amount)}</td>
           <td>${d.paid ? `<span class="badge ok">مسدد (${d.paid_date})</span>` : `<span class="badge err">غير مسدد</span>`}</td>
           <td>
@@ -2168,7 +2171,10 @@
       if (newMeterSelect) newMeterSelect.innerHTML = fuelOptionsHtml('');
 
       const debtFuelSelect = document.getElementById('debt-fuel');
-      if (debtFuelSelect) debtFuelSelect.innerHTML = fuelOptionsHtml('');
+      if (debtFuelSelect) {
+        debtFuelSelect.innerHTML = fuelOptionsHtml('');
+        calcDebtAmountFromInputs();
+      }
     }
 
     function updateFuelPrice(fuelId) {
@@ -2228,7 +2234,7 @@
     }
 
     /**************************************************************
-     * 9. لوحة المالك والتقارير
+     * 9. لوحة المالك والتقارير المنسقة
      **************************************************************/
     function setOwnerFilter(filterType) {
       currentOwnerFilter = filterType;
@@ -2427,18 +2433,16 @@
 
       const fuelTbody = document.getElementById('owner-fuel-breakdown-tbody');
       const breakdownList = Object.values(fuelBreakdown);
-      fuelTbody.innerHTML = breakdownList.length === 0 ? `<tr><td colspan="5" style="text-align:center;">لا توجد مبيعات في هذه الفترة</td></tr>` : breakdownList.map(item => {
+      fuelTbody.innerHTML = breakdownList.length === 0 ? `<tr><td colspan="5" style="text-align:center;">لا توجد مبيعات</td></tr>` : breakdownList.map(item => {
         const tank = appState.tanks?.[item.fuel_id] || {};
-        const dipInfo = tank.last_dip_date
-          ? `الفرق: ${formatNum(tank.last_dip_diff)} لتر (${tank.last_dip_date})`
-          : 'لا يوجد';
+        const dipInfo = tank.last_dip_date ? `${formatNum(tank.last_dip_diff)} لتر` : 'لا يوجد';
         return `
           <tr>
             <td><span class="badge">${item.name}</span></td>
             <td style="font-weight:700; color:var(--primary);">${formatNum(item.liters)} لتر</td>
             <td style="font-weight:700; color:var(--success);">${formatNum(item.revenue)} ل.س</td>
             <td>${formatNum(safeNum(tank.current_volume))} لتر</td>
-            <td style="font-size:0.8rem;">${dipInfo}</td>
+            <td style="font-size:0.75rem;">${dipInfo}</td>
           </tr>
         `;
       }).join('');
@@ -2464,43 +2468,58 @@
       `).join('');
 
       filteredAudits.sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
-      document.getElementById('owner-audit-tbody').innerHTML = filteredAudits.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا توجد عمليات استثنائية مسجلة</td></tr>` : filteredAudits.map(aud => `
-        <tr><td>${aud.date} - ${aud.time || ''}</td><td><span class="badge warn">${aud.action}</span></td><td>${aud.details}</td></tr>
+      document.getElementById('owner-audit-tbody').innerHTML = filteredAudits.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا توجد عمليات</td></tr>` : filteredAudits.map(aud => `
+        <tr><td>${aud.date}</td><td><span class="badge warn">${aud.action}</span></td><td>${aud.details}</td></tr>
       `).join('');
 
-      const pumpsWhatsappText = pumpsList.map(p => `🔹 ${p.name}: ${formatNum(p.net_liters)} لتر (${formatNum(p.revenue)} ل.س)`).join('\n');
+      const pumpsWhatsappText = pumpsList.map(p => `🔹 ${p.name}: ${formatNum(p.net_liters)} لتر (${formatNum(p.revenue)} ل.س)`).join('
+');
 
       lastOwnerSummaryText =
-        `⛽ *تقرير محطة دنيا للوقود*\n` +
-        `📅 ${bounds.label}\n` +
-        `------------------------\n` +
-        `💰 إجمالي المبيعات: ${formatNum(totalSalesMoney)} ل.س\n` +
-        `💸 إجمالي المصاريف: ${formatNum(totalExpensesMoney)} ل.س\n` +
-        `📒 ديون آجلة غير مسددة: ${formatNum(periodUnpaidDebts)} ل.س\n` +
-        `🏦 *صافي الصندوق النقدي الفعلي: ${formatNum(netCash)} ل.س*\n` +
-        `🛢️ إجمالي اللترات المباعة: ${formatNum(totalSoldLiters)} لتر\n` +
-        (pumpsList.length ? `------------------------\n*إحصائيات المضخات:*\n${pumpsWhatsappText}\n` : '') +
-        (breakdownList.length ? `------------------------\n*تفصيل المواد:*\n` + breakdownList.map(f => `▪️ ${f.name}: ${formatNum(f.liters)} لتر (${formatNum(f.revenue)} ل.س)`).join('\n') : '');
+        `⛽ *تقرير محطة دنيا للوقود*
+` +
+        `📅 ${bounds.label}
+` +
+        `------------------------
+` +
+        `💰 إجمالي المبيعات: ${formatNum(totalSalesMoney)} ل.س
+` +
+        `💸 إجمالي المصاريف: ${formatNum(totalExpensesMoney)} ل.س
+` +
+        `📒 ديون آجلة غير مسددة: ${formatNum(periodUnpaidDebts)} ل.س
+` +
+        `🏦 *صافي الصندوق النقدي الفعلي: ${formatNum(netCash)} ل.س*
+` +
+        `🛢️ إجمالي اللترات المباعة: ${formatNum(totalSoldLiters)} لتر
+` +
+        (pumpsList.length ? `------------------------
+*إحصائيات المضخات:*
+${pumpsWhatsappText}
+` : '') +
+        (breakdownList.length ? `------------------------
+*تفصيل المواد:*
+` + breakdownList.map(f => `▪️ ${f.name}: ${formatNum(f.liters)} لتر (${formatNum(f.revenue)} ل.س)`).join('
+') : '');
     }
 
     function exportOwnerReportPDF() {
       const reportEl = document.getElementById('pdf-report-area');
       reportEl.classList.add('pdf-print-mode');
-      showToast('جاري تجهيز ملف PDF بتنسيق صفحات سليم...', '#1c75bc');
+      showToast('جاري تجهيز وتنسيق ملف PDF المتناسق...', '#1c75bc');
 
       const opt = {
-        margin: [10, 8, 10, 8],
+        margin: [6, 6, 6, 6],
         filename: `تقرير_محطة_دنيا_${getSyriaDateString()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
           useCORS: true,
           backgroundColor: '#ffffff',
-          windowWidth: 820,
+          windowWidth: 790,
           scrollY: 0
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.stat-card', '.no-break', '.card-header'] }
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.stat-card', '.no-break', '.card'] }
       };
 
       html2pdf().set(opt).from(reportEl).save().then(() => {
@@ -2516,7 +2535,7 @@
     }
 
     /**************************************************************
-     * 10. استعادة الجلسة والتنزيل التلقائي لملف الـ PDF اليومي
+     * 10. استعادة الجلسة والنسخة الاحتياطية التلقائية
      **************************************************************/
     window.addEventListener('DOMContentLoaded', () => {
       if (localStorage.getItem('donea_daylight') === '1') {
