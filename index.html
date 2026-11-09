@@ -42,7 +42,6 @@
       --border: #cbd5e1;
     }
 
-    /* تنسيق PDF احترافي ومضغوط لملء الورقة تماماً بدون قص أفقياً وعمودياً */
     .pdf-print-mode {
       background: #ffffff !important;
       color: #000000 !important;
@@ -227,15 +226,16 @@
       </div>
       <div id="lockout-alert" style="display:none; background:rgba(239,68,68,0.2); border:1px solid var(--danger); padding:10px; border-radius:8px; margin-bottom:14px; color:#fca5a5; font-size:0.88rem;"></div>
       
-      <form onsubmit="handleLogin(event)">
+      <!-- تم ربط الحدث بشكل مباشر وصريح وبدون قيود تمنع الاستجابة -->
+      <form id="login-form" onsubmit="handleLogin(event)">
         <div class="form-group">
           <label>أدخل كلمة المرور الخاصة بالصلاحية:</label>
           <div class="password-wrapper">
-            <input type="password" id="login-password" placeholder="••••••••••••" required />
+            <input type="password" id="login-password" placeholder="••••••••••••" required autocomplete="current-password" />
             <button type="button" class="toggle-pwd" onclick="togglePasswordVisibility()">👁️</button>
           </div>
         </div>
-        <button type="submit" class="btn btn-primary btn-block">دخول للنظام</button>
+        <button type="submit" id="login-submit-btn" class="btn btn-primary btn-block">دخول للنظام</button>
       </form>
     </div>
   </section>
@@ -807,7 +807,8 @@
 
     function updateHeaderDate() {
       const todayStr = getSyriaDateString();
-      document.getElementById('current-date-badge').textContent = `تاريخ اليوم (سوريا): ${todayStr}`;
+      const badge = document.getElementById('current-date-badge');
+      if (badge) badge.textContent = `تاريخ اليوم (سوريا): ${todayStr}`;
       const adminDateLabel = document.getElementById('admin-today-label');
       if (adminDateLabel) adminDateLabel.textContent = todayStr;
     }
@@ -816,6 +817,7 @@
 
     function showToast(msg, color = '#f26f22') {
       const toast = document.getElementById('toast-box');
+      if (!toast) return;
       toast.textContent = msg;
       toast.style.borderRightColor = color;
       toast.style.display = 'block';
@@ -843,7 +845,7 @@
     }
 
     /**************************************************************
-     * 2. نظام الصلاحيات والأمان وقفل الـ 15 دقيقة
+     * 2. نظام الصلاحيات والأمان (تم إزالة أي عائق استجابة لزر الدخول)
      **************************************************************/
     const ADMIN_PASS = "Donea$$123456789";
     const OWNER_PASS = "Donea$$12345678";
@@ -852,13 +854,14 @@
 
     function togglePasswordVisibility() {
       const input = document.getElementById('login-password');
-      input.type = input.type === 'password' ? 'text' : 'password';
+      if (input) input.type = input.type === 'password' ? 'text' : 'password';
     }
 
     function checkLockoutStatus() {
       const lockUntil = safeNum(localStorage.getItem('donea_lock_until'));
       const now = Date.now();
       const alertBox = document.getElementById('lockout-alert');
+      if (!alertBox) return false;
 
       if (now < lockUntil) {
         const remainingMins = Math.ceil((lockUntil - now) / 60000);
@@ -872,16 +875,22 @@
     }
 
     function handleLogin(e) {
-      e.preventDefault();
-      if (checkLockoutStatus()) return;
+      if (e) e.preventDefault();
+      if (checkLockoutStatus()) return false;
 
-      const pwd = document.getElementById('login-password').value.trim();
+      const pwdInput = document.getElementById('login-password');
+      if (!pwdInput) {
+        showToast('حقل كلمة المرور غير موجود!', '#ef4444');
+        return false;
+      }
+
+      const pwd = pwdInput.value.trim();
 
       if (pwd === ADMIN_PASS) {
         localStorage.removeItem('donea_failed_attempts');
         localStorage.removeItem('donea_lock_until');
         sessionStorage.setItem('donea_role', 'admin');
-        document.getElementById('login-password').value = '';
+        pwdInput.value = '';
         switchView('admin-view');
         showToast('تم تسجيل الدخول كأمين محطة بنجاح', '#10b981');
         checkFirstTimeSetupOrDailyPrompt();
@@ -889,7 +898,7 @@
         localStorage.removeItem('donea_failed_attempts');
         localStorage.removeItem('donea_lock_until');
         sessionStorage.setItem('donea_role', 'owner');
-        document.getElementById('login-password').value = '';
+        pwdInput.value = '';
         switchView('owner-view');
         showToast('مرحباً بك في لوحة المالك الرقابية', '#1c75bc');
       } else {
@@ -904,12 +913,17 @@
           showToast(`كلمة المرور غير صحيحة! المحاولات المتبقية: ${MAX_ATTEMPTS - attempts}`, '#ef4444');
         }
       }
+      return false;
     }
 
     function switchView(viewId) {
       document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
-      document.getElementById(viewId).classList.add('active');
-      document.getElementById('logout-btn').style.display = viewId === 'login-view' ? 'none' : 'inline-flex';
+      const target = document.getElementById(viewId);
+      if (target) target.classList.add('active');
+      
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) logoutBtn.style.display = viewId === 'login-view' ? 'none' : 'inline-flex';
+      
       if (viewId === 'owner-view') renderOwnerDashboard();
       if (viewId === 'admin-view') renderAdminInterface();
     }
@@ -923,12 +937,13 @@
     function switchAdminTab(tabId, btnEl) {
       document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      btnEl.classList.add('active');
+      const targetTab = document.getElementById(tabId);
+      if (targetTab) targetTab.classList.add('active');
+      if (btnEl) btnEl.classList.add('active');
     }
 
     /**************************************************************
-     * 3. الحالة السحابية ومعالجة الـ Wizard والنافذة اليومية الإجبارية مع زر تخطي
+     * 3. الحالة السحابية والمعالجات
      **************************************************************/
     let appState = {
       settings: { fuels: {} },
@@ -959,7 +974,9 @@
         audit_logs: data.audit_logs || {}
       };
       renderAdminInterface();
-      if (document.getElementById('owner-view').classList.contains('active')) renderOwnerDashboard();
+      if (document.getElementById('owner-view') && document.getElementById('owner-view').classList.contains('active')) {
+        renderOwnerDashboard();
+      }
     });
 
     function initializeDefaultDatabaseIfNeeded(existingData) {
@@ -1025,7 +1042,6 @@
       });
     }
 
-    // فحص ما إذا كانت المرة الأولى أم تظهر النافذة الإلزامية في كل مرة يفتح فيها الأمين التطبيق مع زر تخطي
     function checkFirstTimeSetupOrDailyPrompt() {
       const isConfigured = localStorage.getItem('donea_first_setup_done');
       if (!isConfigured) {
@@ -1033,17 +1049,13 @@
         return;
       }
 
-      // في كل مرة يفتح فيها أمين المحطة التطبيق (يومياً أو عند إعادة الفتح): تظهر النافذة البسيطة الأنيقة
+      // في كل مرة يفتح فيها أمين المحطة التطبيق تظهر النافذة البسيطة والأنيقة مع زر تخطي
       showDailyPromptModal();
-
-      // إنشاء ملف الـ PDF اليومي تلقائياً في ذاكرة الهاتف وتعبئته بالتفاصيل الكاملة
+      
       const todayStr = getSyriaDateString();
       checkAndGenerateDailyPDFBackup(todayStr);
     }
 
-    // ----------------------------------------------------
-    // معالج التهيئة الأولية للمرة الأولى (Wizard)
-    // ----------------------------------------------------
     let wizardData = {
       tanksCount: 2,
       tanks: [],
@@ -1054,13 +1066,14 @@
 
     function startFirstTimeWizard() {
       const modal = document.getElementById('setup-wizard-modal');
-      modal.style.display = 'flex';
+      if (modal) modal.style.display = 'flex';
       renderWizardStep(1);
     }
 
     function renderWizardStep(stepNum) {
       const titleEl = document.getElementById('wizard-step-title');
       const contentEl = document.getElementById('wizard-step-content');
+      if (!titleEl || !contentEl) return;
 
       if (stepNum === 1) {
         titleEl.textContent = "الخطوة 1 من 3: عدد الخزانات وأرصدتها وأسعار المحروقات";
@@ -1112,6 +1125,7 @@
     function generateWizardTanksInputs() {
       const count = safeNum(document.getElementById('w_tanks_count').value) || 2;
       const listEl = document.getElementById('w_tanks_dynamic_list');
+      if (!listEl) return;
       let html = '';
       for (let i = 0; i < count; i++) {
         html += `
@@ -1160,6 +1174,7 @@
     function generateWizardMetersInputs() {
       const count = safeNum(document.getElementById('w_meters_count').value) || 2;
       const listEl = document.getElementById('w_meters_dynamic_list');
+      if (!listEl) return;
       const fuelKeys = Object.keys(wizardData.fuels || {});
       
       let fuelOptionsHtml = '';
@@ -1219,19 +1234,20 @@
 
       db.ref().set(payload).then(() => {
         localStorage.setItem('donea_first_setup_done', 'true');
-        document.getElementById('setup-wizard-modal').style.display = 'none';
+        const modal = document.getElementById('setup-wizard-modal');
+        if (modal) modal.style.display = 'none';
         showToast('تم إتمام التهيئة الأولية وبدء العمل بنجاح ✅', '#10b981');
       }).catch(err => {
         showToast('خطأ أثناء الحفظ بالسحابة: ' + err.message, '#ef4444');
       });
     }
 
-    // ----------------------------------------------------
-    // نافذة إدخال القراءات اليومية في كل فتح مع زر تخطي
-    // ----------------------------------------------------
+    // نافذة إدخال القراءات اليومية في كل فتح مع زر تخطي بارز
     function showDailyPromptModal() {
       const modal = document.getElementById('daily-prompt-modal');
       const container = document.getElementById('daily-prompt-meters-container');
+      if (!modal || !container) return;
+
       const meters = appState.meters || {};
       const fuels = (appState.settings && appState.settings.fuels) || {};
 
@@ -1257,7 +1273,8 @@
     }
 
     function closeDailyPrompt(isSkipped) {
-      document.getElementById('daily-prompt-modal').style.display = 'none';
+      const modal = document.getElementById('daily-prompt-modal');
+      if (modal) modal.style.display = 'none';
       if (isSkipped) {
         showToast('تم تخطي الإدخال السريع. يمكنك الإدخال من تبويب العدادات في أي وقت.', '#f59e0b');
       }
@@ -1295,9 +1312,6 @@
       showToast(`تم تسجيل وردية اليوم لـ (${countEntered}) عدادات بنجاح ✅`, '#10b981');
     }
 
-    // ----------------------------------------------------
-    // التنزيل التلقائي لملف الـ PDF الشامل في ذاكرة الهاتف
-    // ----------------------------------------------------
     function checkAndGenerateDailyPDFBackup(todayStr) {
       const lastBackupDate = localStorage.getItem('donea_last_pdf_backup');
       if (lastBackupDate === todayStr) return;
@@ -1415,14 +1429,20 @@
 
       const netCashToDeliver = salesSum - expSum - todayUnpaidDebts + todayCollectedOldDebts;
 
-      document.getElementById('admin-shift-sales').textContent = formatNum(salesSum);
-      document.getElementById('admin-shift-expenses').textContent = formatNum(expSum);
-      document.getElementById('admin-shift-debts').textContent = formatNum(todayUnpaidDebts);
-      document.getElementById('admin-shift-net-cash').textContent = formatNum(netCashToDeliver);
+      const sSales = document.getElementById('admin-shift-sales');
+      const sExp = document.getElementById('admin-shift-expenses');
+      const sDebts = document.getElementById('admin-shift-debts');
+      const sNet = document.getElementById('admin-shift-net-cash');
+
+      if (sSales) sSales.textContent = formatNum(salesSum);
+      if (sExp) sExp.textContent = formatNum(expSum);
+      if (sDebts) sDebts.textContent = formatNum(todayUnpaidDebts);
+      if (sNet) sNet.textContent = formatNum(netCashToDeliver);
     }
 
     function renderMetersSection() {
       const container = document.getElementById('meters-cards-container');
+      if (!container) return;
       const fuels = (appState.settings && appState.settings.fuels) || {};
       const meters = appState.meters || {};
       const todayStr = getSyriaDateString();
@@ -1577,7 +1597,7 @@
       if (currInput === '') {
         document.getElementById(`net_liters_${meterId}`).textContent = '0';
         document.getElementById(`total_money_${meterId}`).textContent = '0';
-        warnBox.style.display = 'none';
+        if (warnBox) warnBox.style.display = 'none';
         updateBatchShiftPreview();
         return;
       }
@@ -1594,16 +1614,22 @@
 
       const tankAvail = tankObj ? safeNum(tankObj.current_volume) : 999999;
       if (!isRollover && curr < prev) {
-        warnBox.style.display = 'block';
-        warnBox.textContent = '⚠️ القراءة الحالية أصغر من السابقة! تحقق من الرقم أو فعّل التصفير.';
+        if (warnBox) {
+          warnBox.style.display = 'block';
+          warnBox.textContent = '⚠️ القراءة الحالية أصغر من السابقة! تحقق من الرقم أو فعّل التصفير.';
+        }
       } else if (netLiters > tankAvail) {
-        warnBox.style.display = 'block';
-        warnBox.textContent = `⚠️ تنبيه: الكمية (${formatNum(netLiters)} لتر) أكبر من الرصيد الدفتري بالخزان (${formatNum(tankAvail)} لتر)!`;
+        if (warnBox) {
+          warnBox.style.display = 'block';
+          warnBox.textContent = `⚠️ تنبيه: الكمية (${formatNum(netLiters)} لتر) أكبر من الرصيد الدفتري بالخزان (${formatNum(tankAvail)} لتر)!`;
+        }
       } else if (netLiters > 15000) {
-        warnBox.style.display = 'block';
-        warnBox.textContent = `⚠️ تنبيه: كمية كبيرة جداً (${formatNum(netLiters)} لتر)، تأكد من عدم زيادة صفر بالخطأ!`;
+        if (warnBox) {
+          warnBox.style.display = 'block';
+          warnBox.textContent = `⚠️ تنبيه: كمية كبيرة جداً (${formatNum(netLiters)} لتر)، تأكد من عدم زيادة صفر بالخطأ!`;
+        }
       } else {
-        warnBox.style.display = 'none';
+        if (warnBox) warnBox.style.display = 'none';
       }
 
       updateBatchShiftPreview();
@@ -1785,6 +1811,7 @@
 
     function renderAdminDailyLogs() {
       const tbody = document.getElementById('admin-daily-sales-tbody');
+      if (!tbody) return;
       const todayStr = getSyriaDateString();
       const logsObj = (appState.daily_logs && appState.daily_logs[todayStr]) || {};
       const logsArr = Object.values(logsObj).sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
@@ -1813,6 +1840,7 @@
      **************************************************************/
     function renderTanksSection() {
       const container = document.getElementById('tanks-cards-container');
+      if (!container) return;
       const tanks = appState.tanks || {};
       const fuels = (appState.settings && appState.settings.fuels) || {};
       container.innerHTML = '';
@@ -1909,13 +1937,14 @@
       const inputVal = document.getElementById(`dip_actual_${tankId}`).value;
       const previewEl = document.getElementById(`dip_preview_${tankId}`);
       if (!tank || inputVal === '') {
-        previewEl.textContent = '';
+        if (previewEl) previewEl.textContent = '';
         return;
       }
       const bookVol = safeNum(tank.current_volume);
       const actualVol = safeNum(inputVal);
       const diff = actualVol - bookVol;
 
+      if (!previewEl) return;
       if (diff === 0) {
         previewEl.style.color = 'var(--success)';
         previewEl.textContent = '✅ مطابق تماماً للرصيد الدفتري (الفرق: 0 لتر)';
@@ -1990,7 +2019,8 @@
       const descEl = document.getElementById('expense-desc');
       if (descEl) {
         descEl.value = text;
-        document.getElementById('expense-amount').focus();
+        const amtEl = document.getElementById('expense-amount');
+        if (amtEl) amtEl.focus();
       }
     }
 
@@ -2027,6 +2057,7 @@
 
     function renderAdminExpenses() {
       const tbody = document.getElementById('admin-expenses-tbody');
+      if (!tbody) return;
       const todayStr = getSyriaDateString();
       const todayExps = (appState.expenses && appState.expenses[todayStr]) || {};
       const list = Object.values(todayExps).sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
@@ -2051,7 +2082,8 @@
     function onDebtFuelChange() {
       const fuelId = document.getElementById('debt-fuel').value;
       const defaultPrice = safeNum(appState.settings?.fuels?.[fuelId]?.price);
-      document.getElementById('debt-unit-price').value = defaultPrice;
+      const priceInput = document.getElementById('debt-unit-price');
+      if (priceInput) priceInput.value = defaultPrice;
       calcDebtAmountFromLiters();
     }
 
@@ -2059,7 +2091,8 @@
       const liters = safeNum(document.getElementById('debt-liters').value);
       const unitPrice = safeNum(document.getElementById('debt-unit-price').value);
       const total = liters * unitPrice;
-      document.getElementById('debt-amount').value = total > 0 ? total : '';
+      const amountInput = document.getElementById('debt-amount');
+      if (amountInput) amountInput.value = total > 0 ? total : '';
     }
 
     function handleAddDebt(e) {
@@ -2071,13 +2104,15 @@
       const amtEl = document.getElementById('debt-amount');
       const noteEl = document.getElementById('debt-note');
 
+      if (!custEl || !fuelEl || !litEl || !priceEl || !amtEl) return;
+
       const customer = custEl.value.trim();
       const fuelId = fuelEl.value;
       const fuelName = appState.settings?.fuels?.[fuelId]?.name || 'وقود';
       const liters = safeNum(litEl.value);
       const unitPrice = safeNum(priceEl.value);
       const amount = safeNum(amtEl.value);
-      const note = noteEl.value.trim();
+      const note = noteEl ? noteEl.value.trim() : '';
 
       if (!customer || amount <= 0 || liters <= 0) {
         showToast('يرجى إدخال اسم الزبون والكمية والسعر بشكل صحيح', '#ef4444');
@@ -2116,9 +2151,12 @@
       }
 
       db.ref().update(updates);
-      recordAuditLog('تسجيل دين آجل', `تسجيل مسحوبة وقود آجلة على (${customer}) بقيمة ${formatNum(amount)} ل.س (${liters} لتر)`);
+      recordAuditLog('تسجيل دين آجل', `تسجيل مسحوبات وقود آجلة على (${customer}) بقيمة ${formatNum(amount)} ل.س (${liters} لتر بسعر ${unitPrice})`);
 
-      custEl.value = ''; litEl.value = ''; amtEl.value = ''; noteEl.value = ''; noteEl.value = '';
+      custEl.value = ''; 
+      litEl.value = ''; 
+      amtEl.value = ''; 
+      if (noteEl) noteEl.value = '';
       showToast(`تم تسجيل الدين الآجل وخصم اللترات من الخزان بنجاح ✅`, '#10b981');
     }
 
@@ -2168,29 +2206,35 @@
       const fuels = (appState.settings && appState.settings.fuels) || {};
       const meters = appState.meters || {};
 
-      document.getElementById('settings-prices-list').innerHTML = Object.keys(fuels).map(fId => `
-        <div class="form-group">
-          <label>سعر لتر (${fuels[fId].name}):</label>
-          <div style="display:flex; gap:8px;">
-            <input type="number" id="price_input_${fId}" value="${safeNum(fuels[fId].price)}" step="any" />
-            <button class="btn btn-primary btn-sm" onclick="updateFuelPrice('${fId}')">حفظ السعر</button>
+      const pricesListEl = document.getElementById('settings-prices-list');
+      if (pricesListEl) {
+        pricesListEl.innerHTML = Object.keys(fuels).map(fId => `
+          <div class="form-group">
+            <label>سعر لتر (${fuels[fId].name}):</label>
+            <div style="display:flex; gap:8px;">
+              <input type="number" id="price_input_${fId}" value="${safeNum(fuels[fId].price)}" step="any" />
+              <button class="btn btn-primary btn-sm" onclick="updateFuelPrice('${fId}')">حفظ السعر</button>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
 
       const fuelOptionsHtml = (selectedFuelId) => Object.keys(fuels).map(fId =>
         `<option value="${fId}" ${fId === selectedFuelId ? 'selected' : ''}>${fuels[fId].name}</option>`
       ).join('');
 
-      document.getElementById('settings-meters-mapping').innerHTML = Object.keys(meters).map(mId => `
-        <div class="form-group">
-          <label>${meters[mId].name}:</label>
-          <div style="display:flex; gap:8px;">
-            <select id="map_fuel_${mId}">${fuelOptionsHtml(meters[mId].fuel_type_id)}</select>
-            <button class="btn btn-secondary btn-sm" onclick="changeMeterFuelType('${mId}')">تبديل المادة</button>
+      const metersMappingEl = document.getElementById('settings-meters-mapping');
+      if (metersMappingEl) {
+        metersMappingEl.innerHTML = Object.keys(meters).map(mId => `
+          <div class="form-group">
+            <label>${meters[mId].name}:</label>
+            <div style="display:flex; gap:8px;">
+              <select id="map_fuel_${mId}">${fuelOptionsHtml(meters[mId].fuel_type_id)}</select>
+              <button class="btn btn-secondary btn-sm" onclick="changeMeterFuelType('${mId}')">تبديل المادة</button>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
 
       const newMeterSelect = document.getElementById('new-meter-fuel');
       if (newMeterSelect) newMeterSelect.innerHTML = fuelOptionsHtml('');
@@ -2203,7 +2247,9 @@
     }
 
     function updateFuelPrice(fuelId) {
-      const newPrice = safeNum(document.getElementById(`price_input_${fuelId}`).value);
+      const inputEl = document.getElementById(`price_input_${fuelId}`);
+      if (!inputEl) return;
+      const newPrice = safeNum(inputEl.value);
       if (newPrice <= 0) {
         showToast('يرجى إدخال سعر صحيح', '#ef4444');
         return;
@@ -2217,7 +2263,9 @@
     }
 
     function changeMeterFuelType(meterId) {
-      const selectedFuel = document.getElementById(`map_fuel_${meterId}`).value;
+      const selectEl = document.getElementById(`map_fuel_${meterId}`);
+      if (!selectEl) return;
+      const selectedFuel = selectEl.value;
       const meterName = appState.meters?.[meterId]?.name || meterId;
       const newFuelName = appState.settings?.fuels?.[selectedFuel]?.name || selectedFuel;
 
@@ -2229,24 +2277,29 @@
     function handleAddNewMeter(e) {
       e.preventDefault();
       const nameEl = document.getElementById('new-meter-name');
+      const fuelEl = document.getElementById('new-meter-fuel');
+      const readingEl = document.getElementById('new-meter-reading');
+      if (!nameEl || !fuelEl || !readingEl) return;
+
       const name = nameEl.value.trim();
-      const fuelId = document.getElementById('new-meter-fuel').value;
-      const initReading = safeNum(document.getElementById('new-meter-reading').value);
+      const fuelId = fuelEl.value;
+      const initReading = safeNum(readingEl.value);
 
       db.ref(`meters/meter_${Date.now()}`).set({ name, fuel_type_id: fuelId, current_reading: initReading, max_reading: 999999 });
       recordAuditLog('إضافة عداد جديد', `إضافة (${name}) بقراءة ابتدائية ${formatNum(initReading)}`);
-      nameEl.value = ''; document.getElementById('new-meter-reading').value = '0';
+      nameEl.value = ''; readingEl.value = '0';
       showToast('تمت إضافة العداد بنجاح ✅', '#10b981');
     }
 
     function handleAddNewFuelAndTank(e) {
       e.preventDefault();
       const nameEl = document.getElementById('new-fuel-name');
-      const fuelName = nameEl.value.trim();
       const priceEl = document.getElementById('new-fuel-price');
       const capEl = document.getElementById('new-tank-capacity');
       const initEl = document.getElementById('new-tank-initial');
+      if (!nameEl || !priceEl || !capEl || !initEl) return;
 
+      const fuelName = nameEl.value.trim();
       const newFuelId = 'fuel_' + Date.now();
       db.ref().update({
         [`settings/fuels/${newFuelId}`]: { name: fuelName, price: safeNum(priceEl.value) },
@@ -2267,13 +2320,14 @@
         const btn = document.getElementById(`filter-btn-${t}`);
         if (btn) btn.className = (t === filterType) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary';
       });
-      document.getElementById('custom-date-range').style.display = filterType === 'custom' ? 'flex' : 'none';
+      const customRange = document.getElementById('custom-date-range');
+      if (customRange) customRange.style.display = filterType === 'custom' ? 'flex' : 'none';
       if (filterType === 'custom') {
         const todayStr = getSyriaDateString();
-        if (!document.getElementById('owner-start-date').value) {
-          document.getElementById('owner-start-date').value = todayStr;
-          document.getElementById('owner-end-date').value = todayStr;
-        }
+        const startInput = document.getElementById('owner-start-date');
+        const endInput = document.getElementById('owner-end-date');
+        if (startInput && !startInput.value) startInput.value = todayStr;
+        if (endInput && !endInput.value) endInput.value = todayStr;
       }
       renderOwnerDashboard();
     }
@@ -2291,8 +2345,8 @@
         const startStr = `${syriaNow.getFullYear()}-${String(syriaNow.getMonth()+1).padStart(2,'0')}-01`;
         return { start: startStr, end: todayStr, label: `تقرير الشهر (${startStr} إلى ${todayStr})` };
       }
-      const cs = document.getElementById('owner-start-date').value || todayStr;
-      const ce = document.getElementById('owner-end-date').value || todayStr;
+      const cs = document.getElementById('owner-start-date')?.value || todayStr;
+      const ce = document.getElementById('owner-end-date')?.value || todayStr;
       return { start: cs, end: ce, label: `تقرير مخصص (${cs} إلى ${ce})` };
     }
 
@@ -2300,8 +2354,10 @@
 
     function renderOwnerDashboard() {
       const bounds = getFilterDateBounds();
-      document.getElementById('report-period-label').textContent = bounds.label;
-      document.getElementById('report-generated-time').textContent = `تاريخ الإصدار: ${getSyriaDateString()} - ${getSyriaTimeString()}`;
+      const periodLabel = document.getElementById('report-period-label');
+      const genTime = document.getElementById('report-generated-time');
+      if (periodLabel) periodLabel.textContent = bounds.label;
+      if (genTime) genTime.textContent = `تاريخ الإصدار: ${getSyriaDateString()} - ${getSyriaTimeString()}`;
 
       let [totalSalesMoney, totalExpensesMoney, totalSoldLiters] = [0, 0, 0];
       const fuelBreakdown = {};
@@ -2430,112 +2486,121 @@
 
       const netCash = totalSalesMoney - totalExpensesMoney - periodUnpaidDebts + periodCollectedOldDebts;
 
-      document.getElementById('owner-total-sales').textContent = formatNum(totalSalesMoney);
-      document.getElementById('owner-total-expenses').textContent = formatNum(totalExpensesMoney);
-      document.getElementById('owner-total-unpaid-debts').textContent = formatNum(periodUnpaidDebts);
-      document.getElementById('owner-net-cash').textContent = formatNum(netCash);
-      document.getElementById('owner-total-liters').textContent = formatNum(totalSoldLiters);
-      document.getElementById('owner-collected-debts').textContent = formatNum(periodCollectedOldDebts);
+      const elSales = document.getElementById('owner-total-sales');
+      const elExp = document.getElementById('owner-total-expenses');
+      const elDebts = document.getElementById('owner-total-unpaid-debts');
+      const elNet = document.getElementById('owner-net-cash');
+      const elLiters = document.getElementById('owner-total-liters');
+      const elColl = document.getElementById('owner-collected-debts');
+
+      if (elSales) elSales.textContent = formatNum(totalSalesMoney);
+      if (elExp) elExp.textContent = formatNum(totalExpensesMoney);
+      if (elDebts) elDebts.textContent = formatNum(periodUnpaidDebts);
+      if (elNet) elNet.textContent = formatNum(netCash);
+      if (elLiters) elLiters.textContent = formatNum(totalSoldLiters);
+      if (elColl) elColl.textContent = formatNum(periodCollectedOldDebts);
 
       const pumpsTbody = document.getElementById('owner-pumps-breakdown-tbody');
       const pumpsList = Object.values(pumpBreakdown);
-      if (pumpsList.length === 0) {
-        pumpsTbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">لا توجد بيانات مضخات</td></tr>`;
-      } else {
-        pumpsTbody.innerHTML = pumpsList.map(p => `
-          <tr>
-            <td><strong>${p.name}</strong></td>
-            <td><span class="badge">${p.current_fuel}</span></td>
-            <td>${p.ops_count}</td>
-            <td>${p.first_prev !== null ? formatNum(p.first_prev) : '-'}</td>
-            <td>${p.last_curr !== null ? formatNum(p.last_curr) : '-'}</td>
-            <td>${formatNum(p.calib_liters)}</td>
-            <td style="font-weight:700; color:var(--primary);">${formatNum(p.net_liters)} لتر</td>
-            <td style="font-weight:700; color:var(--success);">${formatNum(p.revenue)} ل.س</td>
-          </tr>
-        `).join('');
+      if (pumpsTbody) {
+        if (pumpsList.length === 0) {
+          pumpsTbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">لا توجد بيانات مضخات</td></tr>`;
+        } else {
+          pumpsTbody.innerHTML = pumpsList.map(p => `
+            <tr>
+              <td><strong>${p.name}</strong></td>
+              <td><span class="badge">${p.current_fuel}</span></td>
+              <td>${p.ops_count}</td>
+              <td>${p.first_prev !== null ? formatNum(p.first_prev) : '-'}</td>
+              <td>${p.last_curr !== null ? formatNum(p.last_curr) : '-'}</td>
+              <td>${formatNum(p.calib_liters)}</td>
+              <td style="font-weight:700; color:var(--primary);">${formatNum(p.net_liters)} لتر</td>
+              <td style="font-weight:700; color:var(--success);">${formatNum(p.revenue)} ل.س</td>
+            </tr>
+          `).join('');
+        }
       }
 
       const fuelTbody = document.getElementById('owner-fuel-breakdown-tbody');
       const breakdownList = Object.values(fuelBreakdown);
-      fuelTbody.innerHTML = breakdownList.length === 0 ? `<tr><td colspan="5" style="text-align:center;">لا توجد مبيعات في هذه الفترة</td></tr>` : breakdownList.map(item => {
-        const tank = appState.tanks?.[item.fuel_id] || {};
-        const dipInfo = tank.last_dip_date
-          ? `الفرق: ${formatNum(tank.last_dip_diff)} لتر (${tank.last_dip_date})`
-          : 'لا يوجد';
-        return `
-          <tr>
-            <td><span class="badge">${item.name}</span></td>
-            <td style="font-weight:700; color:var(--primary);">${formatNum(item.liters)} لتر</td>
-            <td style="font-weight:700; color:var(--success);">${formatNum(item.revenue)} ل.س</td>
-            <td>${formatNum(safeNum(tank.current_volume))} لتر</td>
-            <td style="font-size:0.8rem;">${dipInfo}</td>
-          </tr>
-        `;
-      }).join('');
+      if (fuelTbody) {
+        fuelTbody.innerHTML = breakdownList.length === 0 ? `<tr><td colspan="5" style="text-align:center;">لا توجد مبيعات في هذه الفترة</td></tr>` : breakdownList.map(item => {
+          const tank = appState.tanks?.[item.fuel_id] || {};
+          const dipInfo = tank.last_dip_date
+            ? `الفرق: ${formatNum(tank.last_dip_diff)} لتر (${tank.last_dip_date})`
+            : 'لا يوجد';
+          return `
+            <tr>
+              <td><span class="badge">${item.name}</span></td>
+              <td style="font-weight:700; color:var(--primary);">${formatNum(item.liters)} لتر</td>
+              <td style="font-weight:700; color:var(--success);">${formatNum(item.revenue)} ل.س</td>
+              <td>${formatNum(safeNum(tank.current_volume))} لتر</td>
+              <td style="font-size:0.8rem;">${dipInfo}</td>
+            </tr>
+          `;
+        }).join('');
+      }
 
       filteredLogs.sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
-      document.getElementById('owner-logs-tbody').innerHTML = filteredLogs.length === 0 ? `<tr><td colspan="9" style="text-align:center;">لا توجد حركات</td></tr>` : filteredLogs.map(log => `
-        <tr>
-          <td>${log.date}</td><td>${log.meter_name}</td><td><span class="badge">${log.fuel_name}</span></td>
-          <td>${formatNum(log.prev_reading)}</td><td>${formatNum(log.curr_reading)}</td>
-          <td>${formatNum(log.calibration_liters)}</td><td style="color:var(--primary); font-weight:700;">${formatNum(log.net_liters)}</td>
-          <td>${formatNum(log.unit_price)}</td><td style="color:var(--success); font-weight:700;">${formatNum(log.total_amount)}</td>
-        </tr>
-      `).join('');
+      const logsTbody = document.getElementById('owner-logs-tbody');
+      if (logsTbody) {
+        logsTbody.innerHTML = filteredLogs.length === 0 ? `<tr><td colspan="9" style="text-align:center;">لا توجد حركات</td></tr>` : filteredLogs.map(log => `
+          <tr>
+            <td>${log.date}</td><td>${log.meter_name}</td><td><span class="badge">${log.fuel_name}</span></td>
+            <td>${formatNum(log.prev_reading)}</td><td>${formatNum(log.curr_reading)}</td>
+            <td>${formatNum(log.calibration_liters)}</td><td style="color:var(--primary); font-weight:700;">${formatNum(log.net_liters)}</td>
+            <td>${formatNum(log.unit_price)}</td><td style="color:var(--success); font-weight:700;">${formatNum(log.total_amount)}</td>
+          </tr>
+        `).join('');
+      }
 
       filteredExpenses.sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
-      document.getElementById('owner-expenses-tbody').innerHTML = filteredExpenses.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا توجد مصاريف</td></tr>` : filteredExpenses.map(exp => `
-        <tr><td>${exp.date}</td><td>${exp.description}</td><td style="color:var(--danger); font-weight:700;">${formatNum(exp.amount)}</td></tr>
-      `).join('');
+      const expTbody = document.getElementById('owner-expenses-tbody');
+      if (expTbody) {
+        expTbody.innerHTML = filteredExpenses.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا توجد مصاريف</td></tr>` : filteredExpenses.map(exp => `
+          <tr><td>${exp.date}</td><td>${exp.description}</td><td style="color:var(--danger); font-weight:700;">${formatNum(exp.amount)}</td></tr>
+        `).join('');
+      }
 
       filteredSupplies.sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
-      document.getElementById('owner-supplies-tbody').innerHTML = filteredSupplies.length === 0 ? `<tr><td colspan="4" style="text-align:center;">لا توجد توريدات</td></tr>` : filteredSupplies.map(sup => `
-        <tr><td>${sup.date}</td><td>${sup.tank_name}</td><td style="color:var(--success); font-weight:700;">+${formatNum(sup.volume)}</td><td>${sup.note}</td></tr>
-      `).join('');
+      const supTbody = document.getElementById('owner-supplies-tbody');
+      if (supTbody) {
+        supTbody.innerHTML = filteredSupplies.length === 0 ? `<tr><td colspan="4" style="text-align:center;">لا توجد توريدات</td></tr>` : filteredSupplies.map(sup => `
+          <tr><td>${sup.date}</td><td>${sup.tank_name}</td><td style="color:var(--success); font-weight:700;">+${formatNum(sup.volume)}</td><td>${sup.note}</td></tr>
+        `).join('');
+      }
 
       filteredAudits.sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
-      document.getElementById('owner-audit-tbody').innerHTML = filteredAudits.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا توجد عمليات استثنائية مسجلة</td></tr>` : filteredAudits.map(aud => `
-        <tr><td>${aud.date} - ${aud.time || ''}</td><td><span class="badge warn">${aud.action}</span></td><td>${aud.details}</td></tr>
-      `).join('');
+      const audTbody = document.getElementById('owner-audit-tbody');
+      if (audTbody) {
+        audTbody.innerHTML = filteredAudits.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا توجد عمليات استثنائية مسجلة</td></tr>` : filteredAudits.map(aud => `
+          <tr><td>${aud.date} - ${aud.time || ''}</td><td><span class="badge warn">${aud.action}</span></td><td>${aud.details}</td></tr>
+        `).join('');
+      }
 
-      const pumpsWhatsappText = pumpsList.map(p => `🔹 ${p.name}: ${formatNum(p.net_liters)} لتر (${formatNum(p.revenue)} ل.س)`).join('
-');
+      const pumpsWhatsappText = pumpsList.map(p => `🔹 ${p.name}: ${formatNum(p.net_liters)} لتر (${formatNum(p.revenue)} ل.س)`).join('\n');
 
       lastOwnerSummaryText =
-        `⛽ *تقرير محطة دنيا للوقود*
-` +
-        `📅 ${bounds.label}
-` +
-        `------------------------
-` +
-        `💰 إجمالي المبيعات: ${formatNum(totalSalesMoney)} ل.س
-` +
-        `💸 إجمالي المصاريف: ${formatNum(totalExpensesMoney)} ل.س
-` +
-        `📒 ديون آجلة غير مسددة: ${formatNum(periodUnpaidDebts)} ل.س
-` +
-        `🏦 *صافي الصندوق النقدي الفعلي: ${formatNum(netCash)} ل.س*
-` +
-        `🛢️ إجمالي اللترات المباعة: ${formatNum(totalSoldLiters)} لتر
-` +
-        (pumpsList.length ? `------------------------
-*إحصائيات المضخات:*
-${pumpsWhatsappText}
-` : '') +
-        (breakdownList.length ? `------------------------
-*تفصيل المواد:*
-` + breakdownList.map(f => `▪️ ${f.name}: ${formatNum(f.liters)} لتر (${formatNum(f.revenue)} ل.س)`).join('
-') : '');
+        `⛽ *تقرير محطة دنيا للوقود*\n` +
+        `📅 ${bounds.label}\n` +
+        `------------------------\n` +
+        `💰 إجمالي المبيعات: ${formatNum(totalSalesMoney)} ل.س\n` +
+        `💸 إجمالي المصاريف: ${formatNum(totalExpensesMoney)} ل.س\n` +
+        `📒 ديون آجلة غير مسددة: ${formatNum(periodUnpaidDebts)} ل.س\n` +
+        `🏦 *صافي الصندوق النقدي الفعلي: ${formatNum(netCash)} ل.س*\n` +
+        `🛢️ إجمالي اللترات المباعة: ${formatNum(totalSoldLiters)} لتر\n` +
+        (pumpsList.length ? `------------------------\n*إحصائيات المضخات:*\n${pumpsWhatsappText}\n` : '') +
+        (breakdownList.length ? `------------------------\n*تفصيل المواد:*\n` + breakdownList.map(f => `▪️ ${f.name}: ${formatNum(f.liters)} لتر (${formatNum(f.revenue)} ل.س)`).join('\n') : '');
     }
 
     function exportOwnerReportPDF() {
       const reportEl = document.getElementById('pdf-report-area');
+      if (!reportEl) return;
       reportEl.classList.add('pdf-print-mode');
-      showToast('جاري تجهيز ملف PDF بتنسيق صفحات متناسق واملء الورقة...', '#1c75bc');
+      showToast('جاري تجهيز ملف PDF المتناسق تماماً للطباعة...', '#1c75bc');
 
       const opt = {
-        margin: [6, 4, 6, 4],
+        margin: [4, 4, 4, 4],
         filename: `تقرير_محطة_دنيا_${getSyriaDateString()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
