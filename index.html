@@ -45,7 +45,7 @@
         .login-card h1 { font-size: 20px; margin-bottom: 8px; color: var(--accent-orange); }
         .login-card p { font-size: 13px; color: #94a3b8; margin-bottom: 20px; }
         
-        /* التطبيق الرئيسي (مخفي حتى يتم تسجيل الدخول) */
+        /* التطبيق الرئيسي */
         #app-wrapper { display: none; padding-bottom: 70px; }
 
         /* الشريط الحي العلوي */
@@ -67,7 +67,6 @@
         .card-metric.highlight { border: 1px solid var(--accent-orange); }
         .card-metric span { display: block; font-weight: bold; color: var(--accent-orange); font-size: 15px; }
         
-        /* المحتوى والتبويبات (SPA) */
         .app-container { padding: 15px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -98,7 +97,6 @@
           margin-top: 10px;
         }
         
-        /* أزرار المصاريف السريعة */
         .quick-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
         .chip {
           background: var(--card-bg);
@@ -110,7 +108,6 @@
           cursor: pointer;
         }
 
-        /* شريط التنقل السفلي */
         .bottom-nav {
           position: fixed;
           bottom: 0; left: 0; right: 0;
@@ -151,9 +148,8 @@
         </div>
     </div>
 
-    <!-- 2. التطبيق الرئيسي (يظهر بعد المصادقة الناجحة) -->
+    <!-- 2. التطبيق الرئيسي -->
     <div id="app-wrapper">
-        <!-- الشريط الحي (اللوحة الحية لمتابعة الورديات) -->
         <header class="live-dashboard-bar">
             <div class="card-metric">مبيعات اليوم <span id="live-sales">0 لتر</span></div>
             <div class="card-metric">المصاريف <span id="live-expenses">0 ل.س</span></div>
@@ -161,7 +157,6 @@
             <div class="card-metric highlight">الصافي النقدي الفعلي <span id="live-net">0 ل.س</span></div>
         </header>
 
-        <!-- الهيكل البرمجي للصفحة الواحدة (SPA) -->
         <main class="app-container">
             
             <!-- تبويب العدادات والمضخات -->
@@ -169,14 +164,18 @@
                 <h2>إدارة العدادات وسحب الورديات</h2>
                 <form id="shift-form">
                     <div class="form-group">
+                        <label>رقم القراءة السابقة للعداد:</label>
+                        <input type="number" id="prev-reading" value="125400" disabled style="opacity: 0.7;">
+                    </div>
+                    <div class="form-group">
                         <label>رقم قراءة العداد الحالية:</label>
-                        <input type="number" id="current-reading" placeholder="أدخل القراءة الحالية" required>
+                        <input type="number" id="current-reading" placeholder="أدخل القراءة الحالية" min="0" required>
                     </div>
                     <div class="form-group">
                         <label>كمية المعايرة والفحص المسترجعة:</label>
-                        <input type="number" id="calibration-qty" value="0">
+                        <input type="number" id="calibration-qty" value="0" min="0">
                     </div>
-                    <button type="submit" class="btn-primary">حفظ الوردية (استجابة فورية)</button>
+                    <button type="submit" class="btn-primary">حفظ الوردية وحساب المبيعات</button>
                 </form>
             </section>
 
@@ -185,7 +184,7 @@
                 <h2>إثبات المصاريف التشغيلية</h2>
                 <div class="quick-chips">
                     <button type="button" class="chip" onclick="quickExpense('صيانة طارئة', 25000)">🔧 صيانة طارئة</button>
-                    <button type="button" class="chip" onclick="quickExpense('ضيافة وضيافات', 10000)">☕ ضيافة</button>
+                    <button type="button" class="chip" onclick="quickExpense('ضيافة', 10000)">☕ ضيافة</button>
                     <button type="button" class="chip" onclick="quickExpense('تشغيل مولدة', 50000)">⚡ مولدة</button>
                 </div>
                 <div class="form-group">
@@ -194,7 +193,7 @@
                 </div>
                 <div class="form-group">
                     <label>المبلغ (ل.س):</label>
-                    <input type="number" id="exp-amount" placeholder="0">
+                    <input type="number" id="exp-amount" placeholder="0" min="0">
                 </div>
                 <button type="button" class="btn-primary" onclick="saveCustomExpense()">حفظ المصروف</button>
             </section>
@@ -202,19 +201,18 @@
             <!-- تبويب الخزانات والسيخة -->
             <section id="tab-tanks" class="tab-content">
                 <h2>جرد الخزانات الأرضية (السيخة)</h2>
-                <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">النظام يقوم بالخصم اللحظي للمبيعات من رصيد الخزانات.</p>
                 <div class="form-group">
                     <label>اختر الخزان:</label>
                     <input type="text" value="خزان بنزين 1 (الرئيسي)" disabled style="opacity: 0.7;">
                 </div>
                 <div class="form-group">
-                    <label>قياس السيخة الفعلي (سم أو لتر):</label>
-                    <input type="number" id="dip-reading" placeholder="أدخل القياس الحالي">
+                    <label>قياس السيخة الفعلي:</label>
+                    <input type="number" id="dip-reading" placeholder="أدخل القياس الحالي" min="0">
                 </div>
                 <button type="button" class="btn-primary" onclick="alert('تم تسجيل قراءة السيخة وفحص العجز بنجاح.')">مطابقة وجرد المخزون</button>
             </section>
 
-            <!-- تبويب الإعدادات والتقارير (متاح للمالك بصلاحيات موسعة) -->
+            <!-- تبويب الإعدادات والتقارير -->
             <section id="tab-settings" class="tab-content">
                 <h2>الإعدادات والتقارير الشاملة</h2>
                 <div id="owner-exclusive-panel" style="background:#0f172a; padding:12px; border-radius:8px; margin-bottom:15px; border:1px solid var(--accent-orange); display:none;">
@@ -222,11 +220,11 @@
                     <span style="font-size:13px;">تم تفعيل صلاحيات الرقابة المالية وإدارة أسعار المحروقات.</span>
                 </div>
                 <button type="button" class="btn-primary" style="background:var(--accent-blue); margin-bottom:10px;" onclick="alert('جاري إعداد وإنشاء تقرير الوردية بصيغة PDF...')">تصدير تقرير الوردية PDF</button>
-                <button type="button" class="btn-primary" style="background:var(--danger-red);" onclick="if(confirm('هل أنت متأكد من رغبتك في استخدام زر الطوارئ؟')) alert('تم تفعيل وضع الطوارئ وتصفير البيانات المحلية المؤقتة.');">زر الطوارئ المؤمّن</button>
+                <button type="button" class="btn-primary" style="background:var(--danger-red); margin-bottom:10px;" onclick="if(confirm('هل أنت متأكد من تفعيل زر الطوارئ؟')) alert('تم تفعيل وضع الطوارئ وتصفير البيانات المؤقتة.');">زر الطوارئ المؤمّن</button>
+                <button type="button" class="btn-primary" style="background:#334155;" onclick="logout()">تسجيل الخروج</button>
             </section>
         </main>
 
-        <!-- شريط التنقل السفلي للـ SPA -->
         <nav class="bottom-nav">
             <button onclick="switchTab('meters', this)" class="active">
                 <span>⛽</span> العدادات
@@ -243,12 +241,11 @@
         </nav>
     </div>
 
-    <!-- المنطق البرمجي المدمج وربط Firebase السحابي -->
+    <!-- المنطق البرمجي وإدارة الحالة -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, enableIndexedDbPersistence, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // إعدادات اتصال Firebase (استبدل القيم ببيانات مشروعك الفعلي)
         const firebaseConfig = {
           apiKey: "YOUR_API_KEY",
           authDomain: "dunya-fuel.firebaseapp.com",
@@ -261,34 +258,66 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // تفعيل العمل بدون إنترنت والتخزين المؤقت المحلي
-        enableIndexedDbPersistence(db).catch((err) => {
-          console.warn("ميزة العمل دون إنترنت نشطة مسبقاً أو غير مدعومة بالكامل.");
+        enableIndexedDbPersistence(db).catch(() => {});
+
+        // الحالة المالية اليومية (تتحدث تفاعلياً)
+        let appState = {
+            totalSalesLiters: 0,
+            totalExpenses: 0,
+            totalDebts: 0,
+            fuelPrice: 15000 // سعر افتراضي للتر لترجمة اللترات إلى قيمة نقدية إن أمكن، أو عرضها مباشرة
+        };
+
+        function updateLiveDashboard() {
+            document.getElementById('live-sales').innerText = appState.totalSalesLiters + " لتر";
+            document.getElementById('live-expenses').innerText = appState.totalExpenses.toLocaleString() + " ل.س";
+            document.getElementById('live-debts').innerText = appState.totalDebts.toLocaleString() + " ل.س";
+            
+            let netCash = (appState.totalSalesLiters * appState.fuelPrice) - appState.totalExpenses - appState.totalDebts;
+            document.getElementById('live-net').innerText = netCash.toLocaleString() + " ل.س";
+        }
+
+        // التحقق من الجلسة المحفوظة عند فتح الصفحة (لحل مشكلة إعادة التحميل)
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedRole = localStorage.getItem('dunya_role');
+            if (savedRole) {
+                activateAppUI(savedRole);
+            }
         });
 
-        // إدارة تسجيل الدخول وفصل الصلاحيات
+        function activateAppUI(role) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-wrapper').style.display = 'block';
+            if (role === 'owner') {
+                document.getElementById('owner-exclusive-panel').style.display = 'block';
+            } else {
+                document.getElementById('owner-exclusive-panel').style.display = 'none';
+            }
+            updateLiveDashboard();
+        }
+
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const passcode = document.getElementById('passcode-input').value.trim();
 
             if (passcode === "Donea12345678") {
-                // صلاحيات المالك الكاملة
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('app-wrapper').style.display = 'block';
-                document.getElementById('owner-exclusive-panel').style.display = 'block';
-                alert("مرحباً بك أيها المالك، تم تفعيل الصلاحيات الكاملة.");
+                localStorage.setItem('dunya_role', 'owner');
+                activateAppUI('owner');
+                alert("مرحباً بك أيها المالك.");
             } else if (passcode === "Donea123456789") {
-                // صلاحيات أمين المحطة
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('app-wrapper').style.display = 'block';
-                document.getElementById('owner-exclusive-panel').style.display = 'none';
-                alert("مرحباً بك، تم تسجيل الدخول بصلاحيات أمين المحطة.");
+                localStorage.setItem('dunya_role', 'keeper');
+                activateAppUI('keeper');
+                alert("مرحباً بك، تم تسجيل الدخول بصلاحية أمين المحطة.");
             } else {
-                alert("رمز المرور غير صحيح! يرجى التأكد من الرمز المُدخل.");
+                alert("رمز المرور غير صحيح!");
             }
         });
 
-        // التنقل السلس بين أقسام الـ SPA
+        window.logout = function() {
+            localStorage.removeItem('dunya_role');
+            location.reload();
+        };
+
         window.switchTab = function(tabName, btnElement) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.bottom-nav button').forEach(el => el.classList.remove('active'));
@@ -296,39 +325,68 @@
             btnElement.classList.add('active');
         };
 
-        // إدارة حفظ الوردية مع الاستجابة الفورية (Optimistic UI)
+        // الوردية والعدادات مع معالجة الـ Rollover وحساب الصافي
         document.getElementById('shift-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const currentReading = document.getElementById('current-reading').value;
-            const calibration = document.getElementById('calibration-qty').value;
+            const prevReading = Number(document.getElementById('prev-reading').value);
+            const currentReading = Number(document.getElementById('current-reading').value);
+            const calibration = Number(document.getElementById('calibration-qty').value);
+
+            if (currentReading < prevReading) {
+                // حالة تصفير العداد Rollover (مثلاً وصل للحد الأقصى 999,999 وعاد للصفر)
+                var confirmRollover = confirm("يبدو أن العداد عاد للصفر (Rollover). هل ترغب في احتساب الفارق بناءً على ذلك؟");
+                if(!confirmRollover) return;
+            }
+
+            let soldLiters = currentReading - prevReading;
+            if (soldLiters < 0) {
+                soldLiters += 1000000; // افتراض سقف العداد 6 أرقام
+            }
+            let netSold = soldLiters - calibration;
+
+            if (netSold < 0) {
+                alert("خطأ: كمية المعايرة أكبر من إجمالي المبيعات!");
+                return;
+            }
+
+            appState.totalSalesLiters += netSold;
+            updateLiveDashboard();
 
             const shiftPayload = {
-                currentReading: Number(currentReading),
-                calibration: Number(calibration),
+                prevReading,
+                currentReading,
+                calibration,
+                netSold,
                 timestamp: serverTimestamp()
             };
 
-            alert("تم حفظ الوردية محلياً بنجاح، وجاري المزامنة السحابية في الخلفية.");
-            
+            alert(`تم حفظ الوردية بنجاح! صافي المبيعات المباعة: ${netSold} لتر.`);
+            document.getElementById('prev-reading').value = currentReading;
+            document.getElementById('current-reading').value = '';
+            document.getElementById('calibration-qty').value = '0';
+
             try {
                 await addDoc(collection(db, "shifts"), shiftPayload);
             } catch (error) {
-                console.log("تم الحفظ محلياً وسيتم مزامنة البيانات تلقائياً فور توفر الاتصال.");
+                console.log("تم الحفظ محلياً بانتظار عودة الاتصال السحابي.");
             }
         });
 
-        // دوال المصاريف السريعة
         window.quickExpense = function(desc, amount) {
-            alert(`تم إدراج مصروف (${desc}) بقيمة ${amount} ل.س بنجاح.`);
+            appState.totalExpenses += amount;
+            updateLiveDashboard();
+            alert(`تم إدراج مصروف (${desc}) بقيمة ${amount.toLocaleString()} ل.س.`);
         };
 
         window.saveCustomExpense = function() {
             const desc = document.getElementById('exp-desc').value;
-            const amount = document.getElementById('exp-amount').value;
-            if(!desc || !amount) {
-                alert("يرجى إدخال البيان والمبلغ بشكل صحيح.");
+            const amount = Number(document.getElementById('exp-amount').value);
+            if(!desc || !amount || amount <= 0) {
+                alert("يرجى إدخال بيان صحيح ومبلغ موجب.");
                 return;
             }
+            appState.totalExpenses += amount;
+            updateLiveDashboard();
             alert(`تم حفظ المصروف التشغيلي بنجاح.`);
             document.getElementById('exp-desc').value = '';
             document.getElementById('exp-amount').value = '';
