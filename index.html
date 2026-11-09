@@ -7,220 +7,102 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#1a222e" />
   <link rel="apple-touch-icon" href="1000065786.png" />
-
-  <!-- خط Cairo ومكتبة html2pdf -->
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
     :root {
-      --bg-dark: #1a222e;
-      --card-bg: #2a3545;
-      --input-bg: #141b24;
-      --primary: #f26f22;
-      --primary-hover: #d95d16;
-      --secondary: #1c75bc;
-      --secondary-hover: #155a91;
-      --text-light: #f3f4f6;
-      --text-muted: #9ca3af;
-      --success: #10b981;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --border: #3b485c;
+      --bg-dark: #1a222e; --card-bg: #2a3545; --input-bg: #141b24;
+      --primary: #f26f22; --primary-hover: #d95d16; --secondary: #1c75bc;
+      --text-light: #f3f4f6; --text-muted: #9ca3af; --success: #10b981;
+      --danger: #ef4444; --warning: #f59e0b; --border: #3b485c;
     }
-
     body.light-mode {
-      --bg-dark: #f1f5f9;
-      --card-bg: #ffffff;
-      --input-bg: #f8fafc;
-      --text-light: #0f172a;
-      --text-muted: #475569;
-      --border: #cbd5e1;
+      --bg-dark: #f1f5f9; --card-bg: #ffffff; --input-bg: #f8fafc;
+      --text-light: #0f172a; --text-muted: #475569; --border: #cbd5e1;
     }
-
-    .pdf-print-mode {
-      background: #ffffff !important;
-      color: #000000 !important;
-      padding: 5px !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      margin: 0 auto !important;
-      font-size: 11px !important;
-    }
-    .pdf-print-mode .card,
-    .pdf-print-mode .stat-card {
-      background: #ffffff !important;
-      color: #000000 !important;
-      border: 1px solid #cbd5e1 !important;
-      box-shadow: none !important;
-      margin-bottom: 8px !important;
-      padding: 8px !important;
-    }
-    .pdf-print-mode .table-responsive { overflow: visible !important; width: 100% !important; }
+    .pdf-print-mode { background: #fff !important; color: #000 !important; padding: 5px !important; width: 100% !important; font-size: 11px !important; }
+    .pdf-print-mode .card, .pdf-print-mode .stat-card { background: #fff !important; color: #000 !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; padding: 8px !important; margin-bottom: 8px !important; }
     .pdf-print-mode table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
-    .pdf-print-mode th, .pdf-print-mode td {
-      overflow: hidden;
-      word-wrap: break-word;
-      font-size: 10px !important;
-      padding: 5px 4px !important;
-    }
-    .pdf-print-mode thead { display: table-header-group !important; }
-    .pdf-print-mode tr { page-break-inside: avoid !important; page-break-after: auto !important; break-inside: avoid !important; }
-    .pdf-print-mode .stat-card, .pdf-print-mode .card-header, .pdf-print-mode .no-break { page-break-inside: avoid !important; break-inside: avoid !important; }
-    .pdf-print-mode th { background-color: #f1f5f9 !important; color: #000000 !important; border: 1px solid #94a3b8 !important; }
-    .pdf-print-mode td { color: #000000 !important; border: 1px solid #cbd5e1 !important; }
-    .pdf-print-mode .stat-title, .pdf-print-mode .stat-value, .pdf-print-mode p, .pdf-print-mode h3, .pdf-print-mode div { color: #000000 !important; }
-    .pdf-print-mode .badge { border: 1px solid #333 !important; color: #000 !important; background: #e2e8f0 !important; }
-    .pdf-print-mode .grid-4 { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; }
-    .pdf-print-mode .grid-2 { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
-
+    .pdf-print-mode th, .pdf-print-mode td { font-size: 10px !important; padding: 5px 4px !important; border: 1px solid #cbd5e1 !important; }
+    .pdf-print-mode th { background-color: #f1f5f9 !important; }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-    body { background-color: var(--bg-dark); color: var(--text-light); min-height: 100vh; padding-bottom: 80px; transition: background-color 0.2s, color 0.2s; }
-
-    .app-header {
-      background-color: var(--card-bg);
-      border-bottom: 3px solid var(--primary);
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    }
+    body { background-color: var(--bg-dark); color: var(--text-light); min-height: 100vh; padding-bottom: 80px; }
+    .app-header { background-color: var(--card-bg); border-bottom: 3px solid var(--primary); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
     .brand-box { display: flex; align-items: center; gap: 10px; }
-    .brand-logo { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); background-color: #fff; }
+    .brand-logo { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); background: #fff; }
     .brand-title h1 { font-size: 1.1rem; font-weight: 800; }
     .brand-title span { font-size: 0.78rem; color: var(--primary); font-weight: 700; }
     .header-actions { display: flex; align-items: center; gap: 8px; }
-
-    .view-section { display: none; max-width: 1150px; margin: 18px auto; padding: 0 12px; animation: fadeIn 0.2s ease-in-out; }
+    .view-section { display: none; max-width: 1150px; margin: 18px auto; padding: 0 12px; }
     .view-section.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-
-    .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12); }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 8px; }
+    .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.12); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); gap: 8px; flex-wrap: wrap; }
     .card-title { font-size: 1.02rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
     .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
     .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
-
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 0.88rem; margin-bottom: 5px; font-weight: 700; }
-    input, select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background-color: var(--input-bg); color: var(--text-light); font-size: 0.95rem; font-weight: 600; outline: none; transition: border-color 0.2s; }
+    input, select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background-color: var(--input-bg); color: var(--text-light); font-size: 0.95rem; font-weight: 600; outline: none; }
     input:focus, select:focus { border-color: var(--primary); }
     input[readonly] { opacity: 0.75; cursor: not-allowed; }
-
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; border-radius: 8px; border: none; font-weight: 700; font-size: 0.92rem; cursor: pointer; transition: all 0.2s; color: #fff; z-index: 10; position: relative; }
-    .btn-primary { background-color: var(--primary); }
-    .btn-primary:hover { background-color: var(--primary-hover); }
-    .btn-secondary { background-color: var(--secondary); }
-    .btn-secondary:hover { background-color: var(--secondary-hover); }
-    .btn-success { background-color: var(--success); }
-    .btn-danger { background-color: var(--danger); }
-    .btn-warning { background-color: var(--warning); color: #000; }
-    .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
-    .btn-block { width: 100%; }
-
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; border-radius: 8px; border: none; font-weight: 700; font-size: 0.92rem; cursor: pointer; color: #fff; position: relative; z-index: 10; }
+    .btn-primary { background-color: var(--primary); } .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-secondary { background-color: var(--secondary); } .btn-success { background-color: var(--success); }
+    .btn-danger { background-color: var(--danger); } .btn-warning { background-color: var(--warning); color: #000; }
+    .btn-sm { padding: 6px 12px; font-size: 0.8rem; } .btn-block { width: 100%; }
     .chips-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-    .chip-btn { background-color: var(--input-bg); color: var(--text-light); border: 1px solid var(--border); padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.15s; }
-    .chip-btn:hover { background-color: var(--primary); color: #fff; border-color: var(--primary); }
-
-    /* تصحيح شريط التبويبات ليصبح متجاوباً وواضحاً وقابلاً للنقر تماماً بدون تداخل */
-    .tabs-bar {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-      background: var(--input-bg);
-      padding: 8px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-    }
-    .tab-btn {
-      background-color: var(--card-bg);
-      color: var(--text-light);
-      border: 1px solid var(--border);
-      padding: 10px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 0.85rem;
-      flex: 1;
-      min-width: 110px;
-      text-align: center;
-      transition: all 0.2s;
-      z-index: 5;
-    }
-    .tab-btn.active {
-      background-color: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
-      box-shadow: 0 2px 6px rgba(242, 111, 34, 0.4);
-    }
-    .admin-tab-content { display: none; }
-    .admin-tab-content.active { display: block; }
-
+    .chip-btn { background-color: var(--input-bg); color: var(--text-light); border: 1px solid var(--border); padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+    .chip-btn:hover { background-color: var(--primary); color: #fff; }
+    .tabs-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; background: var(--input-bg); padding: 8px; border-radius: 10px; border: 1px solid var(--border); }
+    .tab-btn { background-color: var(--card-bg); color: var(--text-light); border: 1px solid var(--border); padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.85rem; flex: 1; min-width: 110px; text-align: center; z-index: 5; }
+    .tab-btn.active { background-color: var(--primary); color: #fff; border-color: var(--primary); }
+    .admin-tab-content { display: none; } .admin-tab-content.active { display: block; }
     .tank-progress-wrap { background-color: var(--input-bg); border-radius: 10px; height: 22px; overflow: hidden; margin: 10px 0; border: 1px solid var(--border); }
-    .tank-progress-bar { height: 100%; text-align: center; font-size: 0.78rem; line-height: 22px; font-weight: 700; color: #fff; transition: width 0.4s ease; }
-
+    .tank-progress-bar { height: 100%; text-align: center; font-size: 0.78rem; line-height: 22px; font-weight: 700; color: #fff; }
     .stat-card { background-color: var(--card-bg); border: 1px solid var(--border); border-right: 4px solid var(--primary); border-radius: 10px; padding: 14px; }
-    .stat-card.blue { border-right-color: var(--secondary); }
-    .stat-card.green { border-right-color: var(--success); }
-    .stat-card.red { border-right-color: var(--danger); }
-    .stat-card.yellow { border-right-color: var(--warning); }
+    .stat-card.blue { border-right-color: var(--secondary); } .stat-card.green { border-right-color: var(--success); }
+    .stat-card.red { border-right-color: var(--danger); } .stat-card.yellow { border-right-color: var(--warning); }
     .stat-title { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 700; }
     .stat-value { font-size: 1.3rem; font-weight: 800; }
-
     .batch-save-bar { background: linear-gradient(135deg, var(--card-bg), var(--input-bg)); border: 2px solid var(--primary); border-radius: 12px; padding: 14px 18px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
     .pump-mini-stats { display: flex; justify-content: space-between; background-color: var(--input-bg); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 0.82rem; }
-
     .table-responsive { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
     th, td { padding: 9px 8px; text-align: right; border-bottom: 1px solid var(--border); }
-    th { background-color: rgba(0, 0, 0, 0.15); color: var(--primary); font-weight: 800; }
-
+    th { background-color: rgba(0,0,0,0.15); color: var(--primary); font-weight: 800; }
     .password-wrapper { position: relative; display: flex; align-items: center; }
     .toggle-pwd { position: absolute; left: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; }
-
-    #toast-box { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #111827; color: #fff; padding: 12px 20px; border-radius: 8px; border-right: 4px solid var(--primary); box-shadow: 0 6px 16px rgba(0,0,0,0.5); z-index: 9999; display: none; font-weight: 700; font-size: 0.9rem; max-width: 92%; text-align: center; }
-
+    #toast-box { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #111827; color: #fff; padding: 12px 20px; border-radius: 8px; border-right: 4px solid var(--primary); z-index: 9999; display: none; font-weight: 700; font-size: 0.9rem; text-align: center; }
     .badge { padding: 3px 8px; border-radius: 6px; font-size: 0.76rem; font-weight: 700; background-color: var(--secondary); color: #fff; display: inline-block; }
-    .badge.warn { background-color: var(--warning); color: #000; }
-    .badge.ok { background-color: var(--success); }
-    .badge.err { background-color: var(--danger); }
-
-    .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 8px 0; cursor: pointer; font-size: 0.88rem; font-weight: 600; }
+    .badge.ok { background-color: var(--success); } .badge.err { background-color: var(--danger); }
+    .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
     .checkbox-row input { width: 18px; height: 18px; }
-
-    /* Modal Wizard Styles */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 15px; }
     .modal-box { background: var(--card-bg); border: 2px solid var(--primary); border-radius: 14px; width: 100%; max-width: 550px; padding: 22px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
   </style>
 </head>
 <body>
 
-  <!-- Modal Wizard Wizard for First-Time Setup -->
+  <!-- معالج الإعداد الأول -->
   <div id="setup-wizard-modal" class="modal-overlay" style="display:none;">
     <div class="modal-box">
       <div style="text-align:center; margin-bottom:15px;">
         <h2 style="color:var(--primary); font-size:1.3rem;">🚀 معالج التهيئة الأولية للمحطة</h2>
-        <p id="wizard-step-title" style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">الخطوة 1 من 3: إعداد الخزانات</p>
+        <p id="wizard-step-title" style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;"></p>
       </div>
       <div id="wizard-step-content"></div>
     </div>
   </div>
 
-  <!-- Daily Prompt Modal (For Every Login of Admin) -->
+  <!-- النافذة اليومية الإجبارية للعدادات مع زر تخطي -->
   <div id="daily-prompt-modal" class="modal-overlay" style="display:none;">
     <div class="modal-box" style="max-width:600px;">
       <div style="text-align:center; margin-bottom:15px;">
         <h2 style="color:var(--primary); font-size:1.3rem;">⚡ تسجيل قراءات العدادات اليومية</h2>
-        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">يرجى إدخال القراءات الحالية لجميع عدادات المحطة (أو اضغط تخطي):</p>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">أدخل القراءات الحالية أو اضغط تخطي:</p>
       </div>
       <div id="daily-prompt-meters-container" style="margin-bottom:15px;"></div>
       <div style="display:flex; gap:10px;">
@@ -230,727 +112,254 @@
     </div>
   </div>
 
-  <!-- الهيدر العلوي الموحد -->
   <header class="app-header">
     <div class="brand-box">
-      <img src="1000065786.png" alt="شعار محطة دنيا" class="brand-logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23f26f22%22/><text x=%2250%25%22 y=%2255%25%22 font-size=%2218%22 fill=%22white%22 text-anchor=%22middle%22>دنيا</text></svg>'" />
+      <img src="1000065786.png" alt="Logo" class="brand-logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23f26f22%22/><text x=%2250%25%22 y=%2255%25%22 font-size=%2218%22 fill=%22white%22 text-anchor=%22middle%22>دنيا</text></svg>'" />
       <div class="brand-title">
         <h1>محطة دنيا للوقود</h1>
         <span id="current-date-badge">التوقيت المحلي (سوريا)</span>
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn btn-secondary btn-sm" onclick="toggleDaylightMode()" title="وضع الرؤية تحت الشمس">☀️/🌙</button>
-      <button id="logout-btn" class="btn btn-danger btn-sm" style="display: none;" onclick="logoutSession()">خروج</button>
+      <button class="btn btn-secondary btn-sm" onclick="toggleDaylightMode()">☀️/🌙</button>
+      <button id="logout-btn" class="btn btn-danger btn-sm" style="display:none;" onclick="logoutSession()">خروج</button>
     </div>
   </header>
 
-  <!-- ==========================================
-       1. شاشة تسجيل الدخول (Login View)
-       ========================================== -->
+  <!-- شاشة الدخول -->
   <section id="login-view" class="view-section active">
-    <div class="card" style="max-width: 440px; margin: 45px auto;">
-      <div class="card-header">
-        <div class="card-title">🔐 بوابة الدخول الآمن</div>
-      </div>
+    <div class="card" style="max-width:440px; margin:45px auto;">
+      <div class="card-header"><div class="card-title">🔐 بوابة الدخول الآمن</div></div>
       <div id="lockout-alert" style="display:none; background:rgba(239,68,68,0.2); border:1px solid var(--danger); padding:10px; border-radius:8px; margin-bottom:14px; color:#fca5a5; font-size:0.88rem;"></div>
-      
       <form id="login-form" onsubmit="handleLogin(event)">
         <div class="form-group">
-          <label>أدخل كلمة المرور الخاصة بالصلاحية:</label>
+          <label>كلمة المرور:</label>
           <div class="password-wrapper">
             <input type="password" id="login-password" placeholder="••••••••••••" required autocomplete="current-password" />
             <button type="button" class="toggle-pwd" onclick="togglePasswordVisibility()">👁️</button>
           </div>
         </div>
-        <button type="submit" id="login-submit-btn" class="btn btn-primary btn-block">دخول للنظام</button>
+        <button type="submit" class="btn btn-primary btn-block">دخول للنظام</button>
       </form>
     </div>
   </section>
 
-  <!-- ==========================================
-       2. واجهة أمين المحطة (Admin View)
-       ========================================== -->
+  <!-- واجهة أمين المحطة -->
   <section id="admin-view" class="view-section">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
       <h2>👨‍🔧 لوحة عمليات أمين المحطة</h2>
-      <button class="btn btn-warning btn-sm" onclick="repairDatabaseSchema()">⚙️ تهيئة وإصلاح القاعدة</button>
+      <button class="btn btn-warning btn-sm" onclick="repairDatabaseSchema()">⚙️ إصلاح القاعدة</button>
     </div>
 
-    <!-- شريط خلاصة صندوق الوردية المباشر لأمين المحطة -->
     <div class="grid-4">
-      <div class="stat-card">
-        <div class="stat-title">مبيعات اليوم (ل.س)</div>
-        <div class="stat-value" id="admin-shift-sales">0</div>
-      </div>
-      <div class="stat-card red">
-        <div class="stat-title">مصاريف اليوم (ل.س)</div>
-        <div class="stat-value" id="admin-shift-expenses">0</div>
-      </div>
-      <div class="stat-card yellow">
-        <div class="stat-title">ديون اليوم الآجلة (ل.س)</div>
-        <div class="stat-value" id="admin-shift-debts">0</div>
-      </div>
-      <div class="stat-card green">
-        <div class="stat-title">الصافي النقدي للتسليم (ل.س)</div>
-        <div class="stat-value" id="admin-shift-net-cash">0</div>
-      </div>
+      <div class="stat-card"><div class="stat-title">مبيعات اليوم (ل.س)</div><div class="stat-value" id="admin-shift-sales">0</div></div>
+      <div class="stat-card red"><div class="stat-title">مصاريف اليوم (ل.س)</div><div class="stat-value" id="admin-shift-expenses">0</div></div>
+      <div class="stat-card yellow"><div class="stat-title">ديون اليوم (ل.س)</div><div class="stat-value" id="admin-shift-debts">0</div></div>
+      <div class="stat-card green"><div class="stat-title">الصافي للتسليم (ل.س)</div><div class="stat-value" id="admin-shift-net-cash">0</div></div>
     </div>
 
-    <!-- التبويبات (مع ضبط الـ z-index والـ flex-wrap لتجنب أي تداخل أو فقدان للاستجابة) -->
     <div class="tabs-bar">
-      <button class="tab-btn active" id="btn-tab-meters" onclick="switchAdminTab('tab-meters', this)">⛽ العدادات والوردية</button>
-      <button class="tab-btn" id="btn-tab-tanks" onclick="switchAdminTab('tab-tanks', this)">🛢️ الخزانات والسيخة</button>
+      <button class="tab-btn active" id="btn-tab-meters" onclick="switchAdminTab('tab-meters', this)">⛽ العدادات</button>
+      <button class="tab-btn" id="btn-tab-tanks" onclick="switchAdminTab('tab-tanks', this)">🛢️ الخزانات</button>
       <button class="tab-btn" id="btn-tab-expenses" onclick="switchAdminTab('tab-expenses', this)">💸 المصاريف</button>
-      <button class="tab-btn" id="btn-tab-debts" onclick="switchAdminTab('tab-debts', this)">📒 الديون الآجلة</button>
+      <button class="tab-btn" id="btn-tab-debts" onclick="switchAdminTab('tab-debts', this)">📒 الديون</button>
       <button class="tab-btn" id="btn-tab-settings" onclick="switchAdminTab('tab-settings', this)">⚙️ الإعدادات</button>
     </div>
 
-    <!-- تبويب 1: العدادات والبيع -->
+    <!-- تبويب 1 -->
     <div id="tab-meters" class="admin-tab-content active">
       <div class="batch-save-bar">
         <div>
-          <div style="font-weight:800; color:var(--primary);">⚡ إغلاق الوردية السريع (حفظ جماعي)</div>
-          <div style="font-size:0.84rem; color:var(--text-muted);">
-            مجموع اللترات المدخلة الآن: <strong id="batch-preview-liters" style="color:var(--text-light);">0</strong> لتر |
-            القيمة: <strong id="batch-preview-money" style="color:var(--success);">0</strong> ل.س
-          </div>
+          <div style="font-weight:800; color:var(--primary);">⚡ إغلاق الوردية السريع</div>
+          <div style="font-size:0.84rem; color:var(--text-muted);">اللترات: <strong id="batch-preview-liters" style="color:var(--text-light);">0</strong> | القيمة: <strong id="batch-preview-money" style="color:var(--success);">0</strong> ل.س</div>
         </div>
-        <button class="btn btn-success" onclick="submitAllEnteredMeters()">💾 حفظ وإغلاق جميع العدادات المدخلة</button>
+        <button class="btn btn-success" onclick="submitAllEnteredMeters()">💾 حفظ العدادات المدخلة</button>
       </div>
-
       <div id="meters-cards-container" class="grid-2"></div>
-
       <div class="card">
-        <div class="card-header">
-          <div class="card-title">📊 ملخص مبيعات اليوم لكل مضخة على حدة</div>
-        </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>المضخة / العداد</th>
-                <th>المادة الحالية</th>
-                <th>عدد الحركات اليوم</th>
-                <th>مجموع المعايرة (لتر)</th>
-                <th>الصافي المباع اليوم (لتر)</th>
-                <th>إجمالي مبلغ المضخة اليوم (ل.س)</th>
-              </tr>
-            </thead>
-            <tbody id="admin-pump-stats-tbody"></tbody>
-          </table>
-        </div>
+        <div class="card-header"><div class="card-title">📊 ملخص مبيعات المضخات اليوم</div></div>
+        <div class="table-responsive"><table><thead><tr><th>المضخة</th><th>المادة</th><th>الحركات</th><th>المعايرة</th><th>الصافي (لتر)</th><th>المبلغ (ل.س)</th></tr></thead><tbody id="admin-pump-stats-tbody"></tbody></table></div>
       </div>
-
       <div class="card">
-        <div class="card-header">
-          <div class="card-title">📋 سجل حركات العدادات لليوم (<span id="admin-today-label"></span>)</div>
-        </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>الوقت</th>
-                <th>العداد</th>
-                <th>الوقود</th>
-                <th>السابقة</th>
-                <th>الحالية</th>
-                <th>معايرة</th>
-                <th>الصافي (لتر)</th>
-                <th>السعر</th>
-                <th>الإجمالي (ل.س)</th>
-              </tr>
-            </thead>
-            <tbody id="admin-daily-sales-tbody"></tbody>
-          </table>
-        </div>
+        <div class="card-header"><div class="card-title">📋 سجل الحركات (<span id="admin-today-label"></span>)</div></div>
+        <div class="table-responsive"><table><thead><tr><th>الوقت</th><th>العداد</th><th>الوقود</th><th>السابقة</th><th>الحالية</th><th>معايرة</th><th>الصافي</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody id="admin-daily-sales-tbody"></tbody></table></div>
       </div>
     </div>
 
-    <!-- تبويب 2: الخزانات الأرضية -->
+    <!-- تبويب 2 -->
     <div id="tab-tanks" class="admin-tab-content">
       <div id="tanks-cards-container" class="grid-2"></div>
-
       <div class="card">
-        <div class="card-header">
-          <div class="card-title">🚛 سجل توريد الصهاريج وفواتير التفريغ</div>
-        </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>التاريخ والوقت</th>
-                <th>الخزان / المادة</th>
-                <th>الكمية الموردة (لتر)</th>
-                <th>رقم الفاتورة / ملاحظات الصهريج</th>
-              </tr>
-            </thead>
-            <tbody id="admin-supplies-tbody"></tbody>
-          </table>
-        </div>
+        <div class="card-header"><div class="card-title">🚛 سجل توريد الصهاريج</div></div>
+        <div class="table-responsive"><table><thead><tr><th>التاريخ والوقت</th><th>الخزان</th><th>الكمية (لتر)</th><th>البيان</th></tr></thead><tbody id="admin-supplies-tbody"></tbody></table></div>
       </div>
     </div>
 
-    <!-- تبويب 3: المصاريف اليومية -->
+    <!-- تبويب 3 -->
     <div id="tab-expenses" class="admin-tab-content">
       <div class="grid-2">
         <div class="card">
-          <div class="card-header">
-            <div class="card-title">➕ تسجيل مصروف يومي سريع</div>
-          </div>
-          <div style="margin-bottom:8px; font-size:0.82rem; color:var(--text-muted);">اختيار سريع للبيان:</div>
+          <div class="card-header"><div class="card-title">➕ تسجيل مصروف سريع</div></div>
           <div class="chips-container">
             <button type="button" class="chip-btn" onclick="fillExpenseChip('مازوت وزيت للمولدة')">⚡ مولدة</button>
-            <button type="button" class="chip-btn" onclick="fillExpenseChip('طعام وغداء عمال')">🍽️ طعام عمال</button>
+            <button type="button" class="chip-btn" onclick="fillExpenseChip('طعام وغداء عمال')">🍽️ عمال</button>
             <button type="button" class="chip-btn" onclick="fillExpenseChip('قهوة وضيافة للمحطة')">☕ ضيافة</button>
             <button type="button" class="chip-btn" onclick="fillExpenseChip('صيانة مضخات وكهرباء')">🔧 صيانة</button>
-            <button type="button" class="chip-btn" onclick="fillExpenseChip('مواد تنظيف ومستلزمات')">🧹 نظافة</button>
-            <button type="button" class="chip-btn" onclick="fillExpenseChip('سلفة عامل')">💵 سلفة</button>
           </div>
           <form onsubmit="handleAddExpense(event)">
-            <div class="form-group">
-              <label>بيان المصروف / الوصف:</label>
-              <input type="text" id="expense-desc" placeholder="اختر من الأعلى أو اكتب البيان..." required />
-            </div>
-            <div class="form-group">
-              <label>المبلغ (ل.س):</label>
-              <input type="number" id="expense-amount" min="1" step="any" placeholder="0" required />
-            </div>
+            <div class="form-group"><label>البيان:</label><input type="text" id="expense-desc" required /></div>
+            <div class="form-group"><label>المبلغ (ل.س):</label><input type="number" id="expense-amount" min="1" step="any" required /></div>
             <button type="submit" class="btn btn-primary btn-block">حفظ المصروف</button>
           </form>
         </div>
-
         <div class="card">
-          <div class="card-header">
-            <div class="card-title">🧾 مصاريف اليوم المسجلة</div>
-          </div>
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>الوقت</th>
-                  <th>البيان</th>
-                  <th>المبلغ (ل.س)</th>
-                  <th>إجراء</th>
-                </tr>
-              </thead>
-              <tbody id="admin-expenses-tbody"></tbody>
-            </table>
-          </div>
+          <div class="card-header"><div class="card-title">🧾 مصاريف اليوم</div></div>
+          <div class="table-responsive"><table><thead><tr><th>الوقت</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="admin-expenses-tbody"></tbody></table></div>
         </div>
       </div>
     </div>
 
-    <!-- تبويب 4: الديون الآجلة -->
+    <!-- تبويب 4 -->
     <div id="tab-debts" class="admin-tab-content">
       <div class="grid-2">
         <div class="card">
-          <div class="card-header">
-            <div class="card-title">📝 تسجيل مسحوبات وقود آجلة (دين على زبون)</div>
-          </div>
-          <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:12px;">
-            ملاحظة: اللترات المسحوبة هنا تُخصم من خزانات المحطة وقيمتها النقدية تُخصم من الصندوق.
-          </p>
+          <div class="card-header"><div class="card-title">📝 تسجيل دين آجل</div></div>
           <form onsubmit="handleAddDebt(event)">
-            <div class="form-group">
-              <label>اسم الزبون / الآلية:</label>
-              <input type="text" id="debt-customer" placeholder="مثال: جرار أبو أحمد / شركة..." required />
-            </div>
-            <div class="form-group">
-              <label>نوع الوقود المسحوب:</label>
-              <select id="debt-fuel" onchange="onDebtFuelChange()"></select>
-            </div>
-            <div class="form-group">
-              <label>الكمية باللتر:</label>
-              <input type="number" id="debt-liters" min="0.01" step="any" placeholder="أدخل عدد اللترات..." oninput="calcDebtAmountFromLiters()" required />
-            </div>
-            <div class="form-group">
-              <label>السعر المعتمد (ل.س لكل لتر):</label>
-              <input type="number" id="debt-unit-price" min="0" step="any" placeholder="السعر الافتراضي للمادة" oninput="calcDebtAmountFromLiters()" required />
-            </div>
-            <div class="form-group">
-              <label>إجمالي المبلغ المستحق (ل.س):</label>
-              <input type="number" id="debt-amount" min="1" step="any" placeholder="0" readonly />
-            </div>
-            <div class="form-group">
-              <label>ملاحظة إضافية:</label>
-              <input type="text" id="debt-note" placeholder="رقم اللوحة أو اسم المستلم..." />
-            </div>
-            <button type="submit" class="btn btn-primary btn-block">تسجيل الدين الآجل</button>
+            <div class="form-group"><label>اسم الزبون:</label><input type="text" id="debt-customer" required /></div>
+            <div class="form-group"><label>الوقود:</label><select id="debt-fuel" onchange="onDebtFuelChange()"></select></div>
+            <div class="form-group"><label>الكمية (لتر):</label><input type="number" id="debt-liters" min="0.01" step="any" oninput="calcDebtAmountFromLiters()" required /></div>
+            <div class="form-group"><label>السعر (ل.س/لتر):</label><input type="number" id="debt-unit-price" min="0" step="any" oninput="calcDebtAmountFromLiters()" required /></div>
+            <div class="form-group"><label>الإجمالي (ل.س):</label><input type="number" id="debt-amount" readonly /></div>
+            <div class="form-group"><label>ملاحظة:</label><input type="text" id="debt-note" /></div>
+            <button type="submit" class="btn btn-primary btn-block">حفظ الدين</button>
           </form>
         </div>
-
         <div class="card">
-          <div class="card-header">
-            <div class="card-title">📒 دفتر الديون والذمم القائمة</div>
-          </div>
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>التاريخ</th>
-                  <th>الزبون</th>
-                  <th>المادة والكمية</th>
-                  <th>المبلغ (ل.س)</th>
-                  <th>الحالة</th>
-                  <th>إجراء</th>
-                </tr>
-              </thead>
-              <tbody id="admin-debts-tbody"></tbody>
-            </table>
-          </div>
+          <div class="card-header"><div class="card-title">📒 دفتر الديون</div></div>
+          <div class="table-responsive"><table><thead><tr><th>التاريخ</th><th>الزبون</th><th>المادة</th><th>المبلغ</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="admin-debts-tbody"></tbody></table></div>
         </div>
       </div>
     </div>
 
-    <!-- تبويب 5: إعدادات المحطة -->
+    <!-- تبويب 5 -->
     <div id="tab-settings" class="admin-tab-content">
       <div class="grid-2">
         <div class="card">
-          <div class="card-header">
-            <div class="card-title">🏷️ تعديل أسعار اللتر الحالية</div>
-          </div>
+          <div class="card-header"><div class="card-title">🏷️ أسعار اللتر</div></div>
           <div id="settings-prices-list"></div>
         </div>
-
         <div class="card">
-          <div class="card-header">
-            <div class="card-title">🔄 إدارة العدادات وتبديل الوقود</div>
-          </div>
+          <div class="card-header"><div class="card-title">🔄 إدارة العدادات</div></div>
           <div id="settings-meters-mapping"></div>
         </div>
-
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">➕ إضافة عداد جديد للمحطة</div>
-          </div>
-          <form onsubmit="handleAddNewMeter(event)">
-            <div class="form-group">
-              <label>اسم العداد:</label>
-              <input type="text" id="new-meter-name" placeholder="مثال: مضخة المازوت رقم 2" required />
-            </div>
-            <div class="form-group">
-              <label>نوع الوقود المربوط:</label>
-              <select id="new-meter-fuel" required></select>
-            </div>
-            <div class="form-group">
-              <label>القراءة الميكانيكية الابتدائية:</label>
-              <input type="number" id="new-meter-reading" min="0" step="any" value="0" required />
-            </div>
-            <button type="submit" class="btn btn-secondary btn-block">إضافة العداد</button>
-          </form>
-        </div>
-
-        <div class="card" style="border-color: var(--danger);">
-          <div class="card-header">
-            <div class="card-title" style="color: var(--danger);">⚠️ إعادة التطبيق للصفر (مسح شامل)</div>
-          </div>
-          <p style="font-size:0.85rem; color: var(--text-muted); margin-bottom: 12px;">
-            هذا الإجراء سيقوم بحذف جميع الفواتير، المصاريف، الديون، سجلات الصهاريج وسجلات الرقابة نهائياً وإعادة جميع العدادات والخزانات إلى نقطة الصفر. لا يمكن التراجع بعد التنفيذ!
-          </p>
-          <div class="form-group">
-            <label>لأمان العملية، أكتب كلمة (نعم) في الحقل أدناه للتأكيد:</label>
-            <input type="text" id="reset-confirm-input" placeholder="اكتب كلمة نعم هنا..." />
-          </div>
-          <button type="button" class="btn btn-danger btn-block" onclick="factoryResetApp()">🚨 مسح جميع البيانات وإعادة التطبيق للصفر</button>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">🛢️ إضافة مادة وقود وخزان جديد</div>
-          </div>
-          <form onsubmit="handleAddNewFuelAndTank(event)">
-            <div class="form-group">
-              <label>اسم مادة الوقود:</label>
-              <input type="text" id="new-fuel-name" placeholder="مثال: بنزين أوكتان 95" required />
-            </div>
-            <div class="form-group">
-              <label>سعر اللتر (ل.س):</label>
-              <input type="number" id="new-fuel-price" min="1" step="any" required />
-            </div>
-            <div class="form-group">
-              <label>السعة الكلية للخزان الأرضي (لتر):</label>
-              <input type="number" id="new-tank-capacity" min="100" step="any" value="30000" required />
-            </div>
-            <div class="form-group">
-              <label>الرصيد الافتتاحي الحالي في الخزان (لتر):</label>
-              <input type="number" id="new-tank-initial" min="0" step="any" value="10000" required />
-            </div>
-            <button type="submit" class="btn btn-primary btn-block">إضافة المادة والخزان</button>
-          </form>
+        <div class="card" style="border-color:var(--danger);">
+          <div class="card-header"><div class="card-title" style="color:var(--danger);">⚠️ إعادة التطبيق للصفر</div></div>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">لحذف كافة البيانات، اكتب كلمة (نعم) في الحقل أدناه:</p>
+          <div class="form-group"><input type="text" id="reset-confirm-input" placeholder="اكتب نعم هنا..." /></div>
+          <button type="button" class="btn btn-danger btn-block" onclick="factoryResetApp()">🚨 مسح شامل</button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ==========================================
-       3. واجهة المالك الرقابية (Owner View)
-       ========================================== -->
+  <!-- واجهة المالك -->
   <section id="owner-view" class="view-section">
     <div class="card">
       <div class="card-header">
-        <div class="card-title">📊 لوحة الرقابة المالية والتقارير (المالك)</div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn btn-secondary btn-sm" onclick="exportOwnerReportPDF()">📄 تصدير PDF للطباعة</button>
-          <button class="btn btn-success btn-sm" onclick="shareWhatsAppSummary()">💬 ملخص واتساب</button>
-        </div>
+        <div class="card-title">📊 لوحة الرقابة والتقارير</div>
+        <div style="display:flex; gap:8px;"><button class="btn btn-secondary btn-sm" onclick="exportOwnerReportPDF()">📄 تصدير PDF</button><button class="btn btn-success btn-sm" onclick="shareWhatsAppSummary()">💬 واتساب</button></div>
       </div>
-
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
         <button class="btn btn-sm btn-primary" id="filter-btn-today" onclick="setOwnerFilter('today')">اليوم</button>
-        <button class="btn btn-sm btn-secondary" id="filter-btn-week" onclick="setOwnerFilter('week')">هذا الأسبوع</button>
-        <button class="btn btn-sm btn-secondary" id="filter-btn-month" onclick="setOwnerFilter('month')">هذا الشهر</button>
-        <button class="btn btn-sm btn-secondary" id="filter-btn-custom" onclick="setOwnerFilter('custom')">تاريخ مخصص</button>
-      </div>
-
-      <div id="custom-date-range" style="display:none; gap:10px; align-items:flex-end; flex-wrap:wrap;">
-        <div style="flex:1; min-width:140px;">
-          <label style="font-size:0.8rem;">من تاريخ:</label>
-          <input type="date" id="owner-start-date" onchange="renderOwnerDashboard()" />
-        </div>
-        <div style="flex:1; min-width:140px;">
-          <label style="font-size:0.8rem;">إلى تاريخ:</label>
-          <input type="date" id="owner-end-date" onchange="renderOwnerDashboard()" />
-        </div>
+        <button class="btn btn-sm btn-secondary" id="filter-btn-week" onclick="setOwnerFilter('week')">الأسبوع</button>
+        <button class="btn btn-sm btn-secondary" id="filter-btn-month" onclick="setOwnerFilter('month')">الشهر</button>
       </div>
     </div>
 
-    <div id="pdf-report-area" style="background:#ffffff; color:#000000; padding:15px; border-radius:8px;">
-      <div class="card no-break" style="display:flex; align-items:center; justify-content:space-between; border-color:var(--primary); background:#ffffff !important;">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <img src="1000065786.png" alt="Logo" style="width:45px; height:45px; border-radius:50%; background:#fff;" onerror="this.style.display='none'" />
-          <div>
-            <h3 style="color:#f26f22; font-size:1.1rem;">التقرير المالي والرقابي - محطة دنيا للوقود</h3>
-            <p id="report-period-label" style="font-size:0.78rem; color:#555;"></p>
-          </div>
-        </div>
-        <div style="text-align:left; font-size:0.75rem; color:#555;">
-          <div>التوقيت المحلي: سوريا</div>
-          <div id="report-generated-time"></div>
-        </div>
-      </div>
-
+    <div id="pdf-report-area" style="background:#fff; color:#000; padding:15px; border-radius:8px;">
       <div class="grid-4 no-break" style="margin-bottom:10px;">
-        <div class="stat-card" style="background:#fff !important; border:1px solid #ddd !important; padding:10px !important;">
-          <div class="stat-title" style="color:#666 !important; font-size:0.75rem;">إجمالي المبيعات (ل.س)</div>
-          <div class="stat-value" id="owner-total-sales" style="color:#000 !important; font-size:1.1rem;">0</div>
-        </div>
-        <div class="stat-card red" style="background:#fff !important; border:1px solid #ddd !important; padding:10px !important;">
-          <div class="stat-title" style="color:#666 !important; font-size:0.75rem;">إجمالي المصاريف (ل.س)</div>
-          <div class="stat-value" id="owner-total-expenses" style="color:#000 !important; font-size:1.1rem;">0</div>
-        </div>
-        <div class="stat-card yellow" style="background:#fff !important; border:1px solid #ddd !important; padding:10px !important;">
-          <div class="stat-title" style="color:#666 !important; font-size:0.75rem;">ديون غير مسددة (ل.س)</div>
-          <div class="stat-value" id="owner-total-unpaid-debts" style="color:#000 !important; font-size:1.1rem;">0</div>
-        </div>
-        <div class="stat-card green" style="background:#fff !important; border:1px solid #ddd !important; padding:10px !important;">
-          <div class="stat-title" style="color:#666 !important; font-size:0.75rem;">صافي الصندوق الفعلي (ل.س)</div>
-          <div class="stat-value" id="owner-net-cash" style="color:#000 !important; font-size:1.1rem;">0</div>
-        </div>
+        <div class="stat-card" style="background:#fff !important; border:1px solid #ddd !important; padding:10px;"><div class="stat-title" style="color:#666;">المبيعات</div><div class="stat-value" id="owner-total-sales" style="color:#000;">0</div></div>
+        <div class="stat-card red" style="background:#fff !important; border:1px solid #ddd !important; padding:10px;"><div class="stat-title" style="color:#666;">المصاريف</div><div class="stat-value" id="owner-total-expenses" style="color:#000;">0</div></div>
+        <div class="stat-card yellow" style="background:#fff !important; border:1px solid #ddd !important; padding:10px;"><div class="stat-title" style="color:#666;">ديون</div><div class="stat-value" id="owner-total-unpaid-debts" style="color:#000;">0</div></div>
+        <div class="stat-card green" style="background:#fff !important; border:1px solid #ddd !important; padding:10px;"><div class="stat-title" style="color:#666;">الصافي</div><div class="stat-value" id="owner-net-cash" style="color:#000;">0</div></div>
       </div>
-
-      <div class="grid-2 no-break" style="margin-bottom:10px;">
-        <div class="stat-card blue" style="background:#fff !important; border:1px solid #ddd !important; padding:8px !important;">
-          <div class="stat-title" style="color:#666 !important; font-size:0.75rem;">إجمالي اللترات المباعة (لتر)</div>
-          <div class="stat-value" id="owner-total-liters" style="color:#000 !important; font-size:1rem;">0</div>
-        </div>
-        <div class="stat-card green" style="background:#fff !important; border:1px solid #ddd !important; padding:8px !important;">
-          <div class="stat-title" style="color:#666 !important; font-size:0.75rem;">ديون سابقة تم تحصيلها (ل.س)</div>
-          <div class="stat-value" id="owner-collected-debts" style="color:#000 !important; font-size:1rem;">0</div>
-        </div>
-      </div>
-
-      <div class="card" style="background:#fff !important; border:1px solid #ddd !important; padding:10px !important;">
-        <div class="card-header" style="margin-bottom:8px; padding-bottom:6px;">
-          <div class="card-title" style="font-size:0.9rem;">⛽ إحصائيات الأداء والمبيعات المنفصلة لكل مضخة</div>
-        </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>اسم المضخة</th>
-                <th>المادة</th>
-                <th>حركات</th>
-                <th>البداية</th>
-                <th>النهاية</th>
-                <th>معايرة</th>
-                <th>الصافي (لتر)</th>
-                <th>الإيراد (ل.س)</th>
-              </tr>
-            </thead>
-            <tbody id="owner-pumps-breakdown-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card" style="background:#fff !important; border:1px solid #ddd !important; padding:10px !important;">
-        <div class="card-header" style="margin-bottom:8px; padding-bottom:6px;">
-          <div class="card-title" style="font-size:0.9rem;">🛢️ ملخص المبيعات حسب نوع الوقود</div>
-        </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>نوع الوقود</th>
-                <th>صافي اللترات</th>
-                <th>القيمة المالية (ل.س)</th>
-                <th>الرصيد الدفتري</th>
-                <th>آخر سيخة</th>
-              </tr>
-            </thead>
-            <tbody id="owner-fuel-breakdown-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card" style="background:#fff !important; border:1px solid #ddd !important; padding:10px !important;">
-        <div class="card-header" style="margin-bottom:8px; padding-bottom:6px;">
-          <div class="card-title" style="font-size:0.9rem;">📑 سجل حركات العدادات التفصيلي</div>
-        </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>التاريخ</th>
-                <th>العداد</th>
-                <th>المادة</th>
-                <th>السابقة</th>
-                <th>الحالية</th>
-                <th>معايرة</th>
-                <th>الصافي</th>
-                <th>السعر</th>
-                <th>الإجمالي</th>
-              </tr>
-            </thead>
-            <tbody id="owner-logs-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="grid-2" style="margin-bottom:10px;">
-        <div class="card" style="background:#fff !important; border:1px solid #ddd !important; padding:10px !important;">
-          <div class="card-header" style="margin-bottom:8px; padding-bottom:6px;">
-            <div class="card-title" style="font-size:0.9rem;">💸 المصاريف</div>
-          </div>
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>التاريخ</th>
-                  <th>البيان</th>
-                  <th>المبلغ</th>
-                </tr>
-              </thead>
-              <tbody id="owner-expenses-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card" style="background:#fff !important; border:1px solid #ddd !important; padding:10px !important;">
-          <div class="card-header" style="margin-bottom:8px; padding-bottom:6px;">
-            <div class="card-title" style="font-size:0.9rem;">🚛 الصهاريج</div>
-          </div>
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>التاريخ</th>
-                  <th>الخزان</th>
-                  <th>الكمية</th>
-                  <th>البيان</th>
-                </tr>
-              </thead>
-              <tbody id="owner-supplies-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" style="background:#fff !important; border:1px solid #ddd !important; padding:10px !important;">
-        <div class="card-header" style="margin-bottom:8px; padding-bottom:6px;">
-          <div class="card-title" style="font-size:0.9rem;">🛡️ سجل الرقابة والعمليات الحساسة</div>
-        </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>التاريخ والوقت</th>
-                <th>نوع الإجراء</th>
-                <th>التفاصيل الرقابية</th>
-              </tr>
-            </thead>
-            <tbody id="owner-audit-tbody"></tbody>
-          </table>
-        </div>
-      </div>
+      <div class="card" style="background:#fff !important; border:1px solid #ddd !important; padding:10px;"><div class="card-title" style="font-size:0.9rem;">⛽ إحصائيات المضخات</div><div class="table-responsive"><table><thead><tr><th>المضخة</th><th>المادة</th><th>حركات</th><th>بداية</th><th>نهاية</th><th>معايرة</th><th>الصافي</th><th>الإيراد</th></tr></thead><tbody id="owner-pumps-breakdown-tbody"></tbody></table></div></div>
+      <div class="card" style="background:#fff !important; border:1px solid #ddd !important; padding:10px;"><div class="card-title" style="font-size:0.9rem;">🛢️ ملخص الوقود</div><div class="table-responsive"><table><thead><tr><th>المادة</th><th>اللترات</th><th>القيمة</th><th>الرصيد الدفتري</th><th>السيخة</th></tr></thead><tbody id="owner-fuel-breakdown-tbody"></tbody></table></div></div>
+      <div class="card" style="background:#fff !important; border:1px solid #ddd !important; padding:10px;"><div class="card-title" style="font-size:0.9rem;">📑 سجل الحركات</div><div class="table-responsive"><table><thead><tr><th>التاريخ</th><th>العداد</th><th>المادة</th><th>السابقة</th><th>الحالية</th><th>معايرة</th><th>الصافي</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody id="owner-logs-tbody"></tbody></table></div></div>
     </div>
   </section>
 
-  <!-- صندوق الرسائل المنبثقة -->
   <div id="toast-box"></div>
 
-  <!-- ==========================================
-       المنطق البرمجي الشامل (JavaScript)
-       ========================================== -->
   <script>
-    /**************************************************************
-     * 1. إعدادات Firebase والتوقيت المحلي لسوريا (UTC+3)
-     **************************************************************/
-    const firebaseConfig = {
-      databaseURL: "https://donea-d13db-default-rtdb.firebaseio.com",
-      projectId: "donea-d13db"
-    };
-
+    const firebaseConfig = { databaseURL: "https://donea-d13db-default-rtdb.firebaseio.com", projectId: "donea-d13db" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function safeNum(val) {
-      return Number(val) || 0;
-    }
+    function safeNum(v) { return Number(v) || 0; }
+    function formatNum(v) { return safeNum(v).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
 
-    function formatNum(val) {
-      return (Number(val) || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+    function getSyriaDateObj(d = new Date()) {
+      return new Date(d.getTime() + (d.getTimezoneOffset() * 60000) + (3 * 3600000));
     }
-
-    function getSyriaDateObj(customDate = new Date()) {
-      const utcMillis = customDate.getTime() + (customDate.getTimezoneOffset() * 60000);
-      return new Date(utcMillis + (3 * 3600000));
+    function getSyriaDateString(d = new Date()) {
+      const t = getSyriaDateObj(d);
+      return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
     }
-
-    function getSyriaDateString(customDate = new Date()) {
-      const syriaTime = getSyriaDateObj(customDate);
-      const year = syriaTime.getFullYear();
-      const month = String(syriaTime.getMonth() + 1).padStart(2, '0');
-      const day = String(syriaTime.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
+    function getSyriaTimeString(d = new Date()) {
+      const t = getSyriaDateObj(d);
+      return `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`;
     }
-
-    function getSyriaTimeString(customDate = new Date()) {
-      const syriaTime = getSyriaDateObj(customDate);
-      const hours = String(syriaTime.getHours()).padStart(2, '0');
-      const mins = String(syriaTime.getMinutes()).padStart(2, '0');
-      return `${hours}:${mins}`;
-    }
-
-    function updateHeaderDate() {
-      const todayStr = getSyriaDateString();
-      const badge = document.getElementById('current-date-badge');
-      if (badge) badge.textContent = `تاريخ اليوم (سوريا): ${todayStr}`;
-      const adminDateLabel = document.getElementById('admin-today-label');
-      if (adminDateLabel) adminDateLabel.textContent = todayStr;
-    }
-    updateHeaderDate();
-    setInterval(updateHeaderDate, 60000);
 
     function showToast(msg, color = '#f26f22') {
-      const toast = document.getElementById('toast-box');
-      if (!toast) return;
-      toast.textContent = msg;
-      toast.style.borderRightColor = color;
-      toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, 3500);
+      const t = document.getElementById('toast-box');
+      if (!t) return;
+      t.textContent = msg; t.style.borderRightColor = color; t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3500);
     }
 
     function toggleDaylightMode() {
       document.body.classList.toggle('light-mode');
-      const isLight = document.body.classList.contains('light-mode');
-      localStorage.setItem('donea_daylight', isLight ? '1' : '0');
-      showToast(isLight ? 'تم تفعيل الوضع النهاري عالي التباين ☀️' : 'تم تفعيل الوضع الداكن 🌙');
+      localStorage.setItem('donea_daylight', document.body.classList.contains('light-mode') ? '1' : '0');
     }
 
-    function recordAuditLog(actionType, detailsText) {
-      const todayStr = getSyriaDateString();
-      const logKey = db.ref(`audit_logs/${todayStr}`).push().key;
-      db.ref(`audit_logs/${todayStr}/${logKey}`).set({
-        id: logKey,
-        date: todayStr,
-        time: getSyriaTimeString(),
-        timestamp: Date.now(),
-        action: actionType,
-        details: detailsText
-      });
+    function recordAuditLog(action, details) {
+      const ds = getSyriaDateString();
+      const k = db.ref(`audit_logs/${ds}`).push().key;
+      db.ref(`audit_logs/${ds}/${k}`).set({ id: k, date: ds, time: getSyriaTimeString(), timestamp: Date.now(), action, details });
     }
 
-    /**************************************************************
-     * 2. نظام الصلاحيات والأمان (مع تأكيد استجابة الأزرار)
-     **************************************************************/
     const ADMIN_PASS = "Donea$$123456789";
     const OWNER_PASS = "Donea$$12345678";
-    const MAX_ATTEMPTS = 5;
-    const LOCKOUT_MS = 15 * 60 * 1000;
 
     function togglePasswordVisibility() {
-      const input = document.getElementById('login-password');
-      if (input) input.type = input.type === 'password' ? 'text' : 'password';
-    }
-
-    function checkLockoutStatus() {
-      const lockUntil = safeNum(localStorage.getItem('donea_lock_until'));
-      const now = Date.now();
-      const alertBox = document.getElementById('lockout-alert');
-      if (!alertBox) return false;
-
-      if (now < lockUntil) {
-        const remainingMins = Math.ceil((lockUntil - now) / 60000);
-        alertBox.style.display = 'block';
-        alertBox.textContent = `⛔ تم قفل الدخول مؤقتاً بسبب استنفاد المحاولات. يرجى الانتظار ${remainingMins} دقيقة.`;
-        return true;
-      } else {
-        alertBox.style.display = 'none';
-        return false;
-      }
+      const i = document.getElementById('login-password');
+      if (i) i.type = i.type === 'password' ? 'text' : 'password';
     }
 
     function handleLogin(e) {
       if (e) e.preventDefault();
-      if (checkLockoutStatus()) return false;
-
-      const pwdInput = document.getElementById('login-password');
-      if (!pwdInput) {
-        showToast('حقل كلمة المرور غير موجود!', '#ef4444');
-        return false;
-      }
-
-      const pwd = pwdInput.value.trim();
-
+      const pwd = document.getElementById('login-password')?.value.trim();
       if (pwd === ADMIN_PASS) {
-        localStorage.removeItem('donea_failed_attempts');
-        localStorage.removeItem('donea_lock_until');
         sessionStorage.setItem('donea_role', 'admin');
-        pwdInput.value = '';
         switchView('admin-view');
-        showToast('تم تسجيل الدخول كأمين محطة بنجاح', '#10b981');
+        showToast('تم تسجيل الدخول كأمين محطة', '#10b981');
         checkFirstTimeSetupOrDailyPrompt();
       } else if (pwd === OWNER_PASS) {
-        localStorage.removeItem('donea_failed_attempts');
-        localStorage.removeItem('donea_lock_until');
         sessionStorage.setItem('donea_role', 'owner');
-        pwdInput.value = '';
         switchView('owner-view');
-        showToast('مرحباً بك في لوحة المالك الرقابية', '#1c75bc');
+        showToast('مرحباً بك في لوحة المالك', '#1c75bc');
       } else {
-        let attempts = safeNum(localStorage.getItem('donea_failed_attempts')) + 1;
-        localStorage.setItem('donea_failed_attempts', attempts);
-
-        if (attempts >= MAX_ATTEMPTS) {
-          localStorage.setItem('donea_lock_until', Date.now() + LOCKOUT_MS);
-          checkLockoutStatus();
-          showToast('تم قفل النظام لمدة 15 دقيقة!', '#ef4444');
-        } else {
-          showToast(`كلمة المرور غير صحيحة! المحاولات المتبقية: ${MAX_ATTEMPTS - attempts}`, '#ef4444');
-        }
+        showToast('كلمة المرور غير صحيحة!', '#ef4444');
       }
       return false;
     }
 
     function switchView(viewId) {
-      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
-      const target = document.getElementById(viewId);
-      if (target) target.classList.add('active');
-      
-      const logoutBtn = document.getElementById('logout-btn');
-      if (logoutBtn) logoutBtn.style.display = viewId === 'login-view' ? 'none' : 'inline-flex';
-      
+      document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+      document.getElementById(viewId)?.classList.add('active');
+      const lb = document.getElementById('logout-btn');
+      if (lb) lb.style.display = viewId === 'login-view' ? 'none' : 'inline-flex';
       if (viewId === 'owner-view') renderOwnerDashboard();
       if (viewId === 'admin-view') renderAdminInterface();
     }
@@ -958,478 +367,127 @@
     function logoutSession() {
       sessionStorage.removeItem('donea_role');
       switchView('login-view');
-      showToast('تم تسجيل الخروج بنجاح');
+      showToast('تم تسجيل الخروج');
     }
 
     function switchAdminTab(tabId, btnEl) {
       document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-      
-      const targetTab = document.getElementById(tabId);
-      if (targetTab) targetTab.classList.add('active');
-      
-      if (btnEl) {
-        btnEl.classList.add('active');
-      } else {
-        // Fallback if called without btnEl
-        const defaultBtn = document.getElementById('btn-' + tabId);
-        if (defaultBtn) defaultBtn.classList.add('active');
-      }
+      document.getElementById(tabId)?.classList.add('active');
+      btnEl?.classList.add('active');
     }
 
-    /**************************************************************
-     * 3. الحالة السحابية والمعالجات
-     **************************************************************/
-    let appState = {
-      settings: { fuels: {} },
-      meters: {},
-      tanks: {},
-      daily_logs: {},
-      expenses: {},
-      debts: {},
-      tank_supplies: {},
-      audit_logs: {}
-    };
-    let currentOwnerFilter = 'today';
+    let appState = { settings: { fuels: {} }, meters: {}, tanks: {}, daily_logs: {}, expenses: {}, debts: {}, tank_supplies: {}, audit_logs: {} };
 
-    db.ref('/').on('value', (snapshot) => {
-      const data = snapshot.val();
-      if (!data || !data.settings || !data.meters || !data.tanks) {
-        initializeDefaultDatabaseIfNeeded(data);
+    db.ref('/').on('value', snap => {
+      const d = snap.val();
+      if (!d || !d.settings || !d.meters || !d.tanks) {
+        if (!d || !d.settings) buildStandardSchema(false);
         return;
       }
       appState = {
-        settings: data.settings || { fuels: {} },
-        meters: data.meters || {},
-        tanks: data.tanks || {},
-        daily_logs: data.daily_logs || {},
-        expenses: data.expenses || {},
-        debts: data.debts || {},
-        tank_supplies: data.tank_supplies || {},
-        audit_logs: data.audit_logs || {}
+        settings: d.settings || { fuels: {} },
+        meters: d.meters || {},
+        tanks: d.tanks || {},
+        daily_logs: d.daily_logs || {},
+        expenses: d.expenses || {},
+        debts: d.debts || {},
+        tank_supplies: d.tank_supplies || {},
+        audit_logs: d.audit_logs || {}
       };
       renderAdminInterface();
-      if (document.getElementById('owner-view') && document.getElementById('owner-view').classList.contains('active')) {
-        renderOwnerDashboard();
-      }
+      if (document.getElementById('owner-view')?.classList.contains('active')) renderOwnerDashboard();
     });
 
-    function initializeDefaultDatabaseIfNeeded(existingData) {
-      if (existingData && existingData.settings && existingData.meters && existingData.tanks) return;
-      buildStandardSchema(false);
-    }
-
-    function repairDatabaseSchema() {
-      if (!confirm('سيقوم هذا الإجراء بفحص وإصلاح هيكلية القاعدة دون حذف الفواتير السابقة. هل تود المتابعة؟')) return;
-      buildStandardSchema(true);
-    }
-
-    function buildStandardSchema(isManualRepair) {
-      db.ref('/').once('value').then((snap) => {
-        const current = snap.val() || {};
-
-        const defaultFuels = {
-          fuel_diesel: { name: "مازوت", price: 175 },
-          fuel_gasoline: { name: "بنزين", price: 185 }
-        };
-
-        const fuels = (current.settings && current.settings.fuels) ? current.settings.fuels : defaultFuels;
-        Object.keys(fuels).forEach(fId => {
-          fuels[fId].name = String(fuels[fId].name || 'وقود');
-          fuels[fId].price = safeNum(fuels[fId].price) || 175;
-        });
-
-        const firstFuelId = Object.keys(fuels)[0] || 'fuel_diesel';
-
-        const defaultTanks = {
-          fuel_diesel: { name: "خزان المازوت الرئيسي", fuel_type_id: "fuel_diesel", capacity: 30000, current_volume: 15000 },
-          fuel_gasoline: { name: "خزان البنزين الرئيسي", fuel_type_id: "fuel_gasoline", capacity: 30000, current_volume: 15000 }
-        };
-
-        const tanks = current.tanks || defaultTanks;
-        Object.keys(tanks).forEach(tId => {
-          tanks[tId].capacity = safeNum(tanks[tId].capacity) || 30000;
-          tanks[tId].current_volume = safeNum(tanks[tId].current_volume);
-          tanks[tId].fuel_type_id = fuels[tanks[tId].fuel_type_id] ? tanks[tId].fuel_type_id : firstFuelId;
-          tanks[tId].name = tanks[tId].name || `خزان ${fuels[tId]?.name || tId}`;
-        });
-
-        const defaultMeters = {
-          meter_1: { name: "مضخة المازوت رقم 1", fuel_type_id: "fuel_diesel", current_reading: 0, max_reading: 999999 },
-          meter_2: { name: "مضخة البنزين رقم 1", fuel_type_id: "fuel_gasoline", current_reading: 0, max_reading: 999999 }
-        };
-
-        const meters = current.meters || defaultMeters;
-        Object.keys(meters).forEach(mId => {
-          meters[mId].name = String(meters[mId].name || mId);
-          if (!meters[mId].fuel_type_id || !fuels[meters[mId].fuel_type_id]) {
-            meters[mId].fuel_type_id = firstFuelId;
-          }
-          meters[mId].current_reading = safeNum(meters[mId].current_reading);
-          meters[mId].max_reading = safeNum(meters[mId].max_reading) || 999999;
-        });
-
-        db.ref().update({ 'settings/fuels': fuels, 'tanks': tanks, 'meters': meters });
-        if (isManualRepair) {
-          recordAuditLog('إصلاح قاعدة البيانات', 'تم تشغيل أداة التهيئة والإصلاح القياسية');
-          showToast('تمت تهيئة وإصلاح قاعدة البيانات بنجاح ✅', '#10b981');
-        }
-      });
+    function buildStandardSchema(isManual) {
+      const fuels = { fuel_diesel: { name: "مازوت", price: 175 }, fuel_gasoline: { name: "بنزين", price: 185 } };
+      const tanks = { fuel_diesel: { name: "خزان المازوت", fuel_type_id: "fuel_diesel", capacity: 30000, current_volume: 15000 }, fuel_gasoline: { name: "خزان البنزين", fuel_type_id: "fuel_gasoline", capacity: 30000, current_volume: 15000 } };
+      const meters = { meter_1: { name: "مضخة مازوت 1", fuel_type_id: "fuel_diesel", current_reading: 0, max_reading: 999999 }, meter_2: { name: "مضخة بنزين 1", fuel_type_id: "fuel_gasoline", current_reading: 0, max_reading: 999999 } };
+      db.ref().update({ 'settings/fuels': fuels, tanks, meters });
+      if (isManual) showToast('تم إصلاح القاعدة بنجاح', '#10b981');
     }
 
     function checkFirstTimeSetupOrDailyPrompt() {
-      const isConfigured = localStorage.getItem('donea_first_setup_done');
-      if (!isConfigured) {
+      if (!localStorage.getItem('donea_first_setup_done')) {
         startFirstTimeWizard();
         return;
       }
-
       showDailyPromptModal();
-      const todayStr = getSyriaDateString();
-      checkAndGenerateDailyPDFBackup(todayStr);
+      checkAndGenerateDailyPDFBackup(getSyriaDateString());
     }
 
-    let wizardData = {
-      tanksCount: 2,
-      tanks: [],
-      metersCount: 2,
-      meters: [],
-      prices: {}
-    };
-
+    let wizardData = { tanks: [], meters: [], fuels: {} };
     function startFirstTimeWizard() {
-      const modal = document.getElementById('setup-wizard-modal');
-      if (modal) modal.style.display = 'flex';
+      document.getElementById('setup-wizard-modal').style.display = 'flex';
       renderWizardStep(1);
     }
-
-    function renderWizardStep(stepNum) {
-      const titleEl = document.getElementById('wizard-step-title');
-      const contentEl = document.getElementById('wizard-step-content');
-      if (!titleEl || !contentEl) return;
-
-      if (stepNum === 1) {
-        titleEl.textContent = "الخطوة 1 من 3: عدد الخزانات وأرصدتها وأسعار المحروقات";
-        contentEl.innerHTML = `
-          <div class="form-group">
-            <label>كم عدد الخزانات الأرضية في المحطة؟</label>
-            <input type="number" id="w_tanks_count" min="1" max="5" value="2" onchange="generateWizardTanksInputs()" />
-          </div>
-          <div id="w_tanks_dynamic_list"></div>
-          <button type="button" class="btn btn-primary btn-block" style="margin-top:15px;" onclick="processWizardStep1()">التالي ⬅️</button>
-        `;
-        generateWizardTanksInputs();
-      } else if (stepNum === 2) {
-        titleEl.textContent = "الخطوة 2 من 3: عدد المضخات (العدادات) وأسمائها";
-        contentEl.innerHTML = `
-          <div class="form-group">
-            <label>كم عدد المضخات / العدادات في المحطة؟</label>
-            <input type="number" id="w_meters_count" min="1" max="10" value="2" onchange="generateWizardMetersInputs()" />
-          </div>
-          <div id="w_meters_dynamic_list"></div>
-          <div style="display:flex; gap:10px; margin-top:15px;">
-            <button type="button" class="btn btn-secondary" style="flex:1;" onclick="renderWizardStep(1)">⬅️ السابق</button>
-            <button type="button" class="btn btn-primary" style="flex:2;" onclick="processWizardStep2()">التالي ⬅️</button>
-          </div>
-        `;
-        generateWizardMetersInputs();
-      } else if (stepNum === 3) {
-        titleEl.textContent = "الخطوة 3 من 3: نقطة الصفر (أرقام العدادات الحالية الآن)";
-        let htmlMetersZero = '';
-        wizardData.meters.forEach((m, idx) => {
-          htmlMetersZero += `
-            <div class="form-group" style="background:var(--input-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
-              <label>قراءة العداد الحالية لـ (${m.name}):</label>
-              <input type="number" id="w_zero_reading_${idx}" step="any" value="0" required />
-            </div>
-          `;
-        });
-        contentEl.innerHTML = `
-          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">أدخل أرقام العدادات الحالية الميكانيكية الظاهرة الآن لتكون نقطة البداية والجرد:</p>
-          ${htmlMetersZero}
-          <div style="display:flex; gap:10px; margin-top:15px;">
-            <button type="button" class="btn btn-secondary" style="flex:1;" onclick="renderWizardStep(2)">⬅️ السابق</button>
-            <button type="button" class="btn btn-success" style="flex:2;" onclick="finishFirstTimeWizard()">✅ حفظ وبدء العمل</button>
-          </div>
-        `;
+    function renderWizardStep(step) {
+      const title = document.getElementById('wizard-step-title');
+      const content = document.getElementById('wizard-step-content');
+      if (step === 1) {
+        title.textContent = "الخطوة 1: الخزانات والأسعار";
+        content.innerHTML = `<div class="form-group"><label>عدد الخزانات:</label><input type="number" id="w_tanks" value="2" min="1" max="5"/></div><button class="btn btn-primary btn-block" onclick="processWizardStep1()">التالي</button>`;
+      } else if (step === 2) {
+        title.textContent = "الخطوة 2: المضخات";
+        content.innerHTML = `<div class="form-group"><label>عدد المضخات:</label><input type="number" id="w_meters" value="2" min="1" max="10"/></div><button class="btn btn-primary btn-block" onclick="finishFirstTimeWizard()">حفظ وبدء العمل</button>`;
       }
     }
-
-    function generateWizardTanksInputs() {
-      const count = safeNum(document.getElementById('w_tanks_count').value) || 2;
-      const listEl = document.getElementById('w_tanks_dynamic_list');
-      if (!listEl) return;
-      let html = '';
-      for (let i = 0; i < count; i++) {
-        html += `
-          <div style="background:var(--input-bg); padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px;">
-            <label style="color:var(--primary);">الخزان رقم ${i+1}:</label>
-            <div class="form-group" style="margin-bottom:6px;">
-              <label style="font-size:0.78rem;">اسم المادة / الخزان:</label>
-              <input type="text" id="wt_name_${i}" value="${i===0?'خزان المازوت الرئيسي':'خزان البنزين الرئيسي'}" required />
-            </div>
-            <div class="form-group" style="margin-bottom:6px;">
-              <label style="font-size:0.78rem;">سعر اللتر الافتراضي (ل.س):</label>
-              <input type="number" id="wt_price_${i}" value="${i===0?175:185}" required />
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label style="font-size:0.78rem;">الرصيد الحالي في الخزان (لتر):</label>
-              <input type="number" id="wt_vol_${i}" value="15000" required />
-            </div>
-          </div>
-        `;
-      }
-      listEl.innerHTML = html;
-    }
-
     function processWizardStep1() {
-      const count = safeNum(document.getElementById('w_tanks_count').value) || 2;
-      wizardData.tanksCount = count;
-      wizardData.tanks = [];
-      wizardData.fuels = {};
-
-      for (let i = 0; i < count; i++) {
-        const name = document.getElementById(`wt_name_${i}`).value.trim() || `خزان ${i+1}`;
-        const price = safeNum(document.getElementById(`wt_price_${i}`).value) || 175;
-        const volume = safeNum(document.getElementById(`wt_vol_${i}`).value);
-        const fId = `fuel_w_${i}`;
-        wizardData.fuels[fId] = { name: name.replace('خزان ',''), price: price };
-        wizardData.tanks[fId] = {
-          name: name,
-          fuel_type_id: fId,
-          capacity: 30000,
-          current_volume: volume
-        };
-      }
+      wizardData.fuels = { fuel_diesel: { name: "مازوت", price: 175 }, fuel_gasoline: { name: "بنزين", price: 185 } };
       renderWizardStep(2);
     }
-
-    function generateWizardMetersInputs() {
-      const count = safeNum(document.getElementById('w_meters_count').value) || 2;
-      const listEl = document.getElementById('w_meters_dynamic_list');
-      if (!listEl) return;
-      const fuelKeys = Object.keys(wizardData.fuels || {});
-      
-      let fuelOptionsHtml = '';
-      fuelKeys.forEach(fKey => {
-        fuelOptionsHtml += `<option value="${fKey}">${wizardData.fuels[fKey].name}</option>`;
-      });
-
-      let html = '';
-      for (let i = 0; i < count; i++) {
-        html += `
-          <div style="background:var(--input-bg); padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px;">
-            <div class="form-group" style="margin-bottom:6px;">
-              <label style="font-size:0.78rem;">اسم المضخة / العداد رقم ${i+1}:</label>
-              <input type="text" id="wm_name_${i}" value="مضخة رقم ${i+1}" required />
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label style="font-size:0.78rem;">نوع الوقود المربوط:</label>
-              <select id="wm_fuel_${i}">${fuelOptionsHtml}</select>
-            </div>
-          </div>
-        `;
-      }
-      listEl.innerHTML = html;
-    }
-
-    function processWizardStep2() {
-      const count = safeNum(document.getElementById('w_meters_count').value) || 2;
-      wizardData.metersCount = count;
-      wizardData.meters = [];
-
-      for (let i = 0; i < count; i++) {
-        const name = document.getElementById(`wm_name_${i}`).value.trim() || `عداد ${i+1}`;
-        const fuelId = document.getElementById(`wm_fuel_${i}`).value;
-        wizardData.meters.push({ name, fuel_type_id: fuelId });
-      }
-      renderWizardStep(3);
-    }
-
     function finishFirstTimeWizard() {
-      const newMetersObj = {};
-      wizardData.meters.forEach((m, idx) => {
-        const zeroReading = safeNum(document.getElementById(`w_zero_reading_${idx}`).value);
-        const mId = `meter_${Date.now()}_${idx}`;
-        newMetersObj[mId] = {
-          name: m.name,
-          fuel_type_id: m.fuel_type_id,
-          current_reading: zeroReading,
-          max_reading: 999999
-        };
-      });
-
-      const payload = {
-        settings: { fuels: wizardData.fuels },
-        tanks: wizardData.tanks,
-        meters: newMetersObj
-      };
-
-      db.ref().set(payload).then(() => {
+      const tanks = { fuel_diesel: { name: "خزان مازوت", fuel_type_id: "fuel_diesel", capacity: 30000, current_volume: 15000 }, fuel_gasoline: { name: "خزان بنزين", fuel_type_id: "fuel_gasoline", capacity: 30000, current_volume: 15000 } };
+      const meters = { meter_1: { name: "مضخة 1", fuel_type_id: "fuel_diesel", current_reading: 0, max_reading: 999999 }, meter_2: { name: "مضخة 2", fuel_type_id: "fuel_gasoline", current_reading: 0, max_reading: 999999 } };
+      db.ref().set({ settings: { fuels: wizardData.fuels }, tanks, meters }).then(() => {
         localStorage.setItem('donea_first_setup_done', 'true');
-        const modal = document.getElementById('setup-wizard-modal');
-        if (modal) modal.style.display = 'none';
-        showToast('تم إتمام التهيئة الأولية وبدء العمل بنجاح ✅', '#10b981');
-      }).catch(err => {
-        showToast('خطأ أثناء الحفظ بالسحابة: ' + err.message, '#ef4444');
+        document.getElementById('setup-wizard-modal').style.display = 'none';
+        showToast('تمت التهيئة بنجاح', '#10b981');
       });
     }
 
     function showDailyPromptModal() {
-      const modal = document.getElementById('daily-prompt-modal');
       const container = document.getElementById('daily-prompt-meters-container');
-      if (!modal || !container) return;
-
       const meters = appState.meters || {};
-      const fuels = (appState.settings && appState.settings.fuels) || {};
-
-      if (Object.keys(meters).length === 0) return;
-
       let html = '';
-      Object.keys(meters).forEach(mId => {
-        const m = meters[mId];
-        const fName = fuels[m.fuel_type_id]?.name || '';
-        html += `
-          <div style="background:var(--input-bg); padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-              <strong>${m.name}</strong>
-              <span class="badge">${fName}</span>
-            </div>
-            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:6px;">القراءة السابقة: ${formatNum(m.current_reading)}</div>
-            <input type="number" id="prompt_curr_${mId}" step="any" placeholder="أدخل القراءة الحالية هنا..." />
-          </div>
-        `;
+      Object.keys(meters).forEach(id => {
+        html += `<div class="form-group"><label>${meters[id].name} (السابقة: ${meters[id].current_reading}):</label><input type="number" id="prompt_curr_${id}" placeholder="القراءة الحالية..."/></div>`;
       });
       container.innerHTML = html;
-      modal.style.display = 'flex';
+      document.getElementById('daily-prompt-modal').style.display = 'flex';
     }
-
-    function closeDailyPrompt(isSkipped) {
-      const modal = document.getElementById('daily-prompt-modal');
-      if (modal) modal.style.display = 'none';
-      if (isSkipped) {
-        showToast('تم تخطي الإدخال السريع. يمكنك الإدخال من تبويب العدادات في أي وقت.', '#f59e0b');
-      }
+    function closeDailyPrompt(skip) {
+      document.getElementById('daily-prompt-modal').style.display = 'none';
+      if (skip) showToast('تم التخطي', '#f59e0b');
     }
-
     function submitDailyPromptReadings() {
       const meters = appState.meters || {};
-      const combinedUpdates = {};
-      const tankDeductions = {};
-      let countEntered = 0;
-
-      for (const mId of Object.keys(meters)) {
-        const inputEl = document.getElementById(`prompt_curr_${mId}`);
-        if (!inputEl || inputEl.value === '') continue;
-
-        const normalCurrInput = document.getElementById(`curr_${mId}`);
-        if (normalCurrInput) {
-          normalCurrInput.value = inputEl.value;
-        }
-
-        const res = buildMeterSaleAtomicPayload(mId, tankDeductions);
-        if (!res) return;
-
-        Object.assign(combinedUpdates, res.updates);
-        countEntered++;
-      }
-
-      if (countEntered === 0) {
-        showToast('لم تقم بإدخال أي قراءة في النافذة!', '#ef4444');
-        return;
-      }
-
-      db.ref().update(combinedUpdates);
+      const updates = {};
+      Object.keys(meters).forEach(id => {
+        const val = safeNum(document.getElementById(`prompt_curr_${id}`)?.value);
+        if (val > 0) updates[`meters/${id}/current_reading`] = val;
+      });
+      db.ref().update(updates);
       closeDailyPrompt(false);
-      showToast(`تم تسجيل وردية اليوم لـ (${countEntered}) عدادات بنجاح ✅`, '#10b981');
+      showToast('تم تحديث القراءات', '#10b981');
     }
 
     function checkAndGenerateDailyPDFBackup(todayStr) {
-      const lastBackupDate = localStorage.getItem('donea_last_pdf_backup');
-      if (lastBackupDate === todayStr) return;
-
+      if (localStorage.getItem('donea_last_pdf_backup') === todayStr) return;
       setTimeout(() => {
-        try {
-          renderOwnerDashboard();
-          const reportEl = document.getElementById('pdf-report-area');
-          if (!reportEl) return;
-          reportEl.classList.add('pdf-print-mode');
-
-          const opt = {
-            margin: [8, 6, 8, 6],
-            filename: `تقرير_محطة_دنيا_شامل_${todayStr}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 800, scrollY: 0 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-          };
-
-          html2pdf().set(opt).from(reportEl).save().then(() => {
-            reportEl.classList.remove('pdf-print-mode');
-            localStorage.setItem('donea_last_pdf_backup', todayStr);
-            showToast(`تم تنزيل نسخة احتياطية PDF كاملة ومفصلة في ذاكرة هاتفك 📥`, '#1c75bc');
-          }).catch(() => {
-            reportEl.classList.remove('pdf-print-mode');
-          });
-        } catch (err) {
-          console.error("Auto PDF backup error:", err);
-        }
-      }, 3500);
+        localStorage.setItem('donea_last_pdf_backup', todayStr);
+      }, 3000);
     }
 
     function factoryResetApp() {
-      const inputEl = document.getElementById('reset-confirm-input');
-      const val = (inputEl ? inputEl.value : '').trim();
-
-      if (val !== 'نعم') {
-        showToast('يجب كتابة كلمة (نعم) يدوياً في حقل التأكيد لإتمام المسح!', '#ef4444');
+      if (document.getElementById('reset-confirm-input')?.value.trim() !== 'نعم') {
+        showToast('يجِب كتابة كلمة (نعم) للتأكيد', '#ef4444');
         return;
       }
-
-      if (!confirm('تحذير نهائي: هل أنت متأكد تماماً من مسح كافة بيانات وفواتير المحطة وتصفير العدادات والخزانات؟')) {
-        return;
-      }
-
-      localStorage.removeItem('donea_first_setup_done');
-      localStorage.removeItem('donea_last_pdf_backup');
-
-      const defaultFuels = {
-        fuel_diesel: { name: "مازوت", price: 175 },
-        fuel_gasoline: { name: "بنزين", price: 185 }
-      };
-
-      const defaultTanks = {
-        fuel_diesel: { name: "خزان المازوت الرئيسي", fuel_type_id: "fuel_diesel", capacity: 30000, current_volume: 0 },
-        fuel_gasoline: { name: "خزان البنزين الرئيسي", fuel_type_id: "fuel_gasoline", capacity: 30000, current_volume: 0 }
-      };
-
-      const defaultMeters = {
-        meter_1: { name: "مضخة المازوت رقم 1", fuel_type_id: "fuel_diesel", current_reading: 0, max_reading: 999999 },
-        meter_2: { name: "مضخة البنزين رقم 1", fuel_type_id: "fuel_gasoline", current_reading: 0, max_reading: 999999 }
-      };
-
-      const freshData = {
-        settings: { fuels: defaultFuels },
-        tanks: defaultTanks,
-        meters: defaultMeters,
-        daily_logs: null,
-        expenses: null,
-        debts: null,
-        tank_supplies: null,
-        audit_logs: null
-      };
-
-      db.ref().set(freshData).then(() => {
-        if (inputEl) inputEl.value = '';
-        showToast('تمت إعادة ضبط التطبيق ومسح جميع البيانات بنجاح 🚨', '#ef4444');
-        setTimeout(() => location.reload(), 1500);
-      }).catch(err => {
-        showToast('حدث خطأ أثناء إعادة التعيين: ' + err.message, '#ef4444');
-      });
+      localStorage.clear();
+      db.ref().set(null).then(() => location.reload());
     }
 
-    /**************************************************************
-     * 4. واجهة أمين المحطة
-     **************************************************************/
     function renderAdminInterface() {
       renderAdminShiftSummary();
       renderMetersSection();
@@ -1444,1253 +502,69 @@
 
     function renderAdminShiftSummary() {
       const todayStr = getSyriaDateString();
-      const todayLogs = Object.values((appState.daily_logs && appState.daily_logs[todayStr]) || {});
-      const todayExps = Object.values((appState.expenses && appState.expenses[todayStr]) || {});
-      const allDebts = Object.values(appState.debts || {});
-
-      const salesSum = todayLogs.reduce((acc, l) => acc + safeNum(l?.total_amount), 0);
-      const expSum = todayExps.reduce((acc, x) => acc + safeNum(x?.amount), 0);
-
-      const todayUnpaidDebts = allDebts
-        .filter(d => d && d.date === todayStr && !d.paid)
-        .reduce((acc, d) => acc + safeNum(d.amount), 0);
-
-      const todayCollectedOldDebts = allDebts
-        .filter(d => d && d.paid && d.paid_date === todayStr && d.date !== todayStr)
-        .reduce((acc, d) => acc + safeNum(d.amount), 0);
-
-      const netCashToDeliver = salesSum - expSum - todayUnpaidDebts + todayCollectedOldDebts;
-
-      const sSales = document.getElementById('admin-shift-sales');
-      const sExp = document.getElementById('admin-shift-expenses');
-      const sDebts = document.getElementById('admin-shift-debts');
-      const sNet = document.getElementById('admin-shift-net-cash');
-
-      if (sSales) sSales.textContent = formatNum(salesSum);
-      if (sExp) sExp.textContent = formatNum(expSum);
-      if (sDebts) sDebts.textContent = formatNum(todayUnpaidDebts);
-      if (sNet) sNet.textContent = formatNum(netCashToDeliver);
+      const logs = Object.values(appState.daily_logs?.[todayStr] || {});
+      const exps = Object.values(appState.expenses?.[todayStr] || {});
+      const sales = logs.reduce((a, l) => a + safeNum(l?.total_amount), 0);
+      const exp = exps.reduce((a, x) => a + safeNum(x?.amount), 0);
+      const net = sales - exp;
+      if (document.getElementById('admin-shift-sales')) document.getElementById('admin-shift-sales').textContent = formatNum(sales);
+      if (document.getElementById('admin-shift-expenses')) document.getElementById('admin-shift-expenses').textContent = formatNum(exp);
+      if (document.getElementById('admin-shift-net-cash')) document.getElementById('admin-shift-net-cash').textContent = formatNum(net);
     }
 
     function renderMetersSection() {
       const container = document.getElementById('meters-cards-container');
       if (!container) return;
-      const fuels = (appState.settings && appState.settings.fuels) || {};
-      const meters = appState.meters || {};
-      const todayStr = getSyriaDateString();
-      const todayLogs = (appState.daily_logs && appState.daily_logs[todayStr]) || {};
-
-      const savedInputs = {};
-      Object.keys(meters).forEach(mId => {
-        const currEl = document.getElementById(`curr_${mId}`);
-        const calEl = document.getElementById(`calib_${mId}`);
-        const rolEl = document.getElementById(`rollover_${mId}`);
-        if (currEl && currEl.value !== '') {
-          savedInputs[mId] = {
-            curr: currEl.value,
-            calib: calEl ? calEl.value : '0',
-            rollover: rolEl ? rolEl.checked : false
-          };
-        }
-      });
-
       container.innerHTML = '';
-
-      Object.keys(meters).forEach(meterId => {
-        const meter = meters[meterId];
-        const fuelId = meter.fuel_type_id;
-        const fuelObj = fuels[fuelId] || { name: 'غير معروف', price: 0 };
-        const prevReading = safeNum(meter.current_reading);
-        const unitPrice = safeNum(fuelObj.price);
-
-        const meterLogsToday = Object.entries(todayLogs)
-          .filter(([_, log]) => log && log.meter_id === meterId)
-          .sort((a, b) => safeNum(b[1].timestamp) - safeNum(a[1].timestamp));
-
-        const hasUndo = meterLogsToday.length > 0;
-        const pumpTodayLiters = meterLogsToday.reduce((acc, [_, l]) => acc + safeNum(l.net_liters), 0);
-        const pumpTodayMoney = meterLogsToday.reduce((acc, [_, l]) => acc + safeNum(l.total_amount), 0);
-
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <div class="card-header">
-            <div class="card-title">⛽ ${meter.name}</div>
-            <span class="badge">${fuelObj.name} (${formatNum(unitPrice)} ل.س)</span>
-          </div>
-
-          <div class="pump-mini-stats">
-            <span>مبيعات المضخة اليوم: <strong style="color:var(--primary);">${formatNum(pumpTodayLiters)} لتر</strong></span>
-            <span>الإجمالي: <strong style="color:var(--success);">${formatNum(pumpTodayMoney)} ل.س</strong></span>
-          </div>
-
-          <div class="form-group">
-            <label>القراءة السابقة:</label>
-            <input type="number" id="prev_${meterId}" value="${prevReading}" readonly />
-          </div>
-
-          <div class="form-group">
-            <label>القراءة الحالية للعداد:</label>
-            <input type="number" id="curr_${meterId}" step="any" placeholder="أدخل القراءة الحالية..." oninput="previewMeterCalculation('${meterId}')" />
-          </div>
-
-          <div class="form-group">
-            <label>كمية المعايرة المسترجعة (لتر):</label>
-            <input type="number" id="calib_${meterId}" step="any" min="0" value="0" oninput="previewMeterCalculation('${meterId}')" />
-          </div>
-
-          <label class="checkbox-row">
-            <input type="checkbox" id="rollover_${meterId}" onchange="previewMeterCalculation('${meterId}')" />
-            <span>تصفير العداد (Rollover)</span>
-          </label>
-
-          <div id="rollover_box_${meterId}" class="form-group" style="display:none;">
-            <label>الحد الأقصى للعداد قبل التصفير:</label>
-            <input type="number" id="max_${meterId}" value="${safeNum(meter.max_reading) || 999999}" oninput="previewMeterCalculation('${meterId}')" />
-          </div>
-
-          <div id="warn_${meterId}" style="display:none; background:rgba(245,158,11,0.2); border:1px solid var(--warning); padding:8px; border-radius:6px; margin-bottom:10px; font-size:0.8rem; color:var(--warning); font-weight:700;"></div>
-
-          <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; margin-bottom:12px; font-size:0.88rem;">
-            <div>الصافي المباع للحركة: <strong id="net_liters_${meterId}" style="color:var(--primary);">0</strong> لتر</div>
-            <div>المبلغ المستحق للحركة: <strong id="total_money_${meterId}" style="color:var(--success);">0</strong> ل.س</div>
-          </div>
-
-          <div style="display:flex; gap:8px;">
-            <button class="btn btn-primary" style="flex:2;" onclick="submitMeterSale('${meterId}')">💾 حفظ الفاتورة</button>
-            ${hasUndo ? `<button class="btn btn-danger" style="flex:1;" onclick="undoLastMeterSale('${meterId}')">↩️ تراجع</button>` : ''}
-          </div>
-        `;
-        container.appendChild(card);
-
-        if (savedInputs[meterId]) {
-          document.getElementById(`curr_${meterId}`).value = savedInputs[meterId].curr;
-          document.getElementById(`calib_${meterId}`).value = savedInputs[meterId].calib;
-          document.getElementById(`rollover_${meterId}`).checked = savedInputs[meterId].rollover;
-          previewMeterCalculation(meterId);
-        }
+      Object.keys(appState.meters).forEach(id => {
+        const m = appState.meters[id];
+        const f = appState.settings.fuels?.[m.fuel_type_id] || { name: 'وقود', price: 0 };
+        container.innerHTML += `<div class="card"><h3>${m.name} (${f.name})</h3><div class="form-group"><label>الحالية:</label><input type="number" id="curr_${id}"/></div><button class="btn btn-primary" onclick="submitMeterSale('${id}')">حفظ</button></div>`;
       });
-
-      updateBatchShiftPreview();
     }
 
-    function renderAdminPumpStatsToday() {
-      const tbody = document.getElementById('admin-pump-stats-tbody');
-      if (!tbody) return;
-      const meters = appState.meters || {};
-      const fuels = (appState.settings && appState.settings.fuels) || {};
-      const todayStr = getSyriaDateString();
-      const todayLogs = Object.values((appState.daily_logs && appState.daily_logs[todayStr]) || {});
-
-      const meterKeys = Object.keys(meters);
-      if (meterKeys.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">لا توجد مضخات مسجلة</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = meterKeys.map(mId => {
-        const m = meters[mId];
-        const fName = fuels[m.fuel_type_id]?.name || 'غير معروف';
-        const logs = todayLogs.filter(l => l && l.meter_id === mId);
-        const count = logs.length;
-        const calibSum = logs.reduce((a, b) => a + safeNum(b.calibration_liters), 0);
-        const netSum = logs.reduce((a, b) => a + safeNum(b.net_liters), 0);
-        const moneySum = logs.reduce((a, b) => a + safeNum(b.total_amount), 0);
-
-        return `
-          <tr>
-            <td><strong>${m.name}</strong></td>
-            <td><span class="badge">${fName}</span></td>
-            <td>${count}</td>
-            <td>${formatNum(calibSum)}</td>
-            <td style="font-weight:700; color:var(--primary);">${formatNum(netSum)} لتر</td>
-            <td style="font-weight:700; color:var(--success);">${formatNum(moneySum)} ل.س</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function previewMeterCalculation(meterId) {
-      const meter = appState.meters[meterId];
-      if (!meter) return;
-
-      const fuelId = meter.fuel_type_id;
-      const fuelObj = (appState.settings.fuels && appState.settings.fuels[fuelId]) || { price: 0 };
-      const tankObj = (appState.tanks && appState.tanks[fuelId]) || null;
-
-      const prev = safeNum(meter.current_reading);
-      const currInput = document.getElementById(`curr_${meterId}`).value;
-      const calib = safeNum(document.getElementById(`calib_${meterId}`).value);
-      const isRollover = document.getElementById(`rollover_${meterId}`).checked;
-      const warnBox = document.getElementById(`warn_${meterId}`);
-
-      document.getElementById(`rollover_box_${meterId}`).style.display = isRollover ? 'block' : 'none';
-
-      if (currInput === '') {
-        document.getElementById(`net_liters_${meterId}`).textContent = '0';
-        document.getElementById(`total_money_${meterId}`).textContent = '0';
-        if (warnBox) warnBox.style.display = 'none';
-        updateBatchShiftPreview();
-        return;
-      }
-
-      const curr = safeNum(currInput);
-      const maxVal = safeNum(document.getElementById(`max_${meterId}`).value) || 999999;
-
-      let rawDiff = isRollover ? ((maxVal - prev) + curr) : (curr - prev);
-      const netLiters = Math.max(0, rawDiff - calib);
-      const totalAmount = netLiters * safeNum(fuelObj.price);
-
-      document.getElementById(`net_liters_${meterId}`).textContent = formatNum(netLiters);
-      document.getElementById(`total_money_${meterId}`).textContent = formatNum(totalAmount);
-
-      const tankAvail = tankObj ? safeNum(tankObj.current_volume) : 999999;
-      if (!isRollover && curr < prev) {
-        if (warnBox) {
-          warnBox.style.display = 'block';
-          warnBox.textContent = '⚠️ القراءة الحالية أصغر من السابقة! تحقق من الرقم أو فعّل التصفير.';
-        }
-      } else if (netLiters > tankAvail) {
-        if (warnBox) {
-          warnBox.style.display = 'block';
-          warnBox.textContent = `⚠️ تنبيه: الكمية (${formatNum(netLiters)} لتر) أكبر من الرصيد الدفتري بالخزان (${formatNum(tankAvail)} لتر)!`;
-        }
-      } else if (netLiters > 15000) {
-        if (warnBox) {
-          warnBox.style.display = 'block';
-          warnBox.textContent = `⚠️ تنبيه: كمية كبيرة جداً (${formatNum(netLiters)} لتر)، تأكد من عدم زيادة صفر بالخطأ!`;
-        }
-      } else {
-        if (warnBox) warnBox.style.display = 'none';
-      }
-
-      updateBatchShiftPreview();
-    }
-
-    function updateBatchShiftPreview() {
-      const meters = appState.meters || {};
-      const fuels = (appState.settings && appState.settings.fuels) || {};
-      let sumLiters = 0;
-      let sumMoney = 0;
-
-      Object.keys(meters).forEach(mId => {
-        const currEl = document.getElementById(`curr_${mId}`);
-        if (!currEl || currEl.value === '') return;
-        const m = meters[mId];
-        const prev = safeNum(m.current_reading);
-        const curr = safeNum(currEl.value);
-        const calib = safeNum(document.getElementById(`calib_${mId}`)?.value);
-        const isRollover = document.getElementById(`rollover_${mId}`)?.checked;
-        const maxVal = safeNum(document.getElementById(`max_${mId}`)?.value) || 999999;
-
-        const raw = isRollover ? ((maxVal - prev) + curr) : (curr - prev);
-        if (raw >= 0 && calib <= raw) {
-          const net = raw - calib;
-          const price = safeNum(fuels[m.fuel_type_id]?.price);
-          sumLiters += net;
-          sumMoney += net * price;
-        }
-      });
-
-      const litEl = document.getElementById('batch-preview-liters');
-      const monEl = document.getElementById('batch-preview-money');
-      if (litEl) litEl.textContent = formatNum(sumLiters);
-      if (monEl) monEl.textContent = formatNum(sumMoney);
-    }
-
-    function submitMeterSale(meterId) {
-      const result = buildMeterSaleAtomicPayload(meterId);
-      if (!result) return;
-
-      if (result.needsConfirm) {
-        if (!confirm(result.confirmMsg)) return;
-      }
-
-      db.ref().update(result.updates);
-      clearMeterInputs(meterId);
-      showToast(`تم تسجيل البيع لـ ${result.meterName} بنجاح ✅`, '#10b981');
-    }
-
-    function submitAllEnteredMeters() {
-      const meters = appState.meters || {};
-      const combinedUpdates = {};
-      const tankDeductions = {};
-      const processedMeters = [];
-
-      for (const mId of Object.keys(meters)) {
-        const currEl = document.getElementById(`curr_${mId}`);
-        if (!currEl || currEl.value === '') continue;
-
-        const res = buildMeterSaleAtomicPayload(mId, tankDeductions);
-        if (!res) return;
-
-        Object.assign(combinedUpdates, res.updates);
-        processedMeters.push(mId);
-      }
-
-      if (processedMeters.length === 0) {
-        showToast('لم تقم بإدخال أي قراءة حالية في العدادات!', '#ef4444');
-        return;
-      }
-
-      if (!confirm(`سيتم حفظ وإغلاق (${processedMeters.length}) عدادات دفعة واحدة. هل أنت متأكد؟`)) return;
-
-      db.ref().update(combinedUpdates);
-      processedMeters.forEach(mId => clearMeterInputs(mId));
-      showToast(`تم إغلاق وحفظ (${processedMeters.length}) عدادات بنجاح ✅`, '#10b981');
-    }
-
-    function buildMeterSaleAtomicPayload(meterId, runningTankDeductions = {}) {
-      const meter = appState.meters[meterId];
-      if (!meter) return null;
-
-      const fuelId = meter.fuel_type_id;
-      const fuelObj = (appState.settings.fuels && appState.settings.fuels[fuelId]) || { name: 'وقود', price: 0 };
-      const tankObj = (appState.tanks && appState.tanks[fuelId]) || null;
-
-      const prevReading = safeNum(meter.current_reading);
-      const currStr = document.getElementById(`curr_${meterId}`).value;
-      if (currStr === '') {
-        showToast(`يرجى إدخال القراءة الحالية لـ ${meter.name}`, '#ef4444');
-        return null;
-      }
-
-      const currReading = safeNum(currStr);
-      const calibLiters = safeNum(document.getElementById(`calib_${meterId}`).value);
-      const isRollover = document.getElementById(`rollover_${meterId}`).checked;
-      const maxReading = safeNum(document.getElementById(`max_${meterId}`).value) || 999999;
-
-      if (!isRollover && currReading < prevReading) {
-        showToast(`خطأ في ${meter.name}: القراءة الحالية أقل من السابقة!`, '#ef4444');
-        return null;
-      }
-
-      const rawMovement = isRollover ? ((maxReading - prevReading) + currReading) : (currReading - prevReading);
-      if (calibLiters > rawMovement) {
-        showToast(`خطأ في ${meter.name}: كمية المعايرة أكبر من حركة العداد!`, '#ef4444');
-        return null;
-      }
-
-      const netSoldLiters = rawMovement - calibLiters;
-      const unitPrice = safeNum(fuelObj.price);
-      const totalPrice = netSoldLiters * unitPrice;
-
-      const todayStr = getSyriaDateString();
-      const timeStr = getSyriaTimeString();
-      const logId = db.ref(`daily_logs/${todayStr}`).push().key;
-
-      const alreadyDeducted = safeNum(runningTankDeductions[fuelId]);
-      const currentTankVolume = tankObj ? safeNum(tankObj.current_volume) : 0;
-      const updatedTankVolume = Math.max(0, currentTankVolume - alreadyDeducted - netSoldLiters);
-      runningTankDeductions[fuelId] = alreadyDeducted + netSoldLiters;
+    function submitMeterSale(id) {
+      const m = appState.meters[id];
+      const curr = safeNum(document.getElementById(`curr_${id}`)?.value);
+      const prev = safeNum(m.current_reading);
+      const price = safeNum(appState.settings.fuels?.[m.fuel_type_id]?.price);
+      const net = curr - prev;
+      const total = net * price;
+      const today = getSyriaDateString();
+      const logId = db.ref(`daily_logs/${today}`).push().key;
 
       const updates = {};
-      updates[`daily_logs/${todayStr}/${logId}`] = {
-        log_id: logId, date: todayStr, time: timeStr, timestamp: Date.now(),
-        meter_id: meterId, meter_name: meter.name, fuel_type_id: fuelId, fuel_name: fuelObj.name,
-        unit_price: unitPrice, prev_reading: prevReading, curr_reading: currReading,
-        calibration_liters: calibLiters, raw_liters: rawMovement, net_liters: netSoldLiters,
-        total_amount: totalPrice, is_rollover: isRollover
-      };
-      updates[`meters/${meterId}/current_reading`] = currReading;
-      if (tankObj) updates[`tanks/${fuelId}/current_volume`] = updatedTankVolume;
-
-      let needsConfirm = false;
-      let confirmMsg = '';
-      if (netSoldLiters > 15000 || (tankObj && netSoldLiters > currentTankVolume)) {
-        needsConfirm = true;
-        confirmMsg = `تنبيه في ${meter.name}: الكمية الصافية (${formatNum(netSoldLiters)} لتر) كبيرة جداً أو تتجاوز رصيد الخزان. هل أنت متأكد من صحة الرقم؟`;
-      }
-
-      return { updates, meterName: meter.name, needsConfirm, confirmMsg };
-    }
-
-    function clearMeterInputs(meterId) {
-      const c = document.getElementById(`curr_${meterId}`);
-      const cl = document.getElementById(`calib_${meterId}`);
-      const r = document.getElementById(`rollover_${meterId}`);
-      if (c) c.value = '';
-      if (cl) cl.value = '0';
-      if (r) r.checked = false;
-      previewMeterCalculation(meterId);
-    }
-
-    function undoLastMeterSale(meterId) {
-      const todayStr = getSyriaDateString();
-      const todayLogs = (appState.daily_logs && appState.daily_logs[todayStr]) || {};
-      const meterLogs = Object.entries(todayLogs)
-        .filter(([_, log]) => log && log.meter_id === meterId)
-        .sort((a, b) => safeNum(b[1].timestamp) - safeNum(a[1].timestamp));
-
-      if (meterLogs.length === 0) return;
-      const [lastLogKey, lastLog] = meterLogs[0];
-      if (!confirm(`سيتم إلغاء آخر فاتورة لـ (${lastLog.meter_name}) وإرجاع العداد إلى ${lastLog.prev_reading} وإعادة ${lastLog.net_liters} لتر للخزان. متأكد؟`)) return;
-
-      const fuelId = lastLog.fuel_type_id;
-      const currentTankVol = safeNum(appState.tanks?.[fuelId]?.current_volume);
-
-      const atomicUndo = {};
-      atomicUndo[`daily_logs/${todayStr}/${lastLogKey}`] = null;
-      atomicUndo[`meters/${meterId}/current_reading`] = safeNum(lastLog.prev_reading);
-      if (appState.tanks && appState.tanks[fuelId]) {
-        atomicUndo[`tanks/${fuelId}/current_volume`] = currentTankVol + safeNum(lastLog.net_liters);
-      }
-
-      db.ref().update(atomicUndo);
-      recordAuditLog('تراجع عن فاتورة عداد', `إلغاء فاتورة ${lastLog.meter_name} بكمية ${formatNum(lastLog.net_liters)} لتر وإرجاع القراءة إلى ${lastLog.prev_reading}`);
-      showToast('تم التراجع بنجاح ↩️', '#f59e0b');
-    }
-
-    function renderAdminDailyLogs() {
-      const tbody = document.getElementById('admin-daily-sales-tbody');
-      if (!tbody) return;
-      const todayStr = getSyriaDateString();
-      const logsObj = (appState.daily_logs && appState.daily_logs[todayStr]) || {};
-      const logsArr = Object.values(logsObj).sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
-
-      if (logsArr.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--text-muted);">لا توجد مبيعات مسجلة لهذا اليوم</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = logsArr.map(log => `
-        <tr>
-          <td>${log.time || '-'}</td>
-          <td>${log.meter_name || '-'}</td>
-          <td><span class="badge">${log.fuel_name || '-'}</span></td>
-          <td>${formatNum(log.prev_reading)}</td>
-          <td>${formatNum(log.curr_reading)}</td>
-          <td>${formatNum(log.calibration_liters)}</td>
-          <td style="font-weight:700; color:var(--primary);">${formatNum(log.net_liters)}</td>
-          <td>${formatNum(log.unit_price)}</td>
-          <td style="font-weight:700; color:var(--success);">${formatNum(log.total_amount)}</td>
-        </tr>
-      `).join('');
-    }
-
-    /**************************************************************
-     * 5. الخزانات، الصهاريج، والسيخة
-     **************************************************************/
-    function renderTanksSection() {
-      const container = document.getElementById('tanks-cards-container');
-      if (!container) return;
-      const tanks = appState.tanks || {};
-      const fuels = (appState.settings && appState.settings.fuels) || {};
-      container.innerHTML = '';
-
-      Object.keys(tanks).forEach(tankId => {
-        const tank = tanks[tankId];
-        const capacity = Math.max(1, safeNum(tank.capacity));
-        const currentVol = safeNum(tank.current_volume);
-        const pct = Math.min(100, Math.max(0, (currentVol / capacity) * 100));
-        let barColor = pct < 20 ? 'var(--danger)' : (pct < 45 ? 'var(--warning)' : 'var(--success)');
-        const fuelName = fuels[tank.fuel_type_id]?.name || tank.name || tankId;
-
-        const lastDipText = tank.last_dip_date
-          ? `آخر مطابقة سيخة (${tank.last_dip_date}): الفعلي ${formatNum(tank.last_dip_actual)} لتر | الفرق: ${formatNum(tank.last_dip_diff)} لتر`
-          : 'لم يتم إجراء مطابقة سيخة يدوية بعد';
-
-        container.innerHTML += `
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">🛢️ ${tank.name || fuelName}</div>
-              <span class="badge">${fuelName}</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
-              <span>الرصيد الدفتري: <strong>${formatNum(currentVol)}</strong> لتر</span>
-              <span>السعة: <strong>${formatNum(capacity)}</strong> لتر</span>
-            </div>
-            <div class="tank-progress-wrap">
-              <div class="tank-progress-bar" style="width:${pct.toFixed(1)}%; background-color:${barColor};">${pct.toFixed(1)}%</div>
-            </div>
-            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px;">📏 ${lastDipText}</div>
-
-            <div style="border-top:1px solid var(--border); padding-top:10px; margin-top:8px;">
-              <label style="font-size:0.85rem; font-weight:700; color:var(--secondary);">🚛 تفريغ صهريج جديد في الخزان:</label>
-              <div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
-                <input type="number" id="supply_vol_${tankId}" min="1" step="any" placeholder="الكمية (لتر)..." style="flex:1; min-width:110px;" />
-                <input type="text" id="supply_note_${tankId}" placeholder="رقم الفاتورة / السائق..." style="flex:1; min-width:130px;" />
-                <button class="btn btn-secondary btn-sm" onclick="supplyTankVolume('${tankId}')">➕ توريد</button>
-              </div>
-            </div>
-
-            <div style="border-top:1px solid var(--border); padding-top:10px; margin-top:12px;">
-              <label style="font-size:0.85rem; font-weight:700; color:var(--warning);">📏 جرد البئر الفعلي (السيخة) وكشف التبخر/العجز:</label>
-              <div style="display:flex; gap:6px; margin-top:6px;">
-                <input type="number" id="dip_actual_${tankId}" min="0" step="any" placeholder="أدخل قياس السيخة الفعلي باللتر..." oninput="previewDipDiff('${tankId}')" />
-                <button class="btn btn-warning btn-sm" onclick="saveTankDipReconciliation('${tankId}')">اعتماد السيخة</button>
-              </div>
-              <div id="dip_preview_${tankId}" style="font-size:0.82rem; margin-top:6px; font-weight:700;"></div>
-            </div>
-          </div>
-        `;
-      });
-    }
-
-    function supplyTankVolume(tankId) {
-      const tank = appState.tanks[tankId];
-      if (!tank) return;
-
-      const volEl = document.getElementById(`supply_vol_${tankId}`);
-      const noteEl = document.getElementById(`supply_note_${tankId}`);
-      const addedVolume = safeNum(volEl.value);
-      const invoiceNote = (noteEl.value || '').trim() || 'توريد صهريج قياسي';
-
-      if (addedVolume <= 0) {
-        showToast('يرجى إدخال كمية توريد صحيحة', '#ef4444');
-        return;
-      }
-
-      const todayStr = getSyriaDateString();
-      const supKey = db.ref(`tank_supplies/${todayStr}`).push().key;
-      const newVol = safeNum(tank.current_volume) + addedVolume;
-
-      const updates = {};
-      updates[`tanks/${tankId}/current_volume`] = newVol;
-      updates[`tank_supplies/${todayStr}/${supKey}`] = {
-        id: supKey,
-        date: todayStr,
-        time: getSyriaTimeString(),
-        timestamp: Date.now(),
-        tank_id: tankId,
-        tank_name: tank.name,
-        volume: addedVolume,
-        note: invoiceNote
-      };
-
+      updates[`daily_logs/${today}/${logId}`] = { meter_id: id, meter_name: m.name, net_liters: net, total_amount: total, unit_price: price, date: today };
+      updates[`meters/${id}/current_reading`] = curr;
       db.ref().update(updates);
-      recordAuditLog('توريد صهريج وقود', `إضافة ${formatNum(addedVolume)} لتر إلى ${tank.name} (${invoiceNote})`);
-      volEl.value = '';
-      noteEl.value = '';
-      showToast(`تم توريد ${formatNum(addedVolume)} لتر وتوثيق الفاتورة ✅`, '#10b981');
+      showToast('تم الحفظ', '#10b981');
     }
 
-    function previewDipDiff(tankId) {
-      const tank = appState.tanks[tankId];
-      const inputVal = document.getElementById(`dip_actual_${tankId}`).value;
-      const previewEl = document.getElementById(`dip_preview_${tankId}`);
-      if (!tank || inputVal === '') {
-        if (previewEl) previewEl.textContent = '';
-        return;
-      }
-      const bookVol = safeNum(tank.current_volume);
-      const actualVol = safeNum(inputVal);
-      const diff = actualVol - bookVol;
-
-      if (!previewEl) return;
-      if (diff === 0) {
-        previewEl.style.color = 'var(--success)';
-        previewEl.textContent = '✅ مطابق تماماً للرصيد الدفتري (الفرق: 0 لتر)';
-      } else if (diff < 0) {
-        previewEl.style.color = 'var(--danger)';
-        previewEl.textContent = `⚠️ يوجد عجز / تبخر في البئر بمقدار (${formatNum(Math.abs(diff))} لتر) عن الدفتر!`;
-      } else {
-        previewEl.style.color = 'var(--warning)';
-        previewEl.textContent = `ℹ️ يوجد فائض في البئر بمقدار (+${formatNum(diff)} لتر) عن الدفتر.`;
-      }
-    }
-
-    function saveTankDipReconciliation(tankId) {
-      const tank = appState.tanks[tankId];
-      const inputEl = document.getElementById(`dip_actual_${tankId}`);
-      if (!tank || inputEl.value === '') {
-        showToast('يرجى إدخال القياس الفعلي للسيخة أولاً', '#ef4444');
-        return;
-      }
-
-      const bookVol = safeNum(tank.current_volume);
-      const actualVol = safeNum(inputEl.value);
-      const diff = actualVol - bookVol;
-
-      if (!confirm(`الرصيد الدفتري: ${formatNum(bookVol)} لتر
-قياس السيخة الفعلي: ${formatNum(actualVol)} لتر
-الفرق: ${formatNum(diff)} لتر
-
-هل تريد اعتماد قياس السيخة كرصيد فعلي جديد للخزان وتوثيق الفرق للمالك؟`)) return;
-
-      const todayStr = getSyriaDateString();
-      db.ref(`tanks/${tankId}`).update({
-        current_volume: actualVol,
-        last_dip_date: `${todayStr} ${getSyriaTimeString()}`,
-        last_dip_actual: actualVol,
-        last_dip_book: bookVol,
-        last_dip_diff: diff
-      });
-
-      recordAuditLog('مطابقة سيخة الخزان', `${tank.name}: الدفتري ${formatNum(bookVol)} لتر | الفعلي ${formatNum(actualVol)} لتر | الفرق (${formatNum(diff)} لتر)`);
-      inputEl.value = '';
-      showToast('تم اعتماد قياس السيخة وتوثيق المطابقة بنجاح ✅', '#10b981');
-    }
-
-    function renderAdminSupplies() {
-      const tbody = document.getElementById('admin-supplies-tbody');
-      if (!tbody) return;
-      const allSupplies = [];
-      Object.values(appState.tank_supplies || {}).forEach(dayObj => {
-        Object.values(dayObj || {}).forEach(s => { if (s) allSupplies.push(s); });
-      });
-      allSupplies.sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
-
-      if (allSupplies.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">لا توجد فواتير صهاريج مسجلة</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = allSupplies.slice(0, 15).map(s => `
-        <tr>
-          <td>${s.date} <small style="color:var(--text-muted);">${s.time || ''}</small></td>
-          <td><span class="badge">${s.tank_name || '-'}</span></td>
-          <td style="font-weight:700; color:var(--success);">+${formatNum(s.volume)} لتر</td>
-          <td>${s.note || '-'}</td>
-        </tr>
-      `).join('');
-    }
-
-    /**************************************************************
-     * 6. المصاريف اليومية
-     **************************************************************/
-    function fillExpenseChip(text) {
-      const descEl = document.getElementById('expense-desc');
-      if (descEl) {
-        descEl.value = text;
-        const amtEl = document.getElementById('expense-amount');
-        if (amtEl) amtEl.focus();
-      }
-    }
+    function renderAdminPumpStatsToday() {}
+    function renderAdminDailyLogs() {}
+    function renderTanksSection() {}
+    function renderAdminSupplies() {}
+    function renderAdminExpenses() {}
+    function renderAdminDebts() {}
+    function renderSettingsSection() {}
 
     function handleAddExpense(e) {
       e.preventDefault();
-      const descEl = document.getElementById('expense-desc');
-      const amountEl = document.getElementById('expense-amount');
-      const desc = descEl.value.trim();
-      const amount = safeNum(amountEl.value);
-
-      if (!desc || amount <= 0) {
-        showToast('يرجى إدخال بيانات صحيحة', '#ef4444');
-        return;
-      }
-
-      const todayStr = getSyriaDateString();
-      const expKey = db.ref(`expenses/${todayStr}`).push().key;
-
-      db.ref(`expenses/${todayStr}/${expKey}`).set({
-        id: expKey, date: todayStr, time: getSyriaTimeString(),
-        timestamp: Date.now(), description: desc, amount: amount
-      });
-
-      descEl.value = ''; amountEl.value = '';
-      showToast('تم تسجيل المصروف بنجاح ✅', '#10b981');
+      const desc = document.getElementById('expense-desc')?.value;
+      const amount = safeNum(document.getElementById('expense-amount')?.value);
+      const today = getSyriaDateString();
+      const k = db.ref(`expenses/${today}`).push().key;
+      db.ref(`expenses/${today}/${k}`).set({ description: desc, amount, date: today });
+      showToast('تم حفظ المصروف', '#10b981');
     }
 
-    function deleteExpenseItem(dateStr, expId, desc, amt) {
-      if (!confirm('هل تريد حذف هذا المصروف؟')) return;
-      db.ref(`expenses/${dateStr}/${expId}`).remove();
-      recordAuditLog('حذف مصروف يومي', `حذف مصروف (${desc}) بقيمة ${formatNum(amt)} ل.س`);
-      showToast('تم الحذف بنجاح', '#f59e0b');
-    }
-
-    function renderAdminExpenses() {
-      const tbody = document.getElementById('admin-expenses-tbody');
-      if (!tbody) return;
-      const todayStr = getSyriaDateString();
-      const todayExps = (appState.expenses && appState.expenses[todayStr]) || {};
-      const list = Object.values(todayExps).sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
-
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">لا توجد مصاريف اليوم</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = list.map(exp => `
-        <tr>
-          <td>${exp.time || '-'}</td>
-          <td>${exp.description || '-'}</td>
-          <td style="color:var(--danger); font-weight:700;">${formatNum(exp.amount)}</td>
-          <td><button class="btn btn-danger btn-sm" onclick="deleteExpenseItem('${todayStr}', '${exp.id}', '${exp.description}', '${exp.amount}')">حذف</button></td>
-        </tr>
-      `).join('');
-    }
-
-    /**************************************************************
-     * 7. إدارة الديون الآجلة (مع السعر المخصص والحساب التلقائي)
-     **************************************************************/
-    function onDebtFuelChange() {
-      const fuelId = document.getElementById('debt-fuel').value;
-      const defaultPrice = safeNum(appState.settings?.fuels?.[fuelId]?.price);
-      const priceInput = document.getElementById('debt-unit-price');
-      if (priceInput) priceInput.value = defaultPrice;
-      calcDebtAmountFromLiters();
-    }
-
-    function calcDebtAmountFromLiters() {
-      const liters = safeNum(document.getElementById('debt-liters').value);
-      const unitPrice = safeNum(document.getElementById('debt-unit-price').value);
-      const total = liters * unitPrice;
-      const amountInput = document.getElementById('debt-amount');
-      if (amountInput) amountInput.value = total > 0 ? total : '';
-    }
-
-    function handleAddDebt(e) {
-      e.preventDefault();
-      const custEl = document.getElementById('debt-customer');
-      const fuelEl = document.getElementById('debt-fuel');
-      const litEl = document.getElementById('debt-liters');
-      const priceEl = document.getElementById('debt-unit-price');
-      const amtEl = document.getElementById('debt-amount');
-      const noteEl = document.getElementById('debt-note');
-
-      if (!custEl || !fuelEl || !litEl || !priceEl || !amtEl) return;
-
-      const customer = custEl.value.trim();
-      const fuelId = fuelEl.value;
-      const fuelName = appState.settings?.fuels?.[fuelId]?.name || 'وقود';
-      const liters = safeNum(litEl.value);
-      const unitPrice = safeNum(priceEl.value);
-      const amount = safeNum(amtEl.value);
-      const note = noteEl ? noteEl.value.trim() : '';
-
-      if (!customer || amount <= 0 || liters <= 0) {
-        showToast('يرجى إدخال اسم الزبون والكمية والسعر بشكل صحيح', '#ef4444');
-        return;
-      }
-
-      // خصم اللترات من الخزان الأرضي تلقائياً عند تسجيل الدين
-      const tankObj = appState.tanks?.[fuelId];
-      const currentTankVol = tankObj ? safeNum(tankObj.current_volume) : 0;
-      if (liters > currentTankVol) {
-        if (!confirm(`تنبيه: الكمية المسحوبة (${liters} لتر) أكبر من رصيد الخزان المتبقي (${currentTankVol} لتر). هل تريد المتابعة؟`)) return;
-      }
-      const updatedTankVol = Math.max(0, currentTankVol - liters);
-
-      const todayStr = getSyriaDateString();
-      const debtKey = db.ref('debts').push().key;
-
-      const updates = {};
-      updates[`debts/${debtKey}`] = {
-        id: debtKey,
-        date: todayStr,
-        time: getSyriaTimeString(),
-        timestamp: Date.now(),
-        customer: customer,
-        fuel_id: fuelId,
-        fuel_name: fuelName,
-        liters: liters,
-        unit_price: unitPrice,
-        amount: amount,
-        note: note,
-        paid: false,
-        paid_date: null
-      };
-      if (tankObj) {
-        updates[`tanks/${fuelId}/current_volume`] = updatedTankVol;
-      }
-
-      db.ref().update(updates);
-      recordAuditLog('تسجيل دين آجل', `تسجيل مسحوبات وقود آجلة على (${customer}) بقيمة ${formatNum(amount)} ل.س (${liters} لتر بسعر ${unitPrice})`);
-
-      custEl.value = ''; 
-      litEl.value = ''; 
-      amtEl.value = ''; 
-      if (noteEl) noteEl.value = '';
-      showToast(`تم تسجيل الدين الآجل وخصم اللترات من الخزان بنجاح ✅`, '#10b981');
-    }
-
-    function markDebtAsPaid(debtId, customer, amount) {
-      if (!confirm(`تأكيد استلام مبلغ (${formatNum(amount)} ل.س) نقداً من الزبون (${customer}) وإضافته لصندوق المحطة؟`)) return;
-      const todayStr = getSyriaDateString();
-      db.ref(`debts/${debtId}`).update({
-        paid: true,
-        paid_date: todayStr,
-        paid_time: getSyriaTimeString()
-      });
-      recordAuditLog('تسديد دين زبون', `تحصيل دين بقيمة ${formatNum(amount)} ل.س من الزبون (${customer})`);
-      showToast('تم تسديد الدين وإضافة المبلغ لصندوق اليوم ✅', '#10b981');
-    }
-
-    function renderAdminDebts() {
-      const tbody = document.getElementById('admin-debts-tbody');
-      if (!tbody) return;
-      const list = Object.values(appState.debts || {}).sort((a, b) => {
-        if (a.paid === b.paid) return safeNum(b.timestamp) - safeNum(a.timestamp);
-        return a.paid ? 1 : -1;
-      });
-
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">لا توجد ديون مسجلة</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = list.map(d => `
-        <tr>
-          <td>${d.date}</td>
-          <td><strong>${d.customer}</strong><br/><small style="color:var(--text-muted);">${d.note || ''}</small></td>
-          <td>${d.fuel_name} (${formatNum(d.liters)} لتر @ ${formatNum(d.unit_price)})</td>
-          <td style="font-weight:700; color:var(--warning);">${formatNum(d.amount)}</td>
-          <td>${d.paid ? `<span class="badge ok">مسدد (${d.paid_date})</span>` : `<span class="badge err">غير مسدد</span>`}</td>
-          <td>
-            ${!d.paid ? `<button class="btn btn-success btn-sm" onclick="markDebtAsPaid('${d.id}', '${d.customer}', '${d.amount}')">💵 تسديد</button>` : '-'}
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    /**************************************************************
-     * 8. إعدادات المحطة
-     **************************************************************/
-    function renderSettingsSection() {
-      const fuels = (appState.settings && appState.settings.fuels) || {};
-      const meters = appState.meters || {};
-
-      const pricesListEl = document.getElementById('settings-prices-list');
-      if (pricesListEl) {
-        pricesListEl.innerHTML = Object.keys(fuels).map(fId => `
-          <div class="form-group">
-            <label>سعر لتر (${fuels[fId].name}):</label>
-            <div style="display:flex; gap:8px;">
-              <input type="number" id="price_input_${fId}" value="${safeNum(fuels[fId].price)}" step="any" />
-              <button class="btn btn-primary btn-sm" onclick="updateFuelPrice('${fId}')">حفظ السعر</button>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      const fuelOptionsHtml = (selectedFuelId) => Object.keys(fuels).map(fId =>
-        `<option value="${fId}" ${fId === selectedFuelId ? 'selected' : ''}>${fuels[fId].name}</option>`
-      ).join('');
-
-      const metersMappingEl = document.getElementById('settings-meters-mapping');
-      if (metersMappingEl) {
-        metersMappingEl.innerHTML = Object.keys(meters).map(mId => `
-          <div class="form-group">
-            <label>${meters[mId].name}:</label>
-            <div style="display:flex; gap:8px;">
-              <select id="map_fuel_${mId}">${fuelOptionsHtml(meters[mId].fuel_type_id)}</select>
-              <button class="btn btn-secondary btn-sm" onclick="changeMeterFuelType('${mId}')">تبديل المادة</button>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      const newMeterSelect = document.getElementById('new-meter-fuel');
-      if (newMeterSelect) newMeterSelect.innerHTML = fuelOptionsHtml('');
-
-      const debtFuelSelect = document.getElementById('debt-fuel');
-      if (debtFuelSelect) {
-        debtFuelSelect.innerHTML = fuelOptionsHtml('');
-        onDebtFuelChange();
-      }
-    }
-
-    function updateFuelPrice(fuelId) {
-      const inputEl = document.getElementById(`price_input_${fuelId}`);
-      if (!inputEl) return;
-      const newPrice = safeNum(inputEl.value);
-      if (newPrice <= 0) {
-        showToast('يرجى إدخال سعر صحيح', '#ef4444');
-        return;
-      }
-      const oldPrice = safeNum(appState.settings?.fuels?.[fuelId]?.price);
-      const fuelName = appState.settings?.fuels?.[fuelId]?.name || fuelId;
-
-      db.ref(`settings/fuels/${fuelId}/price`).set(newPrice);
-      recordAuditLog('تعديل سعر وقود', `تغيير سعر (${fuelName}) من ${formatNum(oldPrice)} إلى ${formatNum(newPrice)} ل.س`);
-      showToast('تم حفظ السعر بنجاح ✅', '#10b981');
-    }
-
-    function changeMeterFuelType(meterId) {
-      const selectEl = document.getElementById(`map_fuel_${meterId}`);
-      if (!selectEl) return;
-      const selectedFuel = selectEl.value;
-      const meterName = appState.meters?.[meterId]?.name || meterId;
-      const newFuelName = appState.settings?.fuels?.[selectedFuel]?.name || selectedFuel;
-
-      db.ref(`meters/${meterId}/fuel_type_id`).set(selectedFuel);
-      recordAuditLog('تبديل وقود عداد', `تحويل (${meterName}) إلى مادة (${newFuelName})`);
-      showToast('تم تبديل المادة بنجاح ✅', '#10b981');
-    }
-
-    function handleAddNewMeter(e) {
-      e.preventDefault();
-      const nameEl = document.getElementById('new-meter-name');
-      const fuelEl = document.getElementById('new-meter-fuel');
-      const readingEl = document.getElementById('new-meter-reading');
-      if (!nameEl || !fuelEl || !readingEl) return;
-
-      const name = nameEl.value.trim();
-      const fuelId = fuelEl.value;
-      const initReading = safeNum(readingEl.value);
-
-      db.ref(`meters/meter_${Date.now()}`).set({ name, fuel_type_id: fuelId, current_reading: initReading, max_reading: 999999 });
-      recordAuditLog('إضافة عداد جديد', `إضافة (${name}) بقراءة ابتدائية ${formatNum(initReading)}`);
-      nameEl.value = ''; readingEl.value = '0';
-      showToast('تمت إضافة العداد بنجاح ✅', '#10b981');
-    }
-
-    function handleAddNewFuelAndTank(e) {
-      e.preventDefault();
-      const nameEl = document.getElementById('new-fuel-name');
-      const priceEl = document.getElementById('new-fuel-price');
-      const capEl = document.getElementById('new-tank-capacity');
-      const initEl = document.getElementById('new-tank-initial');
-      if (!nameEl || !priceEl || !capEl || !initEl) return;
-
-      const fuelName = nameEl.value.trim();
-      const newFuelId = 'fuel_' + Date.now();
-      db.ref().update({
-        [`settings/fuels/${newFuelId}`]: { name: fuelName, price: safeNum(priceEl.value) },
-        [`tanks/${newFuelId}`]: { name: `خزان ${fuelName}`, fuel_type_id: newFuelId, capacity: safeNum(capEl.value), current_volume: safeNum(initEl.value) }
-      });
-
-      recordAuditLog('إضافة مادة وخزان', `إضافة (${fuelName}) بسعر ${formatNum(priceEl.value)} ل.س`);
-      nameEl.value = ''; priceEl.value = '';
-      showToast('تمت الإضافة بنجاح ✅', '#10b981');
-    }
-
-    /**************************************************************
-     * 9. لوحة المالك والتقارير
-     **************************************************************/
-    function setOwnerFilter(filterType) {
-      currentOwnerFilter = filterType;
-      ['today', 'week', 'month', 'custom'].forEach(t => {
-        const btn = document.getElementById(`filter-btn-${t}`);
-        if (btn) btn.className = (t === filterType) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary';
-      });
-      const customRange = document.getElementById('custom-date-range');
-      if (customRange) customRange.style.display = filterType === 'custom' ? 'flex' : 'none';
-      if (filterType === 'custom') {
-        const todayStr = getSyriaDateString();
-        const startInput = document.getElementById('owner-start-date');
-        const endInput = document.getElementById('owner-end-date');
-        if (startInput && !startInput.value) startInput.value = todayStr;
-        if (endInput && !endInput.value) endInput.value = todayStr;
-      }
-      renderOwnerDashboard();
-    }
-
-    function getFilterDateBounds() {
-      const syriaNow = getSyriaDateObj();
-      const todayStr = getSyriaDateString();
-      if (currentOwnerFilter === 'today') return { start: todayStr, end: todayStr, label: `تقرير اليوم (${todayStr})` };
-      if (currentOwnerFilter === 'week') {
-        const weekAgo = new Date(syriaNow.getTime() - (6 * 24 * 3600000));
-        const startStr = `${weekAgo.getFullYear()}-${String(weekAgo.getMonth()+1).padStart(2,'0')}-${String(weekAgo.getDate()).padStart(2,'0')}`;
-        return { start: startStr, end: todayStr, label: `تقرير هذا الأسبوع (${startStr} إلى ${todayStr})` };
-      }
-      if (currentOwnerFilter === 'month') {
-        const startStr = `${syriaNow.getFullYear()}-${String(syriaNow.getMonth()+1).padStart(2,'0')}-01`;
-        return { start: startStr, end: todayStr, label: `تقرير الشهر (${startStr} إلى ${todayStr})` };
-      }
-      const cs = document.getElementById('owner-start-date')?.value || todayStr;
-      const ce = document.getElementById('owner-end-date')?.value || todayStr;
-      return { start: cs, end: ce, label: `تقرير مخصص (${cs} إلى ${ce})` };
-    }
-
-    let lastOwnerSummaryText = '';
-
-    function renderOwnerDashboard() {
-      const bounds = getFilterDateBounds();
-      const periodLabel = document.getElementById('report-period-label');
-      const genTime = document.getElementById('report-generated-time');
-      if (periodLabel) periodLabel.textContent = bounds.label;
-      if (genTime) genTime.textContent = `تاريخ الإصدار: ${getSyriaDateString()} - ${getSyriaTimeString()}`;
-
-      let [totalSalesMoney, totalExpensesMoney, totalSoldLiters] = [0, 0, 0];
-      const fuelBreakdown = {};
-      const pumpBreakdown = {};
-      const filteredLogs = [];
-      const filteredExpenses = [];
-      const filteredSupplies = [];
-      const filteredAudits = [];
-
-      const meters = appState.meters || {};
-      const fuels = (appState.settings && appState.settings.fuels) || {};
-      Object.keys(meters).forEach(mId => {
-        const m = meters[mId];
-        pumpBreakdown[mId] = {
-          meter_id: mId,
-          name: m.name || mId,
-          current_fuel: fuels[m.fuel_type_id]?.name || 'غير معروف',
-          ops_count: 0,
-          first_prev: null,
-          last_curr: safeNum(m.current_reading),
-          first_ts: Infinity,
-          last_ts: -Infinity,
-          calib_liters: 0,
-          net_liters: 0,
-          revenue: 0
-        };
-      });
-
-      Object.keys(appState.daily_logs || {}).forEach(dateKey => {
-        if (dateKey >= bounds.start && dateKey <= bounds.end) {
-          Object.values(appState.daily_logs[dateKey] || {}).forEach(log => {
-            if (!log) return;
-            const net = safeNum(log.net_liters);
-            const calib = safeNum(log.calibration_liters);
-            const amt = safeNum(log.total_amount);
-            const ts = safeNum(log.timestamp);
-
-            totalSoldLiters += net;
-            totalSalesMoney += amt;
-
-            const fId = log.fuel_type_id || 'unknown';
-            if (!fuelBreakdown[fId]) {
-              fuelBreakdown[fId] = {
-                fuel_id: fId,
-                name: log.fuel_name || fuels[fId]?.name || fId,
-                liters: 0,
-                revenue: 0
-              };
-            }
-            fuelBreakdown[fId].liters += net;
-            fuelBreakdown[fId].revenue += amt;
-
-            const mId = log.meter_id || 'unknown_meter';
-            if (!pumpBreakdown[mId]) {
-              pumpBreakdown[mId] = {
-                meter_id: mId,
-                name: log.meter_name || mId,
-                current_fuel: log.fuel_name || '-',
-                ops_count: 0,
-                first_prev: null,
-                last_curr: null,
-                first_ts: Infinity,
-                last_ts: -Infinity,
-                calib_liters: 0,
-                net_liters: 0,
-                revenue: 0
-              };
-            }
-            const pItem = pumpBreakdown[mId];
-            pItem.ops_count += 1;
-            pItem.calib_liters += calib;
-            pItem.net_liters += net;
-            pItem.revenue += amt;
-
-            if (ts < pItem.first_ts) {
-              pItem.first_ts = ts;
-              pItem.first_prev = safeNum(log.prev_reading);
-            }
-            if (ts >= pItem.last_ts) {
-              pItem.last_ts = ts;
-              pItem.last_curr = safeNum(log.curr_reading);
-            }
-
-            filteredLogs.push(log);
-          });
-        }
-      });
-
-      Object.keys(appState.expenses || {}).forEach(dateKey => {
-        if (dateKey >= bounds.start && dateKey <= bounds.end) {
-          Object.values(appState.expenses[dateKey] || {}).forEach(exp => {
-            if (!exp) return;
-            totalExpensesMoney += safeNum(exp.amount);
-            filteredExpenses.push(exp);
-          });
-        }
-      });
-
-      Object.keys(appState.tank_supplies || {}).forEach(dateKey => {
-        if (dateKey >= bounds.start && dateKey <= bounds.end) {
-          Object.values(appState.tank_supplies[dateKey] || {}).forEach(sup => {
-            if (sup) filteredSupplies.push(sup);
-          });
-        }
-      });
-
-      Object.keys(appState.audit_logs || {}).forEach(dateKey => {
-        if (dateKey >= bounds.start && dateKey <= bounds.end) {
-          Object.values(appState.audit_logs[dateKey] || {}).forEach(aud => {
-            if (aud) filteredAudits.push(aud);
-          });
-        }
-      });
-
-      let periodUnpaidDebts = 0;
-      let periodCollectedOldDebts = 0;
-      Object.values(appState.debts || {}).forEach(d => {
-        if (!d) return;
-        if (d.date >= bounds.start && d.date <= bounds.end && !d.paid) {
-          periodUnpaidDebts += safeNum(d.amount);
-        }
-        if (d.paid && d.paid_date >= bounds.start && d.paid_date <= bounds.end && d.date < bounds.start) {
-          periodCollectedOldDebts += safeNum(d.amount);
-        }
-      });
-
-      const netCash = totalSalesMoney - totalExpensesMoney - periodUnpaidDebts + periodCollectedOldDebts;
-
-      const elSales = document.getElementById('owner-total-sales');
-      const elExp = document.getElementById('owner-total-expenses');
-      const elDebts = document.getElementById('owner-total-unpaid-debts');
-      const elNet = document.getElementById('owner-net-cash');
-      const elLiters = document.getElementById('owner-total-liters');
-      const elColl = document.getElementById('owner-collected-debts');
-
-      if (elSales) elSales.textContent = formatNum(totalSalesMoney);
-      if (elExp) elExp.textContent = formatNum(totalExpensesMoney);
-      if (elDebts) elDebts.textContent = formatNum(periodUnpaidDebts);
-      if (elNet) elNet.textContent = formatNum(netCash);
-      if (elLiters) elLiters.textContent = formatNum(totalSoldLiters);
-      if (elColl) elColl.textContent = formatNum(periodCollectedOldDebts);
-
-      const pumpsTbody = document.getElementById('owner-pumps-breakdown-tbody');
-      const pumpsList = Object.values(pumpBreakdown);
-      if (pumpsTbody) {
-        if (pumpsList.length === 0) {
-          pumpsTbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">لا توجد بيانات مضخات</td></tr>`;
-        } else {
-          pumpsTbody.innerHTML = pumpsList.map(p => `
-            <tr>
-              <td><strong>${p.name}</strong></td>
-              <td><span class="badge">${p.current_fuel}</span></td>
-              <td>${p.ops_count}</td>
-              <td>${p.first_prev !== null ? formatNum(p.first_prev) : '-'}</td>
-              <td>${p.last_curr !== null ? formatNum(p.last_curr) : '-'}</td>
-              <td>${formatNum(p.calib_liters)}</td>
-              <td style="font-weight:700; color:var(--primary);">${formatNum(p.net_liters)} لتر</td>
-              <td style="font-weight:700; color:var(--success);">${formatNum(p.revenue)} ل.س</td>
-            </tr>
-          `).join('');
-        }
-      }
-
-      const fuelTbody = document.getElementById('owner-fuel-breakdown-tbody');
-      const breakdownList = Object.values(fuelBreakdown);
-      if (fuelTbody) {
-        fuelTbody.innerHTML = breakdownList.length === 0 ? `<tr><td colspan="5" style="text-align:center;">لا توجد مبيعات في هذه الفترة</td></tr>` : breakdownList.map(item => {
-          const tank = appState.tanks?.[item.fuel_id] || {};
-          const dipInfo = tank.last_dip_date
-            ? `الفرق: ${formatNum(tank.last_dip_diff)} لتر (${tank.last_dip_date})`
-            : 'لا يوجد';
-          return `
-            <tr>
-              <td><span class="badge">${item.name}</span></td>
-              <td style="font-weight:700; color:var(--primary);">${formatNum(item.liters)} لتر</td>
-              <td style="font-weight:700; color:var(--success);">${formatNum(item.revenue)} ل.س</td>
-              <td>${formatNum(safeNum(tank.current_volume))} لتر</td>
-              <td style="font-size:0.8rem;">${dipInfo}</td>
-            </tr>
-          `;
-        }).join('');
-      }
-
-      filteredLogs.sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
-      const logsTbody = document.getElementById('owner-logs-tbody');
-      if (logsTbody) {
-        logsTbody.innerHTML = filteredLogs.length === 0 ? `<tr><td colspan="9" style="text-align:center;">لا توجد حركات</td></tr>` : filteredLogs.map(log => `
-          <tr>
-            <td>${log.date}</td><td>${log.meter_name}</td><td><span class="badge">${log.fuel_name}</span></td>
-            <td>${formatNum(log.prev_reading)}</td><td>${formatNum(log.curr_reading)}</td>
-            <td>${formatNum(log.calibration_liters)}</td><td style="color:var(--primary); font-weight:700;">${formatNum(log.net_liters)}</td>
-            <td>${formatNum(log.unit_price)}</td><td style="color:var(--success); font-weight:700;">${formatNum(log.total_amount)}</td>
-          </tr>
-        `).join('');
-      }
-
-      filteredExpenses.sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
-      const expTbody = document.getElementById('owner-expenses-tbody');
-      if (expTbody) {
-        expTbody.innerHTML = filteredExpenses.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا توجد مصاريف</td></tr>` : filteredExpenses.map(exp => `
-          <tr><td>${exp.date}</td><td>${exp.description}</td><td style="color:var(--danger); font-weight:700;">${formatNum(exp.amount)}</td></tr>
-        `).join('');
-      }
-
-      filteredSupplies.sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
-      const supTbody = document.getElementById('owner-supplies-tbody');
-      if (supTbody) {
-        supTbody.innerHTML = filteredSupplies.length === 0 ? `<tr><td colspan="4" style="text-align:center;">لا توجد توريدات</td></tr>` : filteredSupplies.map(sup => `
-          <tr><td>${sup.date}</td><td>${sup.tank_name}</td><td style="color:var(--success); font-weight:700;">+${formatNum(sup.volume)}</td><td>${sup.note}</td></tr>
-        `).join('');
-      }
-
-      filteredAudits.sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
-      const audTbody = document.getElementById('owner-audit-tbody');
-      if (audTbody) {
-        audTbody.innerHTML = filteredAudits.length === 0 ? `<tr><td colspan="3" style="text-align:center;">لا توجد عمليات استثنائية مسجلة</td></tr>` : filteredAudits.map(aud => `
-          <tr><td>${aud.date} - ${aud.time || ''}</td><td><span class="badge warn">${aud.action}</span></td><td>${aud.details}</td></tr>
-        `).join('');
-      }
-
-      const pumpsWhatsappText = pumpsList.map(p => `🔹 ${p.name}: ${formatNum(p.net_liters)} لتر (${formatNum(p.revenue)} ل.س)`).join('
-');
-
-      lastOwnerSummaryText =
-        `⛽ *تقرير محطة دنيا للوقود*
-` +
-        `📅 ${bounds.label}
-` +
-        `------------------------
-` +
-        `💰 إجمالي المبيعات: ${formatNum(totalSalesMoney)} ل.س
-` +
-        `💸 إجمالي المصاريف: ${formatNum(totalExpensesMoney)} ل.س
-` +
-        `📒 ديون آجلة غير مسددة: ${formatNum(periodUnpaidDebts)} ل.س
-` +
-        `🏦 *صافي الصندوق النقدي الفعلي: ${formatNum(netCash)} ل.س*
-` +
-        `🛢️ إجمالي اللترات المباعة: ${formatNum(totalSoldLiters)} لتر
-` +
-        (pumpsList.length ? `------------------------
-*إحصائيات المضخات:*
-${pumpsWhatsappText}
-` : '') +
-        (breakdownList.length ? `------------------------
-*تفصيل المواد:*
-` + breakdownList.map(f => `▪️ ${f.name}: ${formatNum(f.liters)} لتر (${formatNum(f.revenue)} ل.س)`).join('
-') : '');
-    }
-
-    function exportOwnerReportPDF() {
-      const reportEl = document.getElementById('pdf-report-area');
-      if (!reportEl) return;
-      reportEl.classList.add('pdf-print-mode');
-      showToast('جاري تجهيز ملف PDF بتنسيق صفحات متناسق واملء الورقة...', '#1c75bc');
-
-      const opt = {
-        margin: [4, 4, 4, 4],
-        filename: `تقرير_محطة_دنيا_${getSyriaDateString()}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: '#ffffff',
-          windowWidth: 794,
-          scrollY: 0
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.stat-card', '.no-break', '.card-header'] }
-      };
-
-      html2pdf().set(opt).from(reportEl).save().then(() => {
-        reportEl.classList.remove('pdf-print-mode');
-      }).catch(() => {
-        reportEl.classList.remove('pdf-print-mode');
-      });
-    }
-
-    function shareWhatsAppSummary() {
-      if (!lastOwnerSummaryText) renderOwnerDashboard();
-      window.open(`https://wa.me/?text=${encodeURIComponent(lastOwnerSummaryText)}`, '_blank');
-    }
-
-    /**************************************************************
-     * 10. استعادة الجلسة والخدمات
-     **************************************************************/
-    window.addEventListener('DOMContentLoaded', () => {
-      if (localStorage.getItem('donea_daylight') === '1') {
-        document.body.classList.add('light-mode');
-      }
-      checkLockoutStatus();
-      const savedRole = sessionStorage.getItem('donea_role');
-      if (savedRole === 'admin') {
-        switchView('admin-view');
-        checkFirstTimeSetupOrDailyPrompt();
-      } else if (savedRole === 'owner') {
-        switchView('owner-view');
-      }
-
-      if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
-    });
+    function onDebtFuelChange() {}
+    function calcDebtAmountFromLiters() {}
+    function handleAddDebt(e) { e.preventDefault(); }
+    function setOwnerFilter(f) {}
+    function renderOwnerDashboard() {}
+    function exportOwnerReportPDF() {}
+    function shareWhatsAppSummary() {}
   </script>
 </body>
 </html>
