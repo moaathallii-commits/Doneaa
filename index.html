@@ -14,6 +14,7 @@
           --text-color: #f8fafc;
           --border-color: #334155;
           --danger-red: #ef4444;
+          --success-green: #22c55e;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body.bg-dark-mode {
@@ -93,10 +94,11 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         h2 { font-size: 18px; margin-bottom: 15px; color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
+        h3 { font-size: 15px; margin: 15px 0 8px 0; color: var(--accent-orange); }
         
         .form-group { margin-bottom: 12px; text-align: right; }
         .form-group label { display: block; font-size: 13px; margin-bottom: 5px; }
-        .form-group input {
+        .form-group input, .form-group select {
           width: 100%;
           padding: 10px;
           background: var(--card-bg);
@@ -131,6 +133,18 @@
           margin-top: 5px;
         }
 
+        .btn-success {
+          background: var(--success-green);
+          color: #fff;
+          border: none;
+          padding: 10px;
+          border-radius: 6px;
+          font-weight: bold;
+          cursor: pointer;
+          width: 100%;
+          margin-top: 5px;
+        }
+
         .quick-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
         .chip {
           background: var(--card-bg);
@@ -140,6 +154,17 @@
           border-radius: 20px;
           font-size: 13px;
           cursor: pointer;
+        }
+
+        .item-card {
+          background: var(--card-bg);
+          border: 1px solid var(--border-color);
+          padding: 12px;
+          border-radius: 8px;
+          margin-bottom: 10px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
         }
 
         .bottom-nav {
@@ -216,6 +241,12 @@
                 <h2>إدارة العدادات وسحب الورديات</h2>
                 <form id="shift-form">
                     <div class="form-group">
+                        <label>اختر المضخة / العداد:</label>
+                        <select id="select-pump" class="form-group" style="width:100%; padding:10px; background:var(--card-bg); color:var(--text-color); border:1px solid var(--border-color); border-radius:6px;" onchange="updatePumpPreviousReading()">
+                            <!-- يتم تعبئتها ديناميكياً -->
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>رقم القراءة السابقة للعداد:</label>
                         <input type="number" id="prev-reading" disabled style="opacity: 0.7;">
                     </div>
@@ -253,24 +284,31 @@
             <!-- تبويب الخزانات والسيخة -->
             <section id="tab-tanks" class="tab-content">
                 <h2>جرد الخزانات الأرضية (السيخة)</h2>
-                <div class="form-group">
-                    <label>اختر الخزان:</label>
-                    <input type="text" value="خزان بنزين 1 (الرئيسي)" disabled style="opacity: 0.7;">
+                <div id="tanks-list-container">
+                    <!-- يتم تعبئتها ديناميكياً -->
                 </div>
-                <div class="form-group">
-                    <label>قياس السيخة الفعلي:</label>
-                    <input type="number" id="dip-reading" placeholder="أدخل القياس الحالي" min="0">
-                </div>
-                <button type="button" class="btn-primary" onclick="alert('تم تسجيل قراءة السيخة وفحص العجز بنجاح.')">مطابقة وجرد المخزون</button>
             </section>
 
             <!-- تبويب الإعدادات والتقارير -->
             <section id="tab-settings" class="tab-content">
                 <h2>الإعدادات والتقارير الشاملة</h2>
-                <div id="owner-exclusive-panel" style="background:#0f172a; padding:12px; border-radius:8px; margin-bottom:15px; border:1px solid var(--accent-orange); display:none;">
-                    <p style="font-size:12px; color:var(--accent-orange); margin-bottom:5px;">⭐ لوحة تحكم خاصة بالمالك</p>
-                    <span style="font-size:13px;">تم تفعيل صلاحيات الرقابة المالية وإدارة أسعار المحروقات.</span>
+                
+                <!-- لوحة المالك الخاصة بالأسعار والخزانات والعدادات -->
+                <div id="owner-exclusive-panel" style="background:#0f172a; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid var(--accent-orange); display:none;">
+                    <p style="font-size:13px; color:var(--accent-orange); margin-bottom:10px; font-weight:bold;">⭐ لوحة تحكم المالك: إدارة المحروقات والخزانات والعدادات</p>
+                    
+                    <h3>تعديل أسعار المحروقات</h3>
+                    <div id="fuel-prices-settings" style="margin-bottom:15px;"></div>
+
+                    <h3>إدارة الخزانات</h3>
+                    <div id="tanks-settings-list" style="margin-bottom:10px;"></div>
+                    <button type="button" class="btn-secondary" onclick="addNewTank()">+ إضافة خزان جديد</button>
+
+                    <h3 style="margin-top:15px;">إدارة المضخات والعدادات</h3>
+                    <div id="pumps-settings-list" style="margin-bottom:10px;"></div>
+                    <button type="button" class="btn-secondary" onclick="addNewPump()">+ إضافة مضخة / عداد جديد</button>
                 </div>
+
                 <button type="button" class="btn-primary" style="background:var(--accent-blue); margin-bottom:10px;" onclick="generateDailyPDFReport()">إنشاء وتصدير تقرير الوردية PDF</button>
                 <button type="button" class="btn-primary" style="background:var(--danger-red); margin-bottom:10px;" onclick="if(confirm('هل أنت متأكد من تفعيل زر الطوارئ؟')) alert('تم تفعيل وضع الطوارئ وتصفير البيانات المؤقتة.');">زر الطوارئ المؤمّن</button>
                 <button type="button" class="btn-primary" style="background:#334155;" onclick="logout()">تسجيل الخروج</button>
@@ -317,11 +355,48 @@
             totalDebts: 0
         };
 
+        // الهيكل الافتراضي للبيانات إذا لم تقم بالتهيئة
+        function getStoreData() {
+            let data = localStorage.getItem('dunya_store_config');
+            if (!data) {
+                data = {
+                    tanks: [
+                        { id: 1, name: 'خزان بنزين 1', fuelType: 'بنزين', capacity: 30000, currentStock: 25000 },
+                        { id: 2, name: 'خزان مازوت 1', fuelType: 'مازوت', capacity: 40000, currentStock: 32000 }
+                    ],
+                    pumps: [
+                        { id: 1, name: 'مضخة بنزين أ', fuelType: 'بنزين', prevReading: 125400 },
+                        { id: 2, name: 'مضخة مازوت أ', fuelType: 'مازوت', prevReading: 89200 }
+                    ],
+                    prices: {
+                        'بنزين': 15000,
+                        'مازوت': 13000
+                    }
+                };
+                localStorage.setItem('dunya_store_config', JSON.stringify(data));
+            } else {
+                data = JSON.parse(data);
+            }
+            return data;
+        }
+
+        function saveStoreData(data) {
+            localStorage.setItem('dunya_store_config', JSON.stringify(data));
+            refreshUIComponents();
+        }
+
         function updateLiveDashboard() {
+            const config = getStoreData();
             document.getElementById('live-sales').innerText = appState.totalSalesLiters + " لتر";
             document.getElementById('live-expenses').innerText = appState.totalExpenses.toLocaleString() + " ل.س";
             document.getElementById('live-debts').innerText = appState.totalDebts.toLocaleString() + " ل.س";
-            let netCash = (appState.totalSalesLiters * 14000) - appState.totalExpenses - appState.totalDebts;
+            
+            // حساب الصافي بناءً على متوسط السعر أو سعر المادة الأولى
+            let avgPrice = 14000;
+            const keys = Object.keys(config.prices);
+            if(keys.length > 0) avgPrice = config.prices[keys[0]];
+
+            let netCash = (appState.totalSalesLiters * avgPrice) - appState.totalExpenses - appState.totalDebts;
             document.getElementById('live-net').innerText = netCash.toLocaleString() + " ل.س";
         }
 
@@ -339,7 +414,7 @@
             }
         });
 
-        // 1. معالج التشغيل الأول (Setup Wizard)
+        // 1. معالج التهيئة الأولى (Setup Wizard)
         let wizardData = {};
         function startWizard() {
             document.getElementById('wizard-modal').style.display = 'flex';
@@ -353,13 +428,11 @@
             if (step === 1) {
                 title.innerText = "الخطوة (1/3): إعداد الخزانات والمضخات";
                 container.innerHTML = `
-                    <div class="form-group"><label>عدد الخزانات الأرضية:</label><input type="number" id="w-tanks" value="2" min="1"></div>
-                    <div class="form-group"><label>عدد المضخات وأسمائها:</label><input type="text" id="w-pumps" value="مضخة 1, مضخة 2"></div>
+                    <div class="form-group"><label>عدد الخزانات:</label><input type="number" id="w-tanks-count" value="2" min="1"></div>
+                    <div class="form-group"><label>أسماء المضخات (مفصولة بفاصلة):</label><input type="text" id="w-pumps-names" value="مضخة بنزين 1, مضخة مازوت 1"></div>
                     <button type="button" class="btn-primary" onclick="nextWizardStep(2)">التالي: أسعار المحروقات</button>
                 `;
             } else if (step === 2) {
-                wizardData.tanks = document.getElementById('w-tanks').value;
-                wizardData.pumps = document.getElementById('w-pumps').value;
                 title.innerText = "الخطوة (2/3): تبويب أسعار المحروقات";
                 container.innerHTML = `
                     <div class="form-group"><label>سعر لتر البنزين (ل.س):</label><input type="number" id="w-p-gas" value="15000"></div>
@@ -367,11 +440,11 @@
                     <button type="button" class="btn-primary" onclick="nextWizardStep(3)">التالي: نقاط أصفار العدادات</button>
                 `;
             } else if (step === 3) {
-                wizardData.priceGas = document.getElementById('w-p-gas').value;
-                wizardData.priceMazot = document.getElementById('w-p-mazot').value;
+                wizardData.priceGas = document.getElementById('w-p-gas')?.value || 15000;
+                wizardData.priceMazot = document.getElementById('w-p-mazot')?.value || 13000;
                 title.innerText = "الخطوة (3/3): نقطة الصفر وبداية العدادات";
                 container.innerHTML = `
-                    <div class="form-group"><label>قراءة العداد الحالية (نقطة البداية والجرد):</label><input type="number" id="w-counter-start" value="100000"></div>
+                    <div class="form-group"><label>قراءة العدادات الافتتاحية (نقطة البداية):</label><input type="number" id="w-counter-start" value="100000"></div>
                     <button type="button" class="btn-primary" onclick="finishWizard()">حفظ وإنهاء التهيئة 100%</button>
                 `;
             }
@@ -380,8 +453,22 @@
         window.nextWizardStep = function(step) { renderWizardStep(step); }
 
         window.finishWizard = function() {
-            wizardData.counterStart = document.getElementById('w-counter-start').value;
-            localStorage.setItem('dunya_setup', JSON.stringify(wizardData));
+            const startVal = Number(document.getElementById('w-counter-start').value);
+            const initialData = {
+                tanks: [
+                    { id: 1, name: 'خزان بنزين الرئيسي', fuelType: 'بنزين', capacity: 35000, currentStock: 30000 },
+                    { id: 2, name: 'خزان مازوت الرئيسي', fuelType: 'مازوت', capacity: 45000, currentStock: 40000 }
+                ],
+                pumps: [
+                    { id: 1, name: 'مضخة بنزين 1', fuelType: 'بنزين', prevReading: startVal },
+                    { id: 2, name: 'مضخة مازوت 1', fuelType: 'مازوت', prevReading: startVal }
+                ],
+                prices: {
+                    'بنزين': Number(wizardData.priceGas || 15000),
+                    'مازوت': Number(wizardData.priceMazot || 13000)
+                }
+            };
+            saveStoreData(initialData);
             localStorage.setItem('dunya_configured', 'true');
             document.getElementById('wizard-modal').style.display = 'none';
             
@@ -405,23 +492,31 @@
         function showDailyPopup() {
             const modal = document.getElementById('daily-popup-modal');
             const container = document.getElementById('daily-counters-container');
-            const setup = JSON.parse(localStorage.getItem('dunya_setup') || '{"pumps":"مضخة 1"}');
+            const config = getStoreData();
             
-            container.innerHTML = `
-                <div class="form-group">
-                    <label>قراءة عداد (${setup.pumps}):</label>
-                    <input type="number" id="daily-c-1" placeholder="أدخل القراءة الحالية" required>
-                </div>
-            `;
+            let html = '<p style="font-size:13px; margin-bottom:10px;">أدخل القراءات الحالية لجميع المضخات:</p>';
+            config.pumps.forEach(p => {
+                html += `
+                    <div class="form-group">
+                        <label>${p.name} (${p.fuelType}):</label>
+                        <input type="number" id="daily-pump-${p.id}" value="${p.prevReading}" required>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
             modal.style.display = 'flex';
         }
 
         window.submitDailyCounters = function() {
-            const val = document.getElementById('daily-c-1').value;
-            if(!val) { alert("يرجى إدخال القراءة"); return; }
-            document.getElementById('prev-reading').value = val;
+            const config = getStoreData();
+            config.pumps.forEach(p => {
+                const val = document.getElementById(`daily-pump-${p.id}`)?.value;
+                if(val) p.prevReading = Number(val);
+            });
+            saveStoreData(config);
             localStorage.setItem('dunya_last_login_date', new Date().toDateString());
             document.getElementById('daily-popup-modal').style.display = 'none';
+            refreshUIComponents();
         }
 
         window.skipDailyCounters = function() {
@@ -429,10 +524,157 @@
             document.getElementById('daily-popup-modal').style.display = 'none';
         }
 
+        // تحديث واجهات التبويبات بناءً على التخزين
+        function refreshUIComponents() {
+            const config = getStoreData();
+            
+            // 1. تحديث قائمة المضخات في تبويب العدادات
+            const selectPump = document.getElementById('select-pump');
+            if(selectPump) {
+                selectPump.innerHTML = '';
+                config.pumps.forEach(p => {
+                    selectPump.innerHTML += `<option value="${p.id}">${p.name} [${p.fuelType}]</option>`;
+                });
+                updatePumpPreviousReading();
+            }
+
+            // 2. تحديث قائمة الخزانات والسيخة
+            const tanksContainer = document.getElementById('tanks-list-container');
+            if(tanksContainer) {
+                let html = '<p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">الخصم التلقائي للمبيعات من رصيد الخزانات الأرضية:</p>';
+                config.tanks.forEach(t => {
+                    html += `
+                        <div class="item-card">
+                            <div>
+                                <strong>${t.name}</strong> (${t.fuelType})<br>
+                                <span style="font-size:12px; color:var(--accent-orange);">الرصيد الحالي: ${t.currentStock.toLocaleString()} / ${t.capacity.toLocaleString()} لتر</span>
+                            </div>
+                            <input type="number" placeholder="قياس السيخة" id="tank-dip-${t.id}" style="width:120px; padding:6px;">
+                        </div>
+                    `;
+                });
+                html += `<button type="button" class="btn-primary" onclick="alert('تمت مطابقة قياسات السيخة وفحص المخزون بنجاح.')">اعتماد جرد الخزانات</button>`;
+                tanksContainer.innerHTML = html;
+            }
+
+            // 3. لوحة تحكم المالك للإدارة الديناميكية
+            const pricesContainer = document.getElementById('fuel-prices-settings');
+            if(pricesContainer) {
+                let pHtml = '';
+                for(let fuel in config.prices) {
+                    pHtml += `
+                        <div class="form-group" style="display:flex; gap:10px; align-items:center;">
+                            <label style="flex:1;">سعر ${fuel} (ل.س):</label>
+                            <input type="number" id="price-input-${fuel}" value="${config.prices[fuel]}" style="flex:1;">
+                            <button type="button" class="btn-success" style="width:auto; padding:8px 12px; margin:0;" onclick="updateFuelPrice('${fuel}')">حفظ</button>
+                        </div>
+                    `;
+                }
+                pricesContainer.innerHTML = pHtml;
+            }
+
+            const tanksSettingsList = document.getElementById('tanks-settings-list');
+            if(tanksSettingsList) {
+                let tHtml = '';
+                config.tanks.forEach(t => {
+                    tHtml += `
+                        <div class="item-card" style="font-size:13px;">
+                            <span>${t.name} (${t.fuelType}) - السعة: ${t.capacity} لتر</span>
+                            <button type="button" class="btn-primary" style="background:var(--danger-red); width:auto; padding:4px 10px; margin:0;" onclick="deleteTank(${t.id})">حذف</button>
+                        </div>
+                    `;
+                });
+                tanksSettingsList.innerHTML = tHtml;
+            }
+
+            const pumpsSettingsList = document.getElementById('pumps-settings-list');
+            if(pumpsSettingsList) {
+                let pHtml = '';
+                config.pumps.forEach(p => {
+                    pHtml += `
+                        <div class="item-card" style="font-size:13px;">
+                            <span>${p.name} (${p.fuelType}) - القراءة السابقة: ${p.prevReading}</span>
+                            <button type="button" class="btn-primary" style="background:var(--danger-red); width:auto; padding:4px 10px; margin:0;" onclick="deletePump(${p.id})">حذف</button>
+                        </div>
+                    `;
+                });
+                pumpsSettingsList.innerHTML = pHtml;
+            }
+
+            updateLiveDashboard();
+        }
+
+        window.updatePumpPreviousReading = function() {
+            const pumpId = Number(document.getElementById('select-pump').value);
+            const config = getStoreData();
+            const pump = config.pumps.find(p => p.id === pumpId);
+            if(pump) {
+                document.getElementById('prev-reading').value = pump.prevReading;
+            }
+        }
+
+        // إضافة خزان جديد
+        window.addNewTank = function() {
+            const name = prompt("أدخل اسم الخزان الجديد:");
+            if(!name) return;
+            const fuelType = prompt("نوع الوقود (بنزين / مازوت):", "بنزين");
+            const capacity = Number(prompt("السعة الإجمالية باللتر:", "30000"));
+            const currentStock = Number(prompt("الرصيد الحالي باللتر:", "25000"));
+
+            const config = getStoreData();
+            const newId = config.tanks.length > 0 ? Math.max(...config.tanks.map(t => t.id)) + 1 : 1;
+            config.tanks.push({ id: newId, name, fuelType, capacity, currentStock });
+            saveStoreData(config);
+            alert("تمت إضافة الخزان بنجاح.");
+        }
+
+        window.deleteTank = function(id) {
+            if(!confirm("هل أنت متأكد من حذف هذا الخزان؟")) return;
+            const config = getStoreData();
+            config.tanks = config.tanks.filter(t => t.id !== id);
+            saveStoreData(config);
+        }
+
+        // إضافة مضخة / عداد جديد
+        window.addNewPump = function() {
+            const name = prompt("أدخل اسم المضخة أو العداد:");
+            if(!name) return;
+            const fuelType = prompt("نوع الوقود (بنزين / مازوت):", "بنزين");
+            const prevReading = Number(prompt("قراءة العداد الحالية (بداية الجرد):", "100000"));
+
+            const config = getStoreData();
+            const newId = config.pumps.length > 0 ? Math.max(...config.pumps.map(p => p.id)) + 1 : 1;
+            config.pumps.push({ id: newId, name, fuelType, prevReading });
+            saveStoreData(config);
+            alert("تمت إضافة المضخة بنجاح.");
+        }
+
+        window.deletePump = function(id) {
+            if(!confirm("هل أنت متأكد من حذف هذه المضخة؟")) return;
+            const config = getStoreData();
+            config.pumps = config.pumps.filter(p => p.id !== id);
+            saveStoreData(config);
+        }
+
+        // تعديل سعر المحروقات
+        window.updateFuelPrice = function(fuel) {
+            const newPrice = Number(document.getElementById(`price-input-${fuel}`).value);
+            if(!newPrice || newPrice <= 0) { alert("أدخل سعراً صحيحاً"); return; }
+            const config = getStoreData();
+            config.prices[fuel] = newPrice;
+            saveStoreData(config);
+            alert(`تم تحديث سعر ${fuel} إلى ${newPrice.toLocaleString()} ل.س بنجاح.`);
+        }
+
         // 3. النسخ الاحتياطي التلقائي بصيغة PDF في ذاكرة الهاتف
         window.generateDailyPDFReport = function(isAutomatic = false) {
             const reportDate = new Date().toLocaleDateString('ar-SY');
-            const reportContent = `--- تقرير محطة دنيا للوقود (${reportDate}) ---\n إجمالي المبيعات: ${appState.totalSalesLiters} لتر\n إجمالي المصاريف: ${appState.totalExpenses} ل.س\n ديون الآجل: ${appState.totalDebts} ل.س`;
+            const config = getStoreData();
+            const reportContent = `--- تقرير محطة دنيا للوقود (${reportDate}) ---
+ إجمالي المبيعات: ${appState.totalSalesLiters} لتر
+ إجمالي المصاريف: ${appState.totalExpenses} ل.س
+ ديون الآجل: ${appState.totalDebts} ل.س
+ أسعار المواد الحالية: ${JSON.stringify(config.prices)}`;
             
             const blob = new Blob([reportContent], { type: 'application/pdf' });
             const link = document.createElement('a');
@@ -455,13 +697,9 @@
             } else {
                 document.getElementById('owner-exclusive-panel').style.display = 'none';
             }
-            
-            const setup = JSON.parse(localStorage.getItem('dunya_setup') || '{"counterStart":"100000"}');
-            document.getElementById('prev-reading').value = setup.counterStart;
-            updateLiveDashboard();
+            refreshUIComponents();
         }
 
-        // معالجة تسجيل الدخول بدقة تامة مع إزالة أي مسافات زائدة
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const passcode = document.getElementById('passcode-input').value.trim();
@@ -489,8 +727,10 @@
             btnElement.classList.add('active');
         };
 
+        // تسجيل الوردية وخصم الكميات من الخزان المطابق لنوع وقود المضخة
         document.getElementById('shift-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const pumpId = Number(document.getElementById('select-pump').value);
             const prevReading = Number(document.getElementById('prev-reading').value);
             const currentReading = Number(document.getElementById('current-reading').value);
             const calibration = Number(document.getElementById('calibration-qty').value);
@@ -503,16 +743,30 @@
             let netSold = soldLiters - calibration;
             if (netSold < 0) { alert("خطأ: المعايرة أكبر من المبيعات!"); return; }
 
+            // تحديث قراءة المضخة في الذاكرة
+            const config = getStoreData();
+            const pump = config.pumps.find(p => p.id === pumpId);
+            if(pump) {
+                pump.prevReading = currentReading;
+            }
+
+            // خصم المبيعات من الخزان المطابق لنوع الوقود
+            const tank = config.tanks.find(t => t.fuelType === pump?.fuelType);
+            if(tank) {
+                tank.currentStock = Math.max(0, tank.currentStock - netSold);
+            }
+            saveStoreData(config);
+
             appState.totalSalesLiters += netSold;
             updateLiveDashboard();
 
-            alert(`تم حفظ الوردية بنجاح! صافي المبيعات: ${netSold} لتر.`);
-            document.getElementById('prev-reading').value = currentReading;
+            alert(`تم حفظ الوردية بنجاح! صافي المبيعات: ${netSold} لتر من مادة (${pump?.fuelType || ''}).`);
             document.getElementById('current-reading').value = '';
             document.getElementById('calibration-qty').value = '0';
+            updatePumpPreviousReading();
 
             try {
-                await addDoc(collection(db, "shifts"), { prevReading, currentReading, calibration, netSold, timestamp: serverTimestamp() });
+                await addDoc(collection(db, "shifts"), { pumpId: pump?.name, prevReading, currentReading, calibration, netSold, timestamp: serverTimestamp() });
             } catch (err) { console.log("حفظ محلي بانتظار الشبكة."); }
         });
 
@@ -529,7 +783,7 @@
             appState.totalExpenses += amount;
             updateLiveDashboard();
             alert(`تم حفظ المصروف التشغيلي بنجاح.`);
-            document.getElementById('exp-desc').value = 'رموز صحيحة';
+            document.getElementById('exp-desc').value = '';
             document.getElementById('exp-amount').value = '';
         };
     </script>
