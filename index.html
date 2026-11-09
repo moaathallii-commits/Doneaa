@@ -130,9 +130,31 @@
     .chip-btn { background-color: var(--input-bg); color: var(--text-light); border: 1px solid var(--border); padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.15s; }
     .chip-btn:hover { background-color: var(--primary); color: #fff; border-color: var(--primary); }
 
-    .tabs-bar { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 4px; }
-    .tab-btn { background-color: var(--card-bg); color: var(--text-muted); border: 1px solid var(--border); padding: 9px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.88rem; white-space: nowrap; flex: 1; text-align: center; }
-    .tab-btn.active { background-color: var(--primary); color: #fff; border-color: var(--primary); }
+    /* شريط التبويبات المحسن ليكون مرناً وواضحاً وسهل النقر تماماً */
+    .tabs-bar {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      background-color: var(--card-bg);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.88rem;
+      flex: 1 1 auto;
+      text-align: center;
+      min-width: 110px;
+    }
+    .tab-btn.active {
+      background-color: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
     .admin-tab-content { display: none; }
     .admin-tab-content.active { display: block; }
 
@@ -226,7 +248,6 @@
       </div>
       <div id="lockout-alert" style="display:none; background:rgba(239,68,68,0.2); border:1px solid var(--danger); padding:10px; border-radius:8px; margin-bottom:14px; color:#fca5a5; font-size:0.88rem;"></div>
       
-      <!-- تم ربط الحدث بشكل مباشر وصريح وبدون قيود تمنع الاستجابة -->
       <form id="login-form" onsubmit="handleLogin(event)">
         <div class="form-group">
           <label>أدخل كلمة المرور الخاصة بالصلاحية:</label>
@@ -269,13 +290,13 @@
       </div>
     </div>
 
-    <!-- التبويبات -->
+    <!-- التبويبات المحسنة غير المتقطعة -->
     <div class="tabs-bar">
-      <button class="tab-btn active" onclick="switchAdminTab('tab-meters', this)">⛽ العدادات والوردية</button>
-      <button class="tab-btn" onclick="switchAdminTab('tab-tanks', this)">🛢️ الخزانات والسيخة</button>
-      <button class="tab-btn" onclick="switchAdminTab('tab-expenses', this)">💸 المصاريف</button>
-      <button class="tab-btn" onclick="switchAdminTab('tab-debts', this)">📒 الديون الآجلة</button>
-      <button class="tab-btn" onclick="switchAdminTab('tab-settings', this)">⚙️ الإعدادات</button>
+      <button class="tab-btn active" id="btn-tab-meters" onclick="switchAdminTab('tab-meters', this)">⛽ العدادات</button>
+      <button class="tab-btn" id="btn-tab-tanks" onclick="switchAdminTab('tab-tanks', this)">🛢️ الخزانات</button>
+      <button class="tab-btn" id="btn-tab-expenses" onclick="switchAdminTab('tab-expenses', this)">💸 المصاريف</button>
+      <button class="tab-btn" id="btn-tab-debts" onclick="switchAdminTab('tab-debts', this)">📒 الديون</button>
+      <button class="tab-btn" id="btn-tab-settings" onclick="switchAdminTab('tab-settings', this)">⚙️ الإعدادات</button>
     </div>
 
     <!-- تبويب 1: العدادات والبيع -->
@@ -845,7 +866,7 @@
     }
 
     /**************************************************************
-     * 2. نظام الصلاحيات والأمان (تم إزالة أي عائق استجابة لزر الدخول)
+     * 2. نظام الصلاحيات والأمان
      **************************************************************/
     const ADMIN_PASS = "Donea$$123456789";
     const OWNER_PASS = "Donea$$12345678";
@@ -1049,7 +1070,6 @@
         return;
       }
 
-      // في كل مرة يفتح فيها أمين المحطة التطبيق تظهر النافذة البسيطة والأنيقة مع زر تخطي
       showDailyPromptModal();
       
       const todayStr = getSyriaDateString();
@@ -1242,7 +1262,6 @@
       });
     }
 
-    // نافذة إدخال القراءات اليومية في كل فتح مع زر تخطي بارز
     function showDailyPromptModal() {
       const modal = document.getElementById('daily-prompt-modal');
       const container = document.getElementById('daily-prompt-meters-container');
@@ -2578,19 +2597,34 @@
         `).join('');
       }
 
-      const pumpsWhatsappText = pumpsList.map(p => `🔹 ${p.name}: ${formatNum(p.net_liters)} لتر (${formatNum(p.revenue)} ل.س)`).join('\n');
+      const pumpsWhatsappText = pumpsList.map(p => `🔹 ${p.name}: ${formatNum(p.net_liters)} لتر (${formatNum(p.revenue)} ل.س)`).join('
+');
 
       lastOwnerSummaryText =
-        `⛽ *تقرير محطة دنيا للوقود*\n` +
-        `📅 ${bounds.label}\n` +
-        `------------------------\n` +
-        `💰 إجمالي المبيعات: ${formatNum(totalSalesMoney)} ل.س\n` +
-        `💸 إجمالي المصاريف: ${formatNum(totalExpensesMoney)} ل.س\n` +
-        `📒 ديون آجلة غير مسددة: ${formatNum(periodUnpaidDebts)} ل.س\n` +
-        `🏦 *صافي الصندوق النقدي الفعلي: ${formatNum(netCash)} ل.س*\n` +
-        `🛢️ إجمالي اللترات المباعة: ${formatNum(totalSoldLiters)} لتر\n` +
-        (pumpsList.length ? `------------------------\n*إحصائيات المضخات:*\n${pumpsWhatsappText}\n` : '') +
-        (breakdownList.length ? `------------------------\n*تفصيل المواد:*\n` + breakdownList.map(f => `▪️ ${f.name}: ${formatNum(f.liters)} لتر (${formatNum(f.revenue)} ل.س)`).join('\n') : '');
+        `⛽ *تقرير محطة دنيا للوقود*
+` +
+        `📅 ${bounds.label}
+` +
+        `------------------------
+` +
+        `💰 إجمالي المبيعات: ${formatNum(totalSalesMoney)} ل.س
+` +
+        `💸 إجمالي المصاريف: ${formatNum(totalExpensesMoney)} ل.س
+` +
+        `📒 ديون آجلة غير مسددة: ${formatNum(periodUnpaidDebts)} ل.س
+` +
+        `🏦 *صافي الصندوق النقدي الفعلي: ${formatNum(netCash)} ل.س*
+` +
+        `🛢️ إجمالي اللترات المباعة: ${formatNum(totalSoldLiters)} لتر
+` +
+        (pumpsList.length ? `------------------------
+*إحصائيات المضخات:*
+${pumpsWhatsappText}
+` : '') +
+        (breakdownList.length ? `------------------------
+*تفصيل المواد:*
+` + breakdownList.map(f => `▪️ ${f.name}: ${formatNum(f.liters)} لتر (${formatNum(f.revenue)} ل.س)`).join('
+') : '');
     }
 
     function exportOwnerReportPDF() {
