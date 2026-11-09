@@ -36,7 +36,7 @@ body.light-mode {
   --border: #cbd5e1;
 }
 
-/* تنسيق محسّن لطباعة وتصدير ملفات التقارير PDF */
+/* تنسيق محسّن لطباعة وتصدير التقارير PDF دون أي تداخل أو إظهار لأزرار التحكم */
 .pdf-print-mode, .pdf-print-mode * {
   box-sizing: border-box !important;
 }
@@ -78,6 +78,9 @@ body.light-mode {
   padding: 8px !important;
   font-size: 12px !important;
   text-align: right !important;
+}
+.pdf-print-mode button, .pdf-print-mode .no-print {
+  display: none !important;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
@@ -200,7 +203,6 @@ th { background-color: rgba(0, 0, 0, 0.15); color: var(--primary); font-weight: 
 <section id="login-view" class="view-section active">
   <div class="card" style="max-width: 440px; margin: 45px auto;">
     <div class="card-header"><div class="card-title">بوابة الدخول الآمن</div></div>
-    <!-- استخدام onclick بدلاً من onsubmit لمنع أي مشكلة في استجابة زر الدخول بالمتصفحات المختلفة -->
     <div class="form-group">
       <label>كلمة المرور:</label>
       <input type="password" id="login-password" placeholder="أدخل كلمة المرور..." />
@@ -275,7 +277,7 @@ th { background-color: rgba(0, 0, 0, 0.15); color: var(--primary); font-weight: 
 </section>
 
 <section id="owner-view" class="view-section">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;" class="no-print">
     <h2>لوحة المالك الرقابية</h2>
     <button class="btn btn-primary" onclick="exportOwnerReportPDF()">تصدير التقرير PDF</button>
   </div>
@@ -325,16 +327,17 @@ function handleLoginClick() {
     return;
   }
   const p = inputEl.value.trim();
-  console.log("Login attempt with password:", p);
   
   if (p === ADMIN_PASS) {
     switchView('admin-view');
     showToast('أهلاً أمين المحطة', '#10b981');
-    document.getElementById('logout-btn').style.display = 'inline-flex';
+    const logoutBtn = document.getElementById('logout-btn');
+    if(logoutBtn) logoutBtn.style.display = 'inline-flex';
   } else if (p === OWNER_PASS) {
     switchView('owner-view');
     showToast('أهلاً بالمالك', '#1c75bc');
-    document.getElementById('logout-btn').style.display = 'inline-flex';
+    const logoutBtn = document.getElementById('logout-btn');
+    if(logoutBtn) logoutBtn.style.display = 'inline-flex';
   } else {
     showToast('كلمة المرور خطأ', '#ef4444');
   }
@@ -353,8 +356,10 @@ function switchView(id) {
 }
 
 function logoutSession() { 
-  document.getElementById('logout-btn').style.display = 'none';
-  document.getElementById('login-password').value = '';
+  const logoutBtn = document.getElementById('logout-btn');
+  if(logoutBtn) logoutBtn.style.display = 'none';
+  const passEl = document.getElementById('login-password');
+  if(passEl) passEl.value = '';
   switchView('login-view'); 
 }
 
@@ -375,13 +380,16 @@ let tempSetupData = {};
 db.ref('/').on('value', (s) => {
   const d = s.val() || {};
   appState = d;
+  const s1 = document.getElementById('setup-step-1');
+  const s2 = document.getElementById('setup-step-2');
+
   if (!d.settings || !d.meters || !d.tanks) {
     renderSetupTankInputs();
-    document.getElementById('setup-step-1').style.display = 'flex';
+    if(s1) s1.style.display = 'flex';
     return;
   }
-  document.getElementById('setup-step-1').style.display = 'none';
-  document.getElementById('setup-step-2').style.display = 'none';
+  if(s1) s1.style.display = 'none';
+  if(s2) s2.style.display = 'none';
   
   if (document.getElementById('admin-view').classList.contains('active')) {
     renderAdminInterface();
@@ -412,9 +420,12 @@ function goToSetupStep2() {
   tempSetupData.fuels = {};
   tempSetupData.fuelsList = [];
   for (let i = 1; i <= count; i++) {
-    const name = document.getElementById(`s1_t_name_${i}`).value || 'مادة';
-    const price = safeNum(document.getElementById(`s1_t_price_${i}`).value);
-    const vol = safeNum(document.getElementById(`s1_t_vol_${i}`).value);
+    const nameInput = document.getElementById(`s1_t_name_${i}`);
+    const priceInput = document.getElementById(`s1_t_price_${i}`);
+    const volInput = document.getElementById(`s1_t_vol_${i}`);
+    const name = nameInput ? nameInput.value || 'مادة' : 'مادة';
+    const price = safeNum(priceInput ? priceInput.value : 0);
+    const vol = safeNum(volInput ? volInput.value : 0);
     const fId = `fuel_${i}`;
     tempSetupData.fuels[fId] = { name, price };
     tempSetupData.fuelsList.push({ id: fId, name });
@@ -430,23 +441,31 @@ function goToSetupStep2() {
       <input type="number" id="s2_m_read_${j}" value="0" placeholder="القراءة الابتدائية" style="margin-top:4px;" />
     </div>`;
   }
-  document.getElementById('s2-meters-dynamic-container').innerHTML = h;
-  document.getElementById('setup-step-1').style.display = 'none';
-  document.getElementById('setup-step-2').style.display = 'flex';
+  const dynContainer = document.getElementById('s2-meters-dynamic-container');
+  if(dynContainer) dynContainer.innerHTML = h;
+  const s1 = document.getElementById('setup-step-1');
+  const s2 = document.getElementById('setup-step-2');
+  if(s1) s1.style.display = 'none';
+  if(s2) s2.style.display = 'flex';
 }
 
 function backToSetupStep1() {
-  document.getElementById('setup-step-2').style.display = 'none';
-  document.getElementById('setup-step-1').style.display = 'flex';
+  const s1 = document.getElementById('setup-step-1');
+  const s2 = document.getElementById('setup-step-2');
+  if(s2) s2.style.display = 'none';
+  if(s1) s1.style.display = 'flex';
 }
 
 function completeFirstSetup() {
   const meters = {};
   for (let j = 1; j <= tempSetupData.metersCount; j++) {
+    const nameInput = document.getElementById(`s2_m_name_${j}`);
+    const fuelInput = document.getElementById(`s2_m_fuel_${j}`);
+    const readInput = document.getElementById(`s2_m_read_${j}`);
     meters[`meter_${j}`] = {
-      name: document.getElementById(`s2_m_name_${j}`).value || `عداد ${j}`,
-      fuel_type_id: document.getElementById(`s2_m_fuel_${j}`).value,
-      current_reading: safeNum(document.getElementById(`s2_m_read_${j}`).value),
+      name: nameInput ? nameInput.value || `عداد ${j}` : `عداد ${j}`,
+      fuel_type_id: fuelInput ? fuelInput.value : '',
+      current_reading: safeNum(readInput ? readInput.value : 0),
       max_reading: 999999
     };
   }
@@ -454,7 +473,8 @@ function completeFirstSetup() {
     settings: { fuels: tempSetupData.fuels, tanks: tempSetupData.tanks },
     meters: meters
   }).then(() => {
-    document.getElementById('setup-step-2').style.display = 'none';
+    const s2 = document.getElementById('setup-step-2');
+    if(s2) s2.style.display = 'none';
     showToast('تم الإعداد بنجاح', '#10b981');
   });
 }
@@ -491,13 +511,15 @@ function openMandatoryModal() {
       <input type="number" id="mand_curr_${mId}" step="any" placeholder="القراءة الحالية..." required />
     </div>`;
   }).join('');
-  document.getElementById('mandatory-daily-modal').style.display = 'flex';
+  const modal = document.getElementById('mandatory-daily-modal');
+  if(modal) modal.style.display = 'flex';
 }
 
 function submitMandatoryReadings() {
   let cb = {}, count = 0, tankDed = {};
   for (const mId of Object.keys(appState.meters || {})) {
-    const val = safeNum(document.getElementById(`mand_curr_${mId}`)?.value);
+    const valInput = document.getElementById(`mand_curr_${mId}`);
+    const val = safeNum(valInput ? valInput.value : 0);
     const m = appState.meters[mId];
     const prev = safeNum(m.current_reading);
     if (val < prev) {
@@ -526,7 +548,8 @@ function submitMandatoryReadings() {
   if (count === 0) return;
   db.ref().update(cb).then(() => {
     localStorage.setItem('donea_mand_date', getSyriaDateString());
-    document.getElementById('mandatory-daily-modal').style.display = 'none';
+    const modal = document.getElementById('mandatory-daily-modal');
+    if(modal) modal.style.display = 'none';
     showToast('تم اعتماد الوردية وحفظ السجل تلقائياً', '#10b981');
     renderAdminInterface();
   });
@@ -616,21 +639,24 @@ function handleAddExpense(e) {
   e.preventDefault();
   const today = getSyriaDateString();
   const k = db.ref(`expenses/${today}`).push().key;
+  const descEl = document.getElementById('expense-desc');
+  const amtEl = document.getElementById('expense-amount');
   db.ref(`expenses/${today}/${k}`).set({
     id: k,
     date: today,
-    description: document.getElementById('expense-desc').value,
-    amount: safeNum(document.getElementById('expense-amount').value)
+    description: descEl ? descEl.value : '',
+    amount: safeNum(amtEl ? amtEl.value : 0)
   }).then(() => {
-    document.getElementById('expense-desc').value = '';
-    document.getElementById('expense-amount').value = '';
+    if(descEl) descEl.value = '';
+    if(amtEl) amtEl.value = '';
     showToast('تم حفظ المصروف بنجاح', '#10b981');
     renderAdminInterface();
   });
 }
 
 function renderAdminDebts() {
-  const filter = (document.getElementById('debt-search-input')?.value || '').toLowerCase();
+  const searchInput = document.getElementById('debt-search-input');
+  const filter = (searchInput ? searchInput.value : '').toLowerCase();
   const debtsObj = appState.debts || {};
   const tbody = document.getElementById('admin-debts-tbody');
   if(!tbody) return;
@@ -656,8 +682,8 @@ function renderAdminDebts() {
 function addNewDebtRecord() {
   const nameInput = document.getElementById('debt-search-input');
   const amountInput = document.getElementById('debt-amount-input');
-  const name = nameInput?.value.trim();
-  const amount = safeNum(amountInput?.value);
+  const name = nameInput ? nameInput.value.trim() : '';
+  const amount = safeNum(amountInput ? amountInput.value : 0);
 
   if(!name || amount <= 0) {
     showToast('يرجى إدخال اسم الزبون ومبلغ صحيح للدين', '#ef4444');
@@ -671,8 +697,8 @@ function addNewDebtRecord() {
     const newBal = safeNum(debtsObj[existingId].balance) + amount;
     db.ref(`debts/${existingId}/balance`).set(newBal).then(() => {
       showToast('تم تحديث دين الزبون بنجاح', '#10b981');
-      nameInput.value = '';
-      amountInput.value = '';
+      if(nameInput) nameInput.value = '';
+      if(amountInput) amountInput.value = '';
       renderAdminDebts();
     });
   } else {
@@ -683,8 +709,8 @@ function addNewDebtRecord() {
       balance: amount
     }).then(() => {
       showToast('تم إضافة الدين وتسجيل الزبون بنجاح', '#10b981');
-      nameInput.value = '';
-      amountInput.value = '';
+      if(nameInput) nameInput.value = '';
+      if(amountInput) amountInput.value = '';
       renderAdminDebts();
     });
   }
