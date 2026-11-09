@@ -13,14 +13,41 @@
           --accent-blue: #3b82f6;
           --text-color: #f8fafc;
           --border-color: #334155;
+          --danger-red: #ef4444;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body.bg-dark-mode {
           background-color: var(--bg-dark);
           color: var(--text-color);
           font-family: 'Cairo', sans-serif;
-          padding-bottom: 70px;
+          min-height: 100vh;
         }
+
+        /* شاشة تسجيل الدخول */
+        #login-screen {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          padding: 20px;
+          background: var(--bg-dark);
+        }
+        .login-card {
+          background: var(--card-bg);
+          padding: 30px;
+          border-radius: 12px;
+          border: 1px solid var(--border-color);
+          width: 100%;
+          max-width: 400px;
+          text-align: center;
+        }
+        .login-card h1 { font-size: 20px; margin-bottom: 8px; color: var(--accent-orange); }
+        .login-card p { font-size: 13px; color: #94a3b8; margin-bottom: 20px; }
+        
+        /* التطبيق الرئيسي (مخفي حتى يتم تسجيل الدخول) */
+        #app-wrapper { display: none; padding-bottom: 70px; }
+
         /* الشريط الحي العلوي */
         .live-dashboard-bar {
           display: grid;
@@ -46,7 +73,7 @@
         .tab-content.active { display: block; }
         h2 { font-size: 18px; margin-bottom: 15px; color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
         
-        .form-group { margin-bottom: 12px; }
+        .form-group { margin-bottom: 12px; text-align: right; }
         .form-group label { display: block; font-size: 13px; margin-bottom: 5px; }
         .form-group input {
           width: 100%;
@@ -106,101 +133,122 @@
           gap: 3px;
         }
         .bottom-nav button.active { color: var(--accent-orange); }
-      </style>
+    </style>
 </head>
 <body class="bg-dark-mode">
 
-    <!-- الشريط الحي (اللوحة الحية لمتابعة الورديات) -->
-    <header class="live-dashboard-bar">
-        <div class="card-metric">مبيعات اليوم <span id="live-sales">0 لتر</span></div>
-        <div class="card-metric">المصاريف <span id="live-expenses">0 ل.س</span></div>
-        <div class="card-metric">ديون الآجل <span id="live-debts">0 ل.س</span></div>
-        <div class="card-metric highlight">الصافي النقدي الفعلي <span id="live-net">0 ل.س</span></div>
-    </header>
-
-    <!-- الهيكل البرمجي للصفحة الواحدة (SPA) -->
-    <main class="app-container">
-        
-        <!-- تبويب العدادات والمضخات -->
-        <section id="tab-meters" class="tab-content active">
-            <h2>إدارة العدادات وسحب الورديات</h2>
-            <form id="shift-form">
+    <!-- 1. شاشة تسجيل الدخول -->
+    <div id="login-screen">
+        <div class="login-card">
+            <h1>محطة دنيا للوقود</h1>
+            <p>أدخل رمز المرور الخاص بك لتحديد الصلاحية والدخول</p>
+            <form id="login-form">
                 <div class="form-group">
-                    <label>رقم قراءة العداد الحالية:</label>
-                    <input type="number" id="current-reading" placeholder="أدخل القراءة الحالية" required>
+                    <input type="password" id="passcode-input" placeholder="أدخل رمز المرور..." required autocomplete="current-password">
                 </div>
-                <div class="form-group">
-                    <label>كمية المعايرة والالفحص المسترجعة:</label>
-                    <input type="number" id="calibration-qty" value="0">
-                </div>
-                <button type="submit" class="btn-primary">حفظ الوردية (استجابة فورية)</button>
+                <button type="submit" class="btn-primary">تسجيل الدخول</button>
             </form>
-        </section>
+        </div>
+    </div>
 
-        <!-- تبويب المصاريف -->
-        <section id="tab-expenses" class="tab-content">
-            <h2>إثبات المصاريف التشغيلية</h2>
-            <div class="quick-chips">
-                <button class="chip" onclick="quickExpense('صيانة طارئة', 25000)">🔧 صيانة طارئة</button>
-                <button class="chip" onclick="quickExpense('ضيافة وضيافات', 10000)">☕ ضيافة</button>
-                <button class="chip" onclick="quickExpense('تشغيل مولدة', 50000)">⚡ مولدة</button>
-            </div>
-            <div class="form-group">
-                <label>بيان المصروف:</label>
-                <input type="text" id="exp-desc" placeholder="مثال: شراء قطع غيار">
-            </div>
-            <div class="form-group">
-                <label>المبلغ (ل.س):</label>
-                <input type="number" id="exp-amount" placeholder="0">
-            </div>
-            <button type="button" class="btn-primary" onclick="saveCustomExpense()">حفظ المصروف</button>
-        </section>
+    <!-- 2. التطبيق الرئيسي (يظهر بعد المصادقة الناجحة) -->
+    <div id="app-wrapper">
+        <!-- الشريط الحي (اللوحة الحية لمتابعة الورديات) -->
+        <header class="live-dashboard-bar">
+            <div class="card-metric">مبيعات اليوم <span id="live-sales">0 لتر</span></div>
+            <div class="card-metric">المصاريف <span id="live-expenses">0 ل.س</span></div>
+            <div class="card-metric">ديون الآجل <span id="live-debts">0 ل.س</span></div>
+            <div class="card-metric highlight">الصافي النقدي الفعلي <span id="live-net">0 ل.س</span></div>
+        </header>
 
-        <!-- تبويب الخزانات والسيخة -->
-        <section id="tab-tanks" class="tab-content">
-            <h2>جرد الخزانات الأرضية (السيخة)</h2>
-            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">النظام يقوم بالخصم اللحظي للمبيعات من رصيد الخزانات.</p>
-            <div class="form-group">
-                <label>اختر الخزان:</label>
-                <input type="text" value="خزان بنزين 1 (الرئيسي)" disabled style="opacity: 0.7;">
-            </div>
-            <div class="form-group">
-                <label>قياس السيخة الفعلي (سم أو لتر):</label>
-                <input type="number" id="dip-reading" placeholder="أدخل القياس الحالي">
-            </div>
-            <button type="button" class="btn-primary" onclick="alert('تم تسجيل قراءة السيخة وفحص العجز بنجاح.')">مطابقة وجرد المخزون</button>
-        </section>
+        <!-- الهيكل البرمجي للصفحة الواحدة (SPA) -->
+        <main class="app-container">
+            
+            <!-- تبويب العدادات والمضخات -->
+            <section id="tab-meters" class="tab-content active">
+                <h2>إدارة العدادات وسحب الورديات</h2>
+                <form id="shift-form">
+                    <div class="form-group">
+                        <label>رقم قراءة العداد الحالية:</label>
+                        <input type="number" id="current-reading" placeholder="أدخل القراءة الحالية" required>
+                    </div>
+                    <div class="form-group">
+                        <label>كمية المعايرة والفحص المسترجعة:</label>
+                        <input type="number" id="calibration-qty" value="0">
+                    </div>
+                    <button type="submit" class="btn-primary">حفظ الوردية (استجابة فورية)</button>
+                </form>
+            </section>
 
-        <!-- تبويب الإعدادات والتقارير -->
-        <section id="tab-settings" class="tab-content">
-            <h2>الإعدادات والتقارير اليومية</h2>
-            <button type="button" class="btn-primary" style="background:var(--accent-blue); margin-bottom:10px;" onclick="alert('جاري إعداد وإنشاء تقرير الوردية بصيغة PDF...')">تصدير تقرير الوردية PDF</button>
-            <button type="button" class="btn-primary" style="background:#ef4444;" onclick="if(confirm('هل أنت متأكد من رغبتك في استخدام زر الطوارئ؟')) alert('تم تفعيل وضع الطوارئ وتصفير البيانات المحلية المؤقتة.');">زر الطوارئ المؤمّن</button>
-        </section>
-    </main>
+            <!-- تبويب المصاريف -->
+            <section id="tab-expenses" class="tab-content">
+                <h2>إثبات المصاريف التشغيلية</h2>
+                <div class="quick-chips">
+                    <button type="button" class="chip" onclick="quickExpense('صيانة طارئة', 25000)">🔧 صيانة طارئة</button>
+                    <button type="button" class="chip" onclick="quickExpense('ضيافة وضيافات', 10000)">☕ ضيافة</button>
+                    <button type="button" class="chip" onclick="quickExpense('تشغيل مولدة', 50000)">⚡ مولدة</button>
+                </div>
+                <div class="form-group">
+                    <label>بيان المصروف:</label>
+                    <input type="text" id="exp-desc" placeholder="مثال: شراء قطع غيار">
+                </div>
+                <div class="form-group">
+                    <label>المبلغ (ل.س):</label>
+                    <input type="number" id="exp-amount" placeholder="0">
+                </div>
+                <button type="button" class="btn-primary" onclick="saveCustomExpense()">حفظ المصروف</button>
+            </section>
 
-    <!-- شريط التنقل السفلي للـ SPA -->
-    <nav class="bottom-nav">
-        <button onclick="switchTab('meters', this)" class="active">
-            <span>⛽</span> العدادات
-        </button>
-        <button onclick="switchTab('expenses', this)">
-            <span>💵</span> المصاريف
-        </button>
-        <button onclick="switchTab('tanks', this)">
-            <span>🛢️</span> الخزانات
-        </button>
-        <button onclick="switchTab('settings', this)">
-            <span>⚙️</span> الإعدادات
-        </button>
-    </nav>
+            <!-- تبويب الخزانات والسيخة -->
+            <section id="tab-tanks" class="tab-content">
+                <h2>جرد الخزانات الأرضية (السيخة)</h2>
+                <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">النظام يقوم بالخصم اللحظي للمبيعات من رصيد الخزانات.</p>
+                <div class="form-group">
+                    <label>اختر الخزان:</label>
+                    <input type="text" value="خزان بنزين 1 (الرئيسي)" disabled style="opacity: 0.7;">
+                </div>
+                <div class="form-group">
+                    <label>قياس السيخة الفعلي (سم أو لتر):</label>
+                    <input type="number" id="dip-reading" placeholder="أدخل القياس الحالي">
+                </div>
+                <button type="button" class="btn-primary" onclick="alert('تم تسجيل قراءة السيخة وفحص العجز بنجاح.')">مطابقة وجرد المخزون</button>
+            </section>
+
+            <!-- تبويب الإعدادات والتقارير (متاح للمالك بصلاحيات موسعة) -->
+            <section id="tab-settings" class="tab-content">
+                <h2>الإعدادات والتقارير الشاملة</h2>
+                <div id="owner-exclusive-panel" style="background:#0f172a; padding:12px; border-radius:8px; margin-bottom:15px; border:1px solid var(--accent-orange); display:none;">
+                    <p style="font-size:12px; color:var(--accent-orange); margin-bottom:5px;">⭐ لوحة تحكم خاصة بالمالك</p>
+                    <span style="font-size:13px;">تم تفعيل صلاحيات الرقابة المالية وإدارة أسعار المحروقات.</span>
+                </div>
+                <button type="button" class="btn-primary" style="background:var(--accent-blue); margin-bottom:10px;" onclick="alert('جاري إعداد وإنشاء تقرير الوردية بصيغة PDF...')">تصدير تقرير الوردية PDF</button>
+                <button type="button" class="btn-primary" style="background:var(--danger-red);" onclick="if(confirm('هل أنت متأكد من رغبتك في استخدام زر الطوارئ؟')) alert('تم تفعيل وضع الطوارئ وتصفير البيانات المحلية المؤقتة.');">زر الطوارئ المؤمّن</button>
+            </section>
+        </main>
+
+        <!-- شريط التنقل السفلي للـ SPA -->
+        <nav class="bottom-nav">
+            <button onclick="switchTab('meters', this)" class="active">
+                <span>⛽</span> العدادات
+            </button>
+            <button onclick="switchTab('expenses', this)">
+                <span>💵</span> المصاريف
+            </button>
+            <button onclick="switchTab('tanks', this)">
+                <span>🛢️</span> الخزانات
+            </button>
+            <button onclick="switchTab('settings', this)">
+                <span>⚙️</span> الإعدادات
+            </button>
+        </nav>
+    </div>
 
     <!-- المنطق البرمجي المدمج وربط Firebase السحابي -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, enableIndexedDbPersistence, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // إعدادات اتصال Firebase (يتم استبدالها ببيانات المشروع الخاصة بك)
+        // إعدادات اتصال Firebase (استبدل القيم ببيانات مشروعك الفعلي)
         const firebaseConfig = {
           apiKey: "YOUR_API_KEY",
           authDomain: "dunya-fuel.firebaseapp.com",
@@ -215,7 +263,29 @@
 
         // تفعيل العمل بدون إنترنت والتخزين المؤقت المحلي
         enableIndexedDbPersistence(db).catch((err) => {
-          console.warn("ميزة العمل دون إنترنت نشطة مسبقاً أو غير مدعومة كلياً في هذا المتصفح.");
+          console.warn("ميزة العمل دون إنترنت نشطة مسبقاً أو غير مدعومة بالكامل.");
+        });
+
+        // إدارة تسجيل الدخول وفصل الصلاحيات
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const passcode = document.getElementById('passcode-input').value.trim();
+
+            if (passcode === "Donea12345678") {
+                // صلاحيات المالك الكاملة
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-wrapper').style.display = 'block';
+                document.getElementById('owner-exclusive-panel').style.display = 'block';
+                alert("مرحباً بك أيها المالك، تم تفعيل الصلاحيات الكاملة.");
+            } else if (passcode === "Donea123456789") {
+                // صلاحيات أمين المحطة
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-wrapper').style.display = 'block';
+                document.getElementById('owner-exclusive-panel').style.display = 'none';
+                alert("مرحباً بك، تم تسجيل الدخول بصلاحيات أمين المحطة.");
+            } else {
+                alert("رمز المرور غير صحيح! يرجى التأكد من الرمز المُدخل.");
+            }
         });
 
         // التنقل السلس بين أقسام الـ SPA
@@ -238,7 +308,6 @@
                 timestamp: serverTimestamp()
             };
 
-            // استجابة فورية للمستخدم دون انتظار بطء شبكة الإنترنت
             alert("تم حفظ الوردية محلياً بنجاح، وجاري المزامنة السحابية في الخلفية.");
             
             try {
