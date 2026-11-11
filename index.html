@@ -42,70 +42,6 @@
       --border: #cbd5e1;
     }
 
-    /* تنسيق طباعة PDF احترافي ومنظم تماماً بدون أي تداخل أو قص */
-    .pdf-print-mode {
-      background: #ffffff !important;
-      color: #000000 !important;
-      padding: 10px !important;
-      width: 760px !important;
-      max-width: 760px !important;
-      margin: 0 auto !important;
-      font-size: 12px !important;
-      line-height: 1.5 !important;
-      direction: rtl !important;
-    }
-    .pdf-print-mode .card, .pdf-print-mode .pdf-section-card {
-      background: #ffffff !important;
-      color: #000000 !important;
-      border: 1px solid #d1d5db !important;
-      box-shadow: none !important;
-      margin-bottom: 15px !important;
-      padding: 12px !important;
-      border-radius: 6px !important;
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
-    }
-    .pdf-print-mode .stat-card, .pdf-print-mode .pdf-stat-box {
-      background: #f8fafc !important;
-      color: #000000 !important;
-      border: 1px solid #cbd5e1 !important;
-      border-right: 4px solid var(--primary) !important;
-      box-shadow: none !important;
-      margin-bottom: 10px !important;
-      padding: 10px !important;
-      border-radius: 6px !important;
-      page-break-inside: avoid !important;
-      display: inline-block !important;
-      width: 23% !important;
-      margin-left: 1% !important;
-      vertical-align: top !important;
-    }
-    .pdf-print-mode table {
-      width: 100% !important;
-      table-layout: fixed !important;
-      border-collapse: collapse !important;
-      margin-top: 5px !important;
-    }
-    .pdf-print-mode th {
-      background-color: #f1f5f9 !important;
-      color: #000 !important;
-      border: 1px solid #94a3b8 !important;
-      font-size: 11px !important;
-      padding: 6px !important;
-      text-align: right !important;
-    }
-    .pdf-print-mode td {
-      color: #000 !important;
-      border: 1px solid #cbd5e1 !important;
-      font-size: 11px !important;
-      padding: 6px !important;
-      text-align: right !important;
-      word-wrap: break-word !important;
-    }
-    .pdf-print-mode tr { page-break-inside: avoid !important; break-inside: avoid !important; }
-    .pdf-print-mode h3, .pdf-print-mode .card-title { font-size: 14px !important; color: var(--primary) !important; margin-bottom: 5px !important; }
-    .pdf-print-mode .hide-on-print { display: none !important; }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
 
     body {
@@ -254,6 +190,71 @@
 
     .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 8px 0; cursor: pointer; font-size: 0.88rem; font-weight: 600; }
     .checkbox-row input { width: 18px; height: 18px; }
+
+    /* حل مشكلة PDF نهائياً - تصميم خاص للطباعة فقط */
+    .pdf-print-mode {
+      background: #ffffff !important;
+      color: #000000 !important;
+      padding: 10px !important;
+      /* عرض ثابت لضمان عدم القص والتداخل في A4 */
+      width: 794px !important; 
+      max-width: 794px !important;
+      margin: 0 auto !important;
+      font-size: 13px !important;
+      direction: rtl !important;
+    }
+    .pdf-print-mode .hide-on-print { display: none !important; }
+    .pdf-print-mode .card, .pdf-print-mode .pdf-section-card {
+      background: #ffffff !important;
+      color: #000000 !important;
+      border: 1px solid #000 !important;
+      box-shadow: none !important;
+      margin-bottom: 15px !important;
+      padding: 10px !important;
+      border-radius: 0 !important;
+      page-break-inside: avoid !important;
+    }
+    .pdf-print-mode .stat-card {
+      background: #ffffff !important;
+      color: #000 !important;
+      border: 1px solid #000 !important;
+      margin-bottom: 10px !important;
+      padding: 10px !important;
+      border-radius: 0 !important;
+      page-break-inside: avoid !important;
+      float: right !important;
+      width: 23% !important;
+      margin-left: 2% !important;
+    }
+    .pdf-print-mode .stat-card:last-child { margin-left: 0 !important; }
+    /* Clear floats */
+    .pdf-print-mode .grid-4::after, .pdf-print-mode .grid-2::after {
+      content: ""; display: table; clear: both;
+    }
+    .pdf-print-mode table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      margin-top: 5px !important;
+      table-layout: fixed !important;
+    }
+    .pdf-print-mode th {
+      background-color: #f1f1f1 !important;
+      color: #000 !important;
+      border: 1px solid #000 !important;
+      font-size: 11px !important;
+      padding: 5px !important;
+      text-align: center !important;
+    }
+    .pdf-print-mode td {
+      color: #000 !important;
+      border: 1px solid #000 !important;
+      font-size: 11px !important;
+      padding: 5px !important;
+      text-align: center !important;
+      word-wrap: break-word !important;
+    }
+    .pdf-print-mode h3, .pdf-print-mode .card-title { font-size: 15px !important; color: #000 !important; font-weight: bold !important; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 10px !important; }
+    .pdf-print-mode .badge { border: none !important; color: #000 !important; background: none !important; font-size: 11px !important; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -285,7 +286,7 @@
         <div>📅 تاريخ الوردية: <strong id="mand-pdf-date-label" style="color:var(--primary);"></strong></div>
         <div style="margin-top:6px; color:var(--success);">✅ سيتم تصدير وحفظ التقرير إلى ذاكرة الهاتف.</div>
       </div>
-      <button class="btn btn-danger btn-block" style="padding:12px; font-size:1rem;" onclick="executeAdminMandatoryDailyPDFExport()">📥 حفظ نسختي اليومية (PDF) الآن</button>
+      <button id="btn-mand-export" class="btn btn-danger btn-block" style="padding:12px; font-size:1rem;" onclick="executeMandatoryDailyPDFExport()">📥 حفظ نسختي اليومية (PDF) الآن</button>
     </div>
   </div>
 
@@ -308,7 +309,7 @@
 
   <!-- كشف حساب زبون مع تصدير PDF -->
   <div id="customer-stats-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-box" style="max-width: 650px;" id="customer-pdf-area">
+    <div class="modal-box" style="max-width: 700px;" id="customer-pdf-area">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">
         <h3 style="color:var(--primary);" id="cust-modal-title">كشف حساب زبون</h3>
         <div class="hide-on-print" style="display:flex; gap:5px;">
@@ -318,20 +319,24 @@
       </div>
       <div id="cust-modal-summary" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:14px;"></div>
       
-      <div style="margin-bottom:8px; font-weight:bold; color:var(--secondary);">سجل المسحوبات:</div>
-      <div class="table-responsive" style="max-height:200px; overflow-y:auto; margin-bottom:15px;">
-        <table>
-          <thead><tr><th style="width:25%">التاريخ والوقت</th><th style="width:25%">المادة</th><th style="width:15%">اللترات</th><th style="width:20%">المبلغ الكلي</th><th style="width:15%">الحالة</th></tr></thead>
-          <tbody id="cust-modal-tbody"></tbody>
-        </table>
+      <div class="pdf-section-card">
+        <div style="margin-bottom:8px; font-weight:bold; color:var(--secondary);">سجل المسحوبات:</div>
+        <div class="table-responsive" style="max-height:200px; overflow-y:auto; margin-bottom:15px;">
+          <table>
+            <thead><tr><th style="width:25%">التاريخ والوقت</th><th style="width:25%">المادة</th><th style="width:15%">اللترات</th><th style="width:20%">المبلغ الكلي</th><th style="width:15%">الحالة</th></tr></thead>
+            <tbody id="cust-modal-tbody"></tbody>
+          </table>
+        </div>
       </div>
 
-      <div style="margin-bottom:8px; font-weight:bold; color:var(--success);">سجل الدفعات النقدية:</div>
-      <div class="table-responsive" style="max-height:150px; overflow-y:auto;">
-        <table>
-          <thead><tr><th style="width:30%">التاريخ والوقت</th><th style="width:30%">المبلغ المسدد (ل.س)</th><th style="width:40%">المعرف (لعملية السداد)</th></tr></thead>
-          <tbody id="cust-modal-payments-tbody"></tbody>
-        </table>
+      <div class="pdf-section-card">
+        <div style="margin-bottom:8px; font-weight:bold; color:var(--success);">سجل الدفعات النقدية:</div>
+        <div class="table-responsive" style="max-height:150px; overflow-y:auto;">
+          <table>
+            <thead><tr><th style="width:30%">التاريخ والوقت</th><th style="width:30%">المبلغ المسدد (ل.س)</th><th style="width:40%">المعرف (لعملية السداد)</th></tr></thead>
+            <tbody id="cust-modal-payments-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -389,7 +394,7 @@
     </div>
   </section>
 
-  <!-- واجهة أمين المحطة (تدعم تصدير PDF الإلزامي) -->
+  <!-- واجهة أمين المحطة -->
   <section id="admin-view" class="view-section">
     <div id="admin-pdf-area">
       <div class="hide-on-print" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
@@ -405,7 +410,7 @@
         <div style="color:var(--text-muted); font-size:10px;">محطة دنيا للوقود | <span id="admin-pdf-date"></span></div>
       </div>
 
-      <div class="grid-4">
+      <div class="grid-4" style="margin-bottom:15px;">
         <div class="stat-card"><div class="stat-title">مبيعات اليوم</div><div class="stat-value" id="admin-shift-sales">0</div></div>
         <div class="stat-card red"><div class="stat-title">مصاريف اليوم</div><div class="stat-value" id="admin-shift-expenses">0</div></div>
         <div class="stat-card yellow"><div class="stat-title">ديون آجلة مسجلة اليوم</div><div class="stat-value" id="admin-shift-debts">0</div></div>
@@ -413,7 +418,7 @@
       </div>
 
       <!-- إحصائيات المضخات تظهر دائماً في PDF أمين المحطة -->
-      <div class="card pdf-section-card">
+      <div class="card pdf-section-card" style="margin-bottom:15px;">
         <div class="card-header"><div class="card-title">📊 ملخص مبيعات اليوم لكل مضخة</div></div>
         <div class="table-responsive">
           <table><thead><tr><th style="width:25%">المضخة</th><th style="width:15%">المادة</th><th style="width:10%">حركات</th><th style="width:15%">معايرة</th><th style="width:15%">الصافي (لتر)</th><th style="width:20%">المبلغ (ل.س)</th></tr></thead><tbody id="admin-pump-stats-tbody"></tbody></table>
@@ -490,11 +495,11 @@
           <div class="card-header"><div class="card-title">📝 تسجيل دين جديد</div></div>
           <form onsubmit="handleAddDebt(event)">
             <div class="form-group"><label>الزبون:</label><input type="text" id="debt-customer" required /></div>
-            <div class="form-group"><label>الوقود:</label><select id="debt-fuel" onchange="calcDebtAmountFromLiters()"></select></div>
-            <div class="form-group"><label>الكمية (لتر):</label><input type="number" id="debt-liters" min="0" step="any" oninput="calcDebtAmountFromLiters()" required /></div>
-            <div class="form-group"><label>المبلغ (ل.س):</label><input type="number" id="debt-amount" min="1" step="any" readonly /></div>
-            <div class="form-group"><label>ملاحظة:</label><input type="text" id="debt-note" /></div>
-            <button type="submit" class="btn btn-primary btn-block">حفظ الدين</button>
+            <div class="form-group"><label>الوقود:</label><select id="debt-fuel" required onchange="calcDebtAmountFromLiters()"></select></div>
+            <div class="form-group"><label>الكمية باللتر:</label><input type="number" id="debt-liters" min="0" step="any" oninput="calcDebtAmountFromLiters()" required /></div>
+            <div class="form-group"><label>المبلغ الإجمالي (حساب تلقائي):</label><input type="number" id="debt-amount" min="1" step="any" placeholder="0" readonly /></div>
+            <div class="form-group"><label>ملاحظة إضافية:</label><input type="text" id="debt-note" /></div>
+            <button type="submit" class="btn btn-primary btn-block">تسجيل الدين الآجل</button>
           </form>
         </div>
         <div class="card">
@@ -562,20 +567,20 @@
         <div style="color:var(--text-muted); font-size:10px;"><span id="report-period-label"></span> | <span id="report-generated-time"></span></div>
       </div>
 
-      <div class="grid-4">
+      <div class="grid-4" style="margin-bottom:15px;">
         <div class="stat-card"><div class="stat-title">المبيعات (ل.س)</div><div class="stat-value" id="owner-total-sales">0</div></div>
         <div class="stat-card red"><div class="stat-title">المصاريف (ل.س)</div><div class="stat-value" id="owner-total-expenses">0</div></div>
         <div class="stat-card yellow"><div class="stat-title">ديون قائمة (ل.س)</div><div class="stat-value" id="owner-total-unpaid-debts">0</div></div>
         <div class="stat-card green"><div class="stat-title">الصافي النقدي (ل.س)</div><div class="stat-value" id="owner-net-cash">0</div></div>
       </div>
 
-      <div class="grid-2">
+      <div class="grid-2" style="margin-bottom:15px;">
         <div class="stat-card blue"><div class="stat-title">اللترات المباعة (لتر)</div><div class="stat-value" id="owner-total-liters">0</div></div>
         <div class="stat-card green"><div class="stat-title">ديون محصلة نقداً (ل.س)</div><div class="stat-value" id="owner-collected-debts">0</div></div>
       </div>
 
       <!-- إحصائيات متقدمة -->
-      <div class="grid-2">
+      <div class="grid-2" style="margin-bottom:15px;">
         <div class="card pdf-section-card">
           <div class="card-title">⛽ إحصائيات المضخات</div>
           <div class="table-responsive">
@@ -590,18 +595,18 @@
         </div>
       </div>
 
-      <div class="card pdf-section-card">
+      <div class="card pdf-section-card" style="margin-bottom:15px;">
         <div class="card-title">📒 تقرير الديون الشامل للزبائن</div>
         <div class="table-responsive">
           <table><thead><tr><th style="width:25%">الزبون</th><th style="width:25%">المسحوبات (ل.س)</th><th style="width:25%">المسدد (ل.س)</th><th style="width:25%">المتبقي (ل.س)</th></tr></thead><tbody id="owner-debts-summary-tbody"></tbody></table>
         </div>
       </div>
 
-      <div class="grid-2">
+      <div class="grid-2" style="margin-bottom:15px;">
         <div class="card pdf-section-card">
           <div class="card-title">💸 المصاريف والصهاريج</div>
           <div class="table-responsive">
-            <table><thead><tr><th style="width:20%">التاريخ</th><th style="width:50%">البيان / الحركة</th><th style="width:30%">القيمة/الكمية</th></tr></thead><tbody id="owner-expenses-and-supplies-tbody"></tbody></table>
+            <table><thead><tr><th style="width:25%">التاريخ</th><th style="width:45%">البيان / الحركة</th><th style="width:30%">القيمة/الكمية</th></tr></thead><tbody id="owner-expenses-and-supplies-tbody"></tbody></table>
           </div>
         </div>
         <div class="card pdf-section-card">
@@ -725,10 +730,7 @@
       else { document.getElementById('mandatory-daily-pdf-modal').style.display='none'; checkDailyPopupTrigger(); }
     }
     function executeMandatoryDailyPDFExport() {
-      exportAdminReportPDF();
-      localStorage.setItem('donea_last_pdf_archived_date', getSyriaDateString());
-      document.getElementById('mandatory-daily-pdf-modal').style.display='none';
-      checkDailyPopupTrigger();
+      exportAdminReportPDF(true); // true means it's the mandatory call
     }
     function checkDailyPopupTrigger() {
       if(localStorage.getItem('donea_last_prompt_date') !== getSyriaDateString() && Object.keys(appState.meters||{}).length>0) {
@@ -835,7 +837,7 @@
     function addSup(k) { const v=safeNum(document.getElementById(`sup_${k}`).value), n=document.getElementById(`supn_${k}`).value; if(v>0) { const d=getSyriaDateString(), id=db.ref().push().key; db.ref().update({[`tanks/${k}/current_volume`]:safeNum(appState.tanks[k].current_volume)+v, [`tank_supplies/${d}/${id}`]:{id,date:d,time:getSyriaTimeString(),timestamp:Date.now(),tank_id:k,tank_name:appState.tanks[k].name,volume:v,note:n||'-'}}); showToast('تم التوريد'); } }
     function saveDip(k) { const v=safeNum(document.getElementById(`dip_${k}`).value); if(v>0 && confirm('اعتماد السيخة لتصحيح الخزان؟')) { db.ref(`tanks/${k}`).update({current_volume:v, last_dip_date:getSyriaDateString(), last_dip_actual:v, last_dip_book:appState.tanks[k].current_volume, last_dip_diff:v-appState.tanks[k].current_volume}); showToast('تم التوثيق'); } }
 
-    function fillExpenseChip(t){ document.getElementById('expense-desc').value=t; }
+    function fillExpenseChip(t){ document.getElementById('expense-desc').value=t; document.getElementById('expense-amount').focus(); }
     function handleAddExpense(e) { e.preventDefault(); const d=getSyriaDateString(), id=db.ref().push().key; db.ref(`expenses/${d}/${id}`).set({id, date:d, time:getSyriaTimeString(), timestamp:Date.now(), description:document.getElementById('expense-desc').value, amount:safeNum(document.getElementById('expense-amount').value)}); showToast('تم الحفظ'); document.getElementById('expense-desc').value=''; document.getElementById('expense-amount').value=''; }
     function delExp(id) { if(confirm('حذف؟')) db.ref(`expenses/${getSyriaDateString()}/${id}`).remove(); }
 
@@ -863,22 +865,18 @@
     }
 
     function payCustDebt(c, tot, pd) { 
-      // سنوزع الدفعة على الديون المفتوحة لهذا الزبون بالتسلسل الأقدم للأحدث
-      document.getElementById('pay-debt-id').value = c; // وضعنا اسم الزبون كـ ID هنا
+      document.getElementById('pay-debt-id').value = c; 
       document.getElementById('pay-debt-info').innerHTML=`الزبون: <b>${c}</b><br/>المتبقي الكلي عليه: <b>${formatNum(tot-pd)}</b>`; 
       document.getElementById('pay-debt-amount').value = tot-pd; 
       document.getElementById('pay-debt-modal').style.display='flex'; 
     }
 
     function submitPayDebt() { 
-      const cust = document.getElementById('pay-debt-id').value; // customer name
+      const cust = document.getElementById('pay-debt-id').value; 
       let p = safeNum(document.getElementById('pay-debt-amount').value); 
       if(p<=0) return;
       
       const up = {};
-      const t = getSyriaFullTime();
-      
-      // جلب وتصفية الديون المفتوحة للزبون وترتيبها الأقدم فالأحدث
       let ds = Object.values(appState.debts||{}).filter(x=>x.customer===cust && !x.paid).sort((a,b)=>a.timestamp-b.timestamp);
       
       for(const d of ds) {
@@ -891,7 +889,6 @@
         up[`debts/${d.id}/paid_amount`] = np;
         up[`debts/${d.id}/paid`] = paidStatus;
         
-        // تسجيل الدفعة في سجل الدفعات الدقيق للعملية
         const pid = db.ref().push().key;
         up[`debts/${d.id}/payments/${pid}`] = { date:getSyriaDateString(), time:getSyriaTimeString(), amount:toPay, timestamp:Date.now() };
         
@@ -920,7 +917,6 @@
       document.getElementById('customer-stats-modal').style.display='flex';
     }
 
-    // تصدير PDF مستقل للزبون المفتوح حالياً في كشف الحساب
     function exportCustomerStatementPDF() {
       const el = document.getElementById('customer-pdf-area');
       el.classList.add('pdf-print-mode');
@@ -938,11 +934,11 @@
       });
     }
 
-    // تصدير وردية أمين المحطة PDF
-    function exportAdminReportPDF() {
+    // تصدير وردية أمين المحطة PDF بإصلاح التجميد
+    function exportAdminReportPDF(isMandatory = false) {
       const el = document.getElementById('admin-pdf-area');
       el.classList.add('pdf-print-mode');
-      document.querySelector('#admin-pdf-area .pdf-header-box').style.display = 'block';
+      document.querySelector('#admin-pdf-area .pdf-header-box').style.display = 'table'; // fix grid/flex
       showToast('جاري تصدير تقرير الوردية (PDF)...', '#1c75bc');
       html2pdf().set({
         margin: [5,5,5,5], filename: `وردية_أمين_المحطة_${getSyriaDateString()}.pdf`,
@@ -953,6 +949,17 @@
       }).from(el).save().then(()=>{ 
         el.classList.remove('pdf-print-mode'); 
         document.querySelector('#admin-pdf-area .pdf-header-box').style.display = 'none';
+        if (isMandatory) {
+          localStorage.setItem('donea_last_pdf_archived_date', getSyriaDateString());
+          document.getElementById('mandatory-daily-pdf-modal').style.display = 'none';
+          recordAuditLog('أرشفة PDF إلزامية يومية', `تم حفظ وتوثيق النسخة الاحتياطية للوردية لليوم ${getSyriaDateString()}`);
+          showToast('تم حفظ نسختك اليومية (PDF) بنجاح ✅', '#10b981');
+          checkDailyPopupTrigger();
+        }
+      }).catch(err => {
+        el.classList.remove('pdf-print-mode'); 
+        document.querySelector('#admin-pdf-area .pdf-header-box').style.display = 'none';
+        showToast('فشل التصدير! حاول مرة أخرى.', '#ef4444');
       });
     }
 
@@ -986,9 +993,11 @@
       });
 
       document.getElementById('owner-total-sales').textContent=formatNum(ts); document.getElementById('owner-total-expenses').textContent=formatNum(te); document.getElementById('owner-total-unpaid-debts').textContent=formatNum(tu); document.getElementById('owner-collected-debts').textContent=formatNum(tc); document.getElementById('owner-net-cash').textContent=formatNum(ts-te+tc); document.getElementById('owner-total-liters').textContent=formatNum(tl);
-      document.getElementById('owner-pumps-breakdown-tbody').innerHTML = Object.values(pb).map(p=>`<tr><td>${p.name}</td><td><span class="badge">${p.current_fuel}</span></td><td>${p.ops_count}</td><td>${p.first_prev !== null ? formatNum(p.first_prev) : '-'}</td><td>${p.last_curr !== null ? formatNum(p.last_curr) : '-'}</td><td>${formatNum(p.calib_liters)}</td><td style="font-weight:700;">${formatNum(p.net_liters)} لتر</td><td style="font-weight:700;">${formatNum(p.revenue)} ل.س</td></tr>`).join('');
+      
+      document.getElementById('owner-pumps-breakdown-tbody').innerHTML = Object.values(pb).map(p=>`<tr><td><strong>${p.name}</strong></td><td><span class="badge">${p.current_fuel}</span></td><td>${p.ops_count}</td><td>${p.first_prev !== null ? formatNum(p.first_prev) : '-'}</td><td>${p.last_curr !== null ? formatNum(p.last_curr) : '-'}</td><td>${formatNum(p.calib_liters)}</td><td style="font-weight:700;">${formatNum(p.net_liters)} لتر</td><td style="font-weight:700;">${formatNum(p.revenue)} ل.س</td></tr>`).join('');
       document.getElementById('owner-fuel-breakdown-tbody').innerHTML = Object.keys(fb).map(k=>`<tr><td><span class="badge">${fb[k].n}</span></td><td style="font-weight:700;">${formatNum(fb[k].l)} لتر</td><td style="font-weight:700;">${formatNum(fb[k].m)} ل.س</td><td>${formatNum(safeNum(appState.tanks[k]?.current_volume))} لتر</td></tr>`).join('');
       document.getElementById('owner-debts-summary-tbody').innerHTML = Object.values(cb).map(c=>`<tr><td><strong>${c.n}</strong></td><td>${formatNum(c.r)} ل.س</td><td>${formatNum(c.p)} ل.س</td><td style="font-weight:700;">${formatNum(c.r-c.p)} ل.س</td><td>${(c.r-c.p)<=0?'مسدد بالكامل':'ذمم قائمة'}</td></tr>`).join('');
+      
       document.getElementById('owner-expenses-and-supplies-tbody').innerHTML = cx.map(x=>`<tr><td>${x.d}</td><td>${x.n}</td><td>${formatNum(x.a)}</td></tr>`).join('');
     }
 
@@ -1007,6 +1016,10 @@
         el.classList.remove('pdf-print-mode'); 
         document.querySelector('#pdf-report-area .pdf-header-box').style.display = 'none';
         showToast('تم الحفظ بنجاح ✅', '#10b981'); 
+      }).catch(err => {
+        el.classList.remove('pdf-print-mode'); 
+        document.querySelector('#pdf-report-area .pdf-header-box').style.display = 'none';
+        showToast('فشل التصدير: ' + err.message, '#ef4444');
       });
     }
 
