@@ -104,6 +104,7 @@
     }
     .pdf-print-mode tr { page-break-inside: avoid !important; break-inside: avoid !important; }
     .pdf-print-mode h3, .pdf-print-mode .card-title { font-size: 14px !important; color: var(--primary) !important; margin-bottom: 5px !important; }
+    .pdf-print-mode .hide-on-print { display: none !important; }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
 
@@ -273,7 +274,7 @@
     </div>
   </div>
 
-  <!-- أرشفة PDF إلزامية يومية -->
+  <!-- أرشفة PDF إلزامية يومية (أمين المحطة) -->
   <div id="mandatory-daily-pdf-modal" class="modal-overlay" style="display: none;">
     <div class="modal-box" style="max-width: 520px; border-color: var(--danger);">
       <div style="border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:14px;">
@@ -284,7 +285,7 @@
         <div>📅 تاريخ الوردية: <strong id="mand-pdf-date-label" style="color:var(--primary);"></strong></div>
         <div style="margin-top:6px; color:var(--success);">✅ سيتم تصدير وحفظ التقرير إلى ذاكرة الهاتف.</div>
       </div>
-      <button class="btn btn-danger btn-block" style="padding:12px; font-size:1rem;" onclick="executeMandatoryDailyPDFExport()">📥 حفظ نسختي اليومية (PDF) الآن</button>
+      <button class="btn btn-danger btn-block" style="padding:12px; font-size:1rem;" onclick="executeAdminMandatoryDailyPDFExport()">📥 حفظ نسختي اليومية (PDF) الآن</button>
     </div>
   </div>
 
@@ -305,20 +306,31 @@
     </div>
   </div>
 
-  <!-- كشف حساب زبون -->
+  <!-- كشف حساب زبون مع تصدير PDF -->
   <div id="customer-stats-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-box" style="max-width: 650px;">
+    <div class="modal-box" style="max-width: 650px;" id="customer-pdf-area">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">
         <h3 style="color:var(--primary);" id="cust-modal-title">كشف حساب زبون</h3>
-        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('customer-stats-modal').style.display='none'">إغلاق ✕</button>
+        <div class="hide-on-print" style="display:flex; gap:5px;">
+          <button class="btn btn-sm btn-primary" onclick="exportCustomerStatementPDF()">📥 تصدير PDF</button>
+          <button class="btn btn-sm btn-secondary" onclick="document.getElementById('customer-stats-modal').style.display='none'">إغلاق ✕</button>
+        </div>
       </div>
       <div id="cust-modal-summary" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:14px;"></div>
-      <div class="table-responsive" style="max-height:350px; overflow-y:auto;">
+      
+      <div style="margin-bottom:8px; font-weight:bold; color:var(--secondary);">سجل المسحوبات:</div>
+      <div class="table-responsive" style="max-height:200px; overflow-y:auto; margin-bottom:15px;">
         <table>
-          <thead>
-            <tr><th>التاريخ</th><th>المادة</th><th>اللترات</th><th>المبلغ الكلي</th><th>المسدد</th><th>الحالة</th></tr>
-          </thead>
+          <thead><tr><th style="width:25%">التاريخ والوقت</th><th style="width:25%">المادة</th><th style="width:15%">اللترات</th><th style="width:20%">المبلغ الكلي</th><th style="width:15%">الحالة</th></tr></thead>
           <tbody id="cust-modal-tbody"></tbody>
+        </table>
+      </div>
+
+      <div style="margin-bottom:8px; font-weight:bold; color:var(--success);">سجل الدفعات النقدية:</div>
+      <div class="table-responsive" style="max-height:150px; overflow-y:auto;">
+        <table>
+          <thead><tr><th style="width:30%">التاريخ والوقت</th><th style="width:30%">المبلغ المسدد (ل.س)</th><th style="width:40%">المعرف (لعملية السداد)</th></tr></thead>
+          <tbody id="cust-modal-payments-tbody"></tbody>
         </table>
       </div>
     </div>
@@ -348,7 +360,7 @@
   </div>
 
   <!-- الهيدر العلوي -->
-  <header class="app-header">
+  <header class="app-header hide-on-print">
     <div class="brand-box">
       <img src="1000065786.png" alt="Logo" class="brand-logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23f26f22%22/><text x=%2250%25%22 y=%2255%25%22 font-size=%2218%22 fill=%22white%22 text-anchor=%22middle%22>دنيا</text></svg>'" />
       <div class="brand-title"><h1>محطة دنيا للوقود</h1><span id="current-date-badge">سوريا</span></div>
@@ -360,7 +372,7 @@
   </header>
 
   <!-- بوابة الدخول -->
-  <section id="login-view" class="view-section active">
+  <section id="login-view" class="view-section active hide-on-print">
     <div class="card" style="max-width: 440px; margin: 45px auto;">
       <div class="card-header"><div class="card-title">🔐 بوابة الدخول</div></div>
       <div id="lockout-alert" style="display:none; background:rgba(239,68,68,0.2); border:1px solid var(--danger); padding:10px; border-radius:8px; margin-bottom:14px; color:#fca5a5;"></div>
@@ -377,24 +389,46 @@
     </div>
   </section>
 
-  <!-- واجهة أمين المحطة -->
+  <!-- واجهة أمين المحطة (تدعم تصدير PDF الإلزامي) -->
   <section id="admin-view" class="view-section">
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-      <h2>👨‍🔧 لوحة أمين المحطة</h2>
-      <div style="display:flex; gap:8px;">
-        <button class="btn btn-primary btn-sm" onclick="exportOwnerReportPDF()">📥 أرشيف PDF</button>
-        <button class="btn btn-warning btn-sm" onclick="repairDatabaseSchema()">⚙️ تهيئة</button>
+    <div id="admin-pdf-area">
+      <div class="hide-on-print" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+        <h2>👨‍🔧 لوحة أمين المحطة</h2>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary btn-sm" onclick="exportAdminReportPDF()">📥 تصدير الوردية PDF</button>
+          <button class="btn btn-warning btn-sm" onclick="repairDatabaseSchema()">⚙️ تهيئة</button>
+        </div>
       </div>
-    </div>
 
-    <div class="grid-4">
-      <div class="stat-card"><div class="stat-title">مبيعات اليوم</div><div class="stat-value" id="admin-shift-sales">0</div></div>
-      <div class="stat-card red"><div class="stat-title">مصاريف اليوم</div><div class="stat-value" id="admin-shift-expenses">0</div></div>
-      <div class="stat-card yellow"><div class="stat-title">ديون آجلة غير مسددة</div><div class="stat-value" id="admin-shift-debts">0</div></div>
-      <div class="stat-card green"><div class="stat-title">المطلوب للصندوق</div><div class="stat-value" id="admin-shift-net-cash">0</div></div>
-    </div>
+      <div class="pdf-header-box" style="display:none; text-align:center; margin-bottom:15px; border-bottom:2px solid var(--primary); padding-bottom:10px;">
+        <h2 style="color:var(--primary); margin-bottom:5px;">تقرير وردية أمين المحطة</h2>
+        <div style="color:var(--text-muted); font-size:10px;">محطة دنيا للوقود | <span id="admin-pdf-date"></span></div>
+      </div>
 
-    <div class="tabs-bar">
+      <div class="grid-4">
+        <div class="stat-card"><div class="stat-title">مبيعات اليوم</div><div class="stat-value" id="admin-shift-sales">0</div></div>
+        <div class="stat-card red"><div class="stat-title">مصاريف اليوم</div><div class="stat-value" id="admin-shift-expenses">0</div></div>
+        <div class="stat-card yellow"><div class="stat-title">ديون آجلة مسجلة اليوم</div><div class="stat-value" id="admin-shift-debts">0</div></div>
+        <div class="stat-card green"><div class="stat-title">المطلوب للصندوق</div><div class="stat-value" id="admin-shift-net-cash">0</div></div>
+      </div>
+
+      <!-- إحصائيات المضخات تظهر دائماً في PDF أمين المحطة -->
+      <div class="card pdf-section-card">
+        <div class="card-header"><div class="card-title">📊 ملخص مبيعات اليوم لكل مضخة</div></div>
+        <div class="table-responsive">
+          <table><thead><tr><th style="width:25%">المضخة</th><th style="width:15%">المادة</th><th style="width:10%">حركات</th><th style="width:15%">معايرة</th><th style="width:15%">الصافي (لتر)</th><th style="width:20%">المبلغ (ل.س)</th></tr></thead><tbody id="admin-pump-stats-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <div class="card pdf-section-card">
+        <div class="card-header"><div class="card-title">📋 سجل حركات العدادات لليوم</div></div>
+        <div class="table-responsive">
+          <table><thead><tr><th style="width:10%">الوقت</th><th style="width:20%">العداد</th><th style="width:15%">الوقود</th><th style="width:15%">السابقة</th><th style="width:15%">الحالية</th><th style="width:10%">الصافي</th><th style="width:15%">الإجمالي</th><th class="hide-on-print" style="width:10%">حذف</th></tr></thead><tbody id="admin-daily-sales-tbody"></tbody></table>
+        </div>
+      </div>
+    </div> <!-- نهاية admin-pdf-area -->
+
+    <div class="tabs-bar hide-on-print">
       <button class="tab-btn active" onclick="switchAdminTab('tab-meters', this)">⛽ العدادات</button>
       <button class="tab-btn" onclick="switchAdminTab('tab-tanks', this)">🛢️ الخزانات</button>
       <button class="tab-btn" onclick="switchAdminTab('tab-expenses', this)">💸 المصاريف</button>
@@ -403,28 +437,16 @@
     </div>
 
     <!-- العدادات -->
-    <div id="tab-meters" class="admin-tab-content active">
+    <div id="tab-meters" class="admin-tab-content active hide-on-print">
       <div class="batch-save-bar">
         <div><div style="font-weight:800; color:var(--primary);">⚡ إغلاق الوردية السريع</div><div style="font-size:0.84rem; color:var(--text-muted);">اللترات: <strong id="batch-preview-liters">0</strong> | القيمة: <strong id="batch-preview-money">0</strong></div></div>
         <button class="btn btn-success" onclick="submitAllEnteredMeters()">💾 حفظ الكل</button>
       </div>
       <div id="meters-cards-container" class="grid-2"></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">📊 مبيعات اليوم المنفصلة للمضخات</div></div>
-        <div class="table-responsive">
-          <table><thead><tr><th>المضخة</th><th>المادة</th><th>الحركات</th><th>الصافي (لتر)</th><th>المبلغ (ل.س)</th></tr></thead><tbody id="admin-pump-stats-tbody"></tbody></table>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">📋 سجل حركات العدادات لليوم (<span id="admin-today-label"></span>)</div></div>
-        <div class="table-responsive">
-          <table><thead><tr><th>الوقت</th><th>العداد</th><th>الوقود</th><th>السابقة</th><th>الحالية</th><th>معايرة</th><th>الصافي</th><th>السعر</th><th>الإجمالي</th><th>تراجع</th></tr></thead><tbody id="admin-daily-sales-tbody"></tbody></table>
-        </div>
-      </div>
     </div>
 
     <!-- الخزانات -->
-    <div id="tab-tanks" class="admin-tab-content">
+    <div id="tab-tanks" class="admin-tab-content hide-on-print">
       <div id="tanks-cards-container" class="grid-2"></div>
       <div class="card">
         <div class="card-header"><div class="card-title">🚛 سجل توريد الصهاريج</div></div>
@@ -435,10 +457,10 @@
     </div>
 
     <!-- المصاريف -->
-    <div id="tab-expenses" class="admin-tab-content">
+    <div id="tab-expenses" class="admin-tab-content hide-on-print">
       <div class="grid-2">
         <div class="card">
-          <div class="card-header"><div class="card-title">➕ تسجيل مصروف</div></div>
+          <div class="card-header"><div class="card-title">➕ تسجيل مصروف يومي</div></div>
           <div class="chips-container">
             <button type="button" class="chip-btn" onclick="fillExpenseChip('مازوت وزيت للمولدة')">⚡ مولدة</button>
             <button type="button" class="chip-btn" onclick="fillExpenseChip('طعام وغداء عمال')">🍽️ طعام عمال</button>
@@ -462,7 +484,7 @@
     </div>
 
     <!-- الديون -->
-    <div id="tab-debts" class="admin-tab-content">
+    <div id="tab-debts" class="admin-tab-content hide-on-print">
       <div class="grid-2">
         <div class="card">
           <div class="card-header"><div class="card-title">📝 تسجيل دين جديد</div></div>
@@ -486,8 +508,8 @@
     </div>
 
     <!-- الإعدادات -->
-    <div id="tab-settings" class="admin-tab-content">
-      <div class="grid-2">
+    <div id="tab-settings" class="admin-tab-content hide-on-print">
+      <div class="grid-3">
         <div class="card"><div class="card-header"><div class="card-title">🏷️ أسعار اللتر</div></div><div id="settings-prices-list"></div></div>
         <div class="card"><div class="card-header"><div class="card-title">🔄 ربط العدادات</div></div><div id="settings-meters-mapping"></div></div>
         <div class="card">
@@ -495,25 +517,25 @@
           <form onsubmit="handleAddNewMeter(event)">
             <div class="form-group"><label>اسم العداد:</label><input type="text" id="new-meter-name" required /></div>
             <div class="form-group"><label>نوع الوقود:</label><select id="new-meter-fuel" required></select></div>
-            <div class="form-group"><label>القراءة الابتدائية:</label><input type="number" id="new-meter-reading" min="0" step="any" value="0" required /></div>
+            <div class="form-group"><label>قراءة البداية:</label><input type="number" id="new-meter-reading" min="0" step="any" value="0" required /></div>
             <button type="submit" class="btn btn-secondary btn-block">إضافة العداد</button>
           </form>
         </div>
-        <div class="card" style="border-color: var(--danger);">
-          <div class="card-header"><div class="card-title" style="color: var(--danger);">⚠️ إعادة التطبيق للصفر (مسح شامل)</div></div>
-          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">لحذف جميع الفواتير والمصاريف والديون، أكتب (نعم):</p>
-          <div class="form-group"><input type="text" id="reset-confirm-input" placeholder="نعم" /></div>
-          <button type="button" class="btn btn-danger btn-block" onclick="factoryResetApp()">🚨 مسح جميع البيانات</button>
-        </div>
+      </div>
+      <div class="card" style="border-color: var(--danger); max-width: 500px;">
+        <div class="card-header"><div class="card-title" style="color: var(--danger);">⚠️ إعادة التطبيق للصفر (مسح شامل)</div></div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">لحذف جميع الفواتير والمصاريف والديون، أكتب (نعم):</p>
+        <div class="form-group"><input type="text" id="reset-confirm-input" placeholder="نعم" /></div>
+        <button type="button" class="btn btn-danger btn-block" onclick="factoryResetApp()">🚨 مسح جميع البيانات</button>
       </div>
     </div>
   </section>
 
   <!-- ==========================================
-       3. واجهة المالك الرقابية والـ PDF المخفي
+       3. واجهة المالك الرقابية والـ PDF الشامل
        ========================================== -->
   <section id="owner-view" class="view-section">
-    <div class="card">
+    <div class="card hide-on-print">
       <div class="card-header">
         <div class="card-title">📊 لوحة المالك الرقابية</div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -533,58 +555,61 @@
       </div>
     </div>
 
-    <!-- حاوية التقرير التي سيتم تصويرها -->
+    <!-- حاوية التقرير الشاملة التي سيتم تصويرها -->
     <div id="pdf-report-area">
-      <div class="card no-break" style="display:flex; align-items:center; justify-content:space-between; border-color:var(--primary);">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <img src="1000065786.png" alt="Logo" style="width:48px; height:48px; border-radius:50%; background:#fff;" onerror="this.style.display='none'" />
-          <div><h3 style="color:var(--primary);">التقرير الشامل - محطة دنيا</h3><p id="report-period-label" style="font-size:0.85rem; color:var(--text-muted);"></p></div>
-        </div>
-        <div style="text-align:left; font-size:0.8rem; color:var(--text-muted);"><div id="report-generated-time"></div></div>
+      <div class="pdf-header-box" style="display:none; text-align:center; margin-bottom:15px; border-bottom:2px solid var(--primary); padding-bottom:10px;">
+        <h2 style="color:var(--primary); margin-bottom:5px;">التقرير الشامل والنسخة الاحتياطية - محطة دنيا</h2>
+        <div style="color:var(--text-muted); font-size:10px;"><span id="report-period-label"></span> | <span id="report-generated-time"></span></div>
       </div>
 
-      <div class="grid-4 no-break">
+      <div class="grid-4">
         <div class="stat-card"><div class="stat-title">المبيعات (ل.س)</div><div class="stat-value" id="owner-total-sales">0</div></div>
         <div class="stat-card red"><div class="stat-title">المصاريف (ل.س)</div><div class="stat-value" id="owner-total-expenses">0</div></div>
         <div class="stat-card yellow"><div class="stat-title">ديون قائمة (ل.س)</div><div class="stat-value" id="owner-total-unpaid-debts">0</div></div>
         <div class="stat-card green"><div class="stat-title">الصافي النقدي (ل.س)</div><div class="stat-value" id="owner-net-cash">0</div></div>
       </div>
 
-      <div class="grid-2 no-break">
+      <div class="grid-2">
         <div class="stat-card blue"><div class="stat-title">اللترات المباعة (لتر)</div><div class="stat-value" id="owner-total-liters">0</div></div>
         <div class="stat-card green"><div class="stat-title">ديون محصلة نقداً (ل.س)</div><div class="stat-value" id="owner-collected-debts">0</div></div>
       </div>
 
-      <div class="pdf-section-card">
-        <div class="card-title">⛽ إحصائيات المضخات</div>
-        <table>
-          <thead><tr><th style="width:20%">المضخة</th><th style="width:15%">الوقود</th><th style="width:10%">حركات</th><th style="width:15%">البداية</th><th style="width:15%">النهاية</th><th style="width:10%">معايرة</th><th style="width:15%">الصافي (لتر)</th></tr></thead>
-          <tbody id="owner-pumps-breakdown-tbody"></tbody>
-        </table>
+      <!-- إحصائيات متقدمة -->
+      <div class="grid-2">
+        <div class="card pdf-section-card">
+          <div class="card-title">⛽ إحصائيات المضخات</div>
+          <div class="table-responsive">
+            <table><thead><tr><th style="width:20%">المضخة</th><th style="width:15%">الوقود</th><th style="width:15%">حركات</th><th style="width:25%">الصافي (لتر)</th><th style="width:25%">الإيراد (ل.س)</th></tr></thead><tbody id="owner-pumps-breakdown-tbody"></tbody></table>
+          </div>
+        </div>
+        <div class="card pdf-section-card">
+          <div class="card-title">🛢️ ملخص الوقود والمخزون</div>
+          <div class="table-responsive">
+            <table><thead><tr><th style="width:25%">النوع</th><th style="width:25%">لترات مباعة</th><th style="width:25%">القيمة (ل.س)</th><th style="width:25%">رصيد الدفتر</th></tr></thead><tbody id="owner-fuel-breakdown-tbody"></tbody></table>
+          </div>
+        </div>
       </div>
 
-      <div class="pdf-section-card">
-        <div class="card-title">🛢️ ملخص الوقود والمخزون</div>
-        <table>
-          <thead><tr><th style="width:25%">نوع الوقود</th><th style="width:25%">اللترات المباعة</th><th style="width:25%">القيمة (ل.س)</th><th style="width:25%">الرصيد الدفتري</th></tr></thead>
-          <tbody id="owner-fuel-breakdown-tbody"></tbody>
-        </table>
+      <div class="card pdf-section-card">
+        <div class="card-title">📒 تقرير الديون الشامل للزبائن</div>
+        <div class="table-responsive">
+          <table><thead><tr><th style="width:25%">الزبون</th><th style="width:25%">المسحوبات (ل.س)</th><th style="width:25%">المسدد (ل.س)</th><th style="width:25%">المتبقي (ل.س)</th></tr></thead><tbody id="owner-debts-summary-tbody"></tbody></table>
+        </div>
       </div>
 
-      <div class="pdf-section-card">
-        <div class="card-title">📒 تقرير الديون الشامل</div>
-        <table>
-          <thead><tr><th style="width:30%">الزبون</th><th style="width:25%">المسحوبات (ل.س)</th><th style="width:25%">المسدد (ل.س)</th><th style="width:20%">المتبقي (ل.س)</th></tr></thead>
-          <tbody id="owner-debts-summary-tbody"></tbody>
-        </table>
-      </div>
-
-      <div class="pdf-section-card">
-        <div class="card-title">💸 المصاريف والصهاريج</div>
-        <table>
-          <thead><tr><th style="width:25%">التاريخ</th><th style="width:50%">البيان</th><th style="width:25%">القيمة/الكمية</th></tr></thead>
-          <tbody id="owner-expenses-and-supplies-tbody"></tbody>
-        </table>
+      <div class="grid-2">
+        <div class="card pdf-section-card">
+          <div class="card-title">💸 المصاريف والصهاريج</div>
+          <div class="table-responsive">
+            <table><thead><tr><th style="width:20%">التاريخ</th><th style="width:50%">البيان / الحركة</th><th style="width:30%">القيمة/الكمية</th></tr></thead><tbody id="owner-expenses-and-supplies-tbody"></tbody></table>
+          </div>
+        </div>
+        <div class="card pdf-section-card">
+          <div class="card-title">🛡️ سجل الرقابة والعمليات</div>
+          <div class="table-responsive">
+            <table><thead><tr><th style="width:25%">التاريخ والوقت</th><th style="width:25%">الإجراء</th><th style="width:50%">التفاصيل</th></tr></thead><tbody id="owner-audit-tbody"></tbody></table>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -602,6 +627,7 @@
     function getSyriaDateObj(d = new Date()) { return new Date(d.getTime() + (d.getTimezoneOffset() * 60000) + (3 * 3600000)); }
     function getSyriaDateString(d = new Date()) { const s = getSyriaDateObj(d); return `${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}-${String(s.getDate()).padStart(2,'0')}`; }
     function getSyriaTimeString(d = new Date()) { const s = getSyriaDateObj(d); return `${String(s.getHours()).padStart(2,'0')}:${String(s.getMinutes()).padStart(2,'0')}`; }
+    function getSyriaFullTime(d = new Date()) { const s = getSyriaDateObj(d); return `${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}-${String(s.getDate()).padStart(2,'0')} ${String(s.getHours()).padStart(2,'0')}:${String(s.getMinutes()).padStart(2,'0')}`; }
 
     function updateHeaderDate() {
       const d = getSyriaDateString();
@@ -609,6 +635,7 @@
       const l = document.getElementById('admin-today-label'); if(l) l.textContent = d;
       const pl = document.getElementById('popup-date-label'); if(pl) pl.textContent = d;
       const ml = document.getElementById('mand-pdf-date-label'); if(ml) ml.textContent = d;
+      const ap = document.getElementById('admin-pdf-date'); if(ap) ap.textContent = d;
     }
     setInterval(updateHeaderDate, 60000); updateHeaderDate();
 
@@ -652,7 +679,7 @@
     function switchAdminTab(tid, b) { document.querySelectorAll('.admin-tab-content').forEach(e=>e.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById(tid).classList.add('active'); b.classList.add('active'); }
 
     let appState = { settings:{fuels:{}}, meters:{}, tanks:{}, daily_logs:{}, expenses:{}, debts:{}, tank_supplies:{}, audit_logs:{} };
-    let currentOwnerFilter = 'today'; let tempSetupData = {};
+    let currentOwnerFilter = 'today'; let tempSetupData = {}; let currentViewingCustomer = '';
 
     db.ref('/').on('value', snap => {
       const data = snap.val() || {};
@@ -664,18 +691,7 @@
       if(document.getElementById('owner-view').classList.contains('active')) renderOwnerDashboard();
     });
 
-    function checkMandatoryDailyPDFTrigger() {
-      const d = getSyriaDateString();
-      if (localStorage.getItem('donea_last_pdf_archived_date') !== d && Object.keys(appState.meters||{}).length > 0) { document.getElementById('mandatory-daily-pdf-modal').style.display='flex'; }
-      else { document.getElementById('mandatory-daily-pdf-modal').style.display='none'; checkDailyPopupTrigger(); }
-    }
-    function executeMandatoryDailyPDFExport() {
-      setOwnerFilter('today'); exportOwnerReportPDF();
-      localStorage.setItem('donea_last_pdf_archived_date', getSyriaDateString());
-      document.getElementById('mandatory-daily-pdf-modal').style.display='none';
-      checkDailyPopupTrigger();
-    }
-    
+    // ---------------- الإعدادات الأولية ----------------
     function renderSetupTankInputs() {
       const c = safeNum(document.getElementById('s1-tanks-count').value);
       let h = ''; for(let i=1;i<=c;i++) h+=`<div style="background:var(--input-bg); border:1px solid var(--border); padding:10px; border-radius:8px; margin-bottom:8px;"><div style="font-weight:700; color:var(--primary); margin-bottom:6px;">الخزان ${i}:</div><div class="grid-2"><div class="form-group"><label>اسم المادة:</label><input type="text" id="s1_t_name_${i}" value="${i===1?'مازوت':(i===2?'بنزين':'مادة '+i)}" required/></div><div class="form-group"><label>السعر:</label><input type="number" id="s1_t_price_${i}" value="${i===1?175:185}" required/></div><div class="form-group"><label>السعة:</label><input type="number" id="s1_t_cap_${i}" value="30000" required/></div><div class="form-group"><label>الرصيد الحالى:</label><input type="number" id="s1_t_vol_${i}" value="15000" required/></div></div></div>`;
@@ -696,7 +712,24 @@
       for(let j=1;j<=tempSetupData.mc;j++) meters[`meter_${j}`] = { name:document.getElementById(`s2_m_name_${j}`).value, fuel_type_id:document.getElementById(`s2_m_fuel_${j}`).value, current_reading:safeNum(document.getElementById(`s2_m_read_${j}`).value), max_reading:999999 };
       db.ref().set({settings:{fuels:tempSetupData.fuels}, tanks:tempSetupData.tanks, meters}).then(()=>{ document.getElementById('setup-step-2').style.display='none'; });
     }
+    function repairDatabaseSchema() { if(confirm('تهيئة وإصلاح؟')) showToast('القاعدة سليمة ✅'); }
+    function factoryResetApp() {
+      if(document.getElementById('reset-confirm-input').value.trim()!=='نعم') return showToast('أكتب نعم للتأكيد');
+      if(confirm('تأكيد المسح الشامل؟')) db.ref().set(null).then(()=>{ localStorage.clear(); showToast('تم المسح 🚨'); });
+    }
 
+    // ---------------- واجهة أمين المحطة ----------------
+    function checkMandatoryDailyPDFTrigger() {
+      const d = getSyriaDateString();
+      if (localStorage.getItem('donea_last_pdf_archived_date') !== d && Object.keys(appState.meters||{}).length > 0) { document.getElementById('mandatory-daily-pdf-modal').style.display='flex'; }
+      else { document.getElementById('mandatory-daily-pdf-modal').style.display='none'; checkDailyPopupTrigger(); }
+    }
+    function executeMandatoryDailyPDFExport() {
+      exportAdminReportPDF();
+      localStorage.setItem('donea_last_pdf_archived_date', getSyriaDateString());
+      document.getElementById('mandatory-daily-pdf-modal').style.display='none';
+      checkDailyPopupTrigger();
+    }
     function checkDailyPopupTrigger() {
       if(localStorage.getItem('donea_last_prompt_date') !== getSyriaDateString() && Object.keys(appState.meters||{}).length>0) {
         document.getElementById('popup-meters-inputs-container').innerHTML = Object.keys(appState.meters).map(k=>`<div style="background:var(--input-bg); padding:10px; margin-bottom:8px; border-radius:6px;"><b>${appState.meters[k].name}</b> (سابقة: ${appState.meters[k].current_reading})<br/><input type="number" id="popup_curr_${k}" placeholder="القراءة..." style="margin-top:5px;"/></div>`).join('');
@@ -720,27 +753,31 @@
       if(count>0) { db.ref().update(up); closeDailyPopup(); showToast(`تم الحفظ ✅`); } else showToast(`لم تدخل شيء`);
     }
 
-    function repairDatabaseSchema() { if(confirm('تهيئة وإصلاح؟')) showToast('القاعدة سليمة ✅'); }
-    function factoryResetApp() {
-      if(document.getElementById('reset-confirm-input').value.trim()!=='نعم') return showToast('أكتب نعم للتأكيد');
-      if(confirm('تأكيد المسح الشامل؟')) db.ref().set(null).then(()=>{ localStorage.clear(); showToast('تم المسح 🚨'); });
-    }
-
     function renderAdminInterface() {
       const ds=getSyriaDateString(), dL=Object.values(appState.daily_logs?.[ds]||{}), dE=Object.values(appState.expenses?.[ds]||{}), ad=Object.values(appState.debts||{});
-      const sS=dL.reduce((a,b)=>a+safeNum(b.total_amount),0), eS=dE.reduce((a,b)=>a+safeNum(b.amount),0), ud=ad.filter(d=>!d.paid).reduce((a,b)=>a+(safeNum(b.amount)-safeNum(b.paid_amount)),0), cd=ad.filter(d=>d.last_paid_date===ds).reduce((a,b)=>a+safeNum(b.last_paid_amount),0);
-      document.getElementById('admin-shift-sales').textContent = formatNum(sS); document.getElementById('admin-shift-expenses').textContent = formatNum(eS); document.getElementById('admin-shift-debts').textContent = formatNum(ud); document.getElementById('admin-shift-net-cash').textContent = formatNum(sS-eS+cd);
+      const sS=dL.reduce((a,b)=>a+safeNum(b.total_amount),0), eS=dE.reduce((a,b)=>a+safeNum(b.amount),0);
+      
+      // الديون المسجلة "اليوم"
+      const todayNewDebts = ad.filter(d=>d.date===ds).reduce((a,b)=>a+safeNum(b.amount),0);
+      // الدفعات المستلمة "اليوم"
+      let todayCollected = 0;
+      ad.forEach(d => { if(d.payments) Object.values(d.payments).forEach(p=>{ if(p.date===ds) todayCollected += safeNum(p.amount); }); });
+
+      document.getElementById('admin-shift-sales').textContent = formatNum(sS); 
+      document.getElementById('admin-shift-expenses').textContent = formatNum(eS); 
+      document.getElementById('admin-shift-debts').textContent = formatNum(todayNewDebts); 
+      document.getElementById('admin-shift-net-cash').textContent = formatNum(sS - eS - todayNewDebts + todayCollected);
 
       document.getElementById('meters-cards-container').innerHTML = Object.keys(appState.meters||{}).map(k=>{
         const m=appState.meters[k], f=appState.settings.fuels[m.fuel_type_id], p=safeNum(m.current_reading), ml=dL.filter(l=>l.meter_id===k), nl=ml.reduce((a,b)=>a+safeNum(b.net_liters),0), nm=ml.reduce((a,b)=>a+safeNum(b.total_amount),0);
-        return `<div class="card"><div class="card-header"><div class="card-title">⛽ ${m.name}</div><span class="badge">${f.name}</span></div><div class="pump-mini-stats"><span>مبيعات اليوم: <strong>${formatNum(nl)} لتر</strong></span><span>المبلغ: <strong>${formatNum(nm)} ل.س</strong></span></div><div class="form-group"><label>السابقة:</label><input type="number" value="${p}" readonly/></div><div class="form-group"><label>الحالية:</label><input type="number" id="curr_${k}" step="any" oninput="previewMeter('${k}')"/></div><div class="form-group"><label>المعايرة:</label><input type="number" id="calib_${k}" value="0" step="any" oninput="previewMeter('${k}')"/></div><div class="checkbox-row"><input type="checkbox" id="rollover_${k}" onchange="previewMeter('${k}')"/><span>تصفير العداد</span></div><div id="rollover_box_${k}" class="form-group" style="display:none;"><label>أقصى قراءة:</label><input type="number" id="max_${k}" value="${m.max_reading||999999}" oninput="previewMeter('${k}')"/></div><div style="background:rgba(0,0,0,0.2); padding:10px; margin-bottom:12px; border-radius:8px;">الصافي: <strong id="net_${k}" style="color:var(--primary);">0</strong> لتر | المبلغ: <strong id="mon_${k}" style="color:var(--success);">0</strong> ل.س</div><div style="display:flex; gap:8px;"><button class="btn btn-primary" style="flex:2;" onclick="saveMeter('${k}')">حفظ الفاتورة</button><button class="btn btn-danger" style="flex:1;" onclick="undoMeter('${k}')">تراجع</button></div></div>`;
+        return `<div class="card"><div class="card-header"><div class="card-title">⛽ ${m.name}</div><span class="badge">${f.name}</span></div><div class="pump-mini-stats"><span>مبيعات اليوم: <strong>${formatNum(nl)} لتر</strong></span><span>المبلغ: <strong>${formatNum(nm)} ل.س</strong></span></div><div class="form-group"><label>السابقة:</label><input type="number" value="${p}" readonly/></div><div class="form-group"><label>الحالية:</label><input type="number" id="curr_${k}" step="any" oninput="previewMeter('${k}')"/></div><div class="form-group"><label>المعايرة:</label><input type="number" id="calib_${k}" value="0" step="any" oninput="previewMeter('${k}')"/></div><div class="checkbox-row"><input type="checkbox" id="rollover_${k}" onchange="previewMeter('${k}')"/><span>تصفير العداد</span></div><div id="rollover_box_${k}" class="form-group" style="display:none;"><label>أقصى قراءة:</label><input type="number" id="max_${k}" value="${m.max_reading||999999}" oninput="previewMeter('${k}')"/></div><div style="background:rgba(0,0,0,0.2); padding:10px; margin-bottom:12px; border-radius:8px;">الصافي: <strong id="net_${k}" style="color:var(--primary);">0</strong> لتر | المبلغ: <strong id="mon_${k}" style="color:var(--success);">0</strong> ل.س</div><div style="display:flex; gap:8px;"><button class="btn btn-primary" style="flex:2;" onclick="saveMeter('${k}')">حفظ الفاتورة</button><button class="btn btn-danger hide-on-print" style="flex:1;" onclick="undoMeter('${k}')">تراجع</button></div></div>`;
       }).join('');
 
       document.getElementById('admin-pump-stats-tbody').innerHTML = Object.keys(appState.meters||{}).map(k=>{
         const ml=dL.filter(l=>l.meter_id===k); return `<tr><td>${appState.meters[k].name}</td><td>${appState.settings.fuels[appState.meters[k].fuel_type_id]?.name}</td><td>${ml.length}</td><td>${formatNum(ml.reduce((a,b)=>a+safeNum(b.calibration_liters),0))}</td><td>${formatNum(ml.reduce((a,b)=>a+safeNum(b.net_liters),0))}</td><td>${formatNum(ml.reduce((a,b)=>a+safeNum(b.total_amount),0))}</td></tr>`;
       }).join('');
 
-      document.getElementById('admin-daily-sales-tbody').innerHTML = dL.map(l=>`<tr><td>${l.time}</td><td>${l.meter_name}</td><td>${l.fuel_name}</td><td>${formatNum(l.prev_reading)}</td><td>${formatNum(l.curr_reading)}</td><td>${formatNum(l.calibration_liters)}</td><td>${formatNum(l.net_liters)}</td><td>${formatNum(l.unit_price)}</td><td>${formatNum(l.total_amount)}</td><td><button class="btn btn-sm btn-danger" onclick="undoLog('${l.log_id}','${l.meter_id}')">حذف</button></td></tr>`).join('');
+      document.getElementById('admin-daily-sales-tbody').innerHTML = dL.map(l=>`<tr><td>${l.time}</td><td>${l.meter_name}</td><td>${l.fuel_name}</td><td>${formatNum(l.prev_reading)}</td><td>${formatNum(l.curr_reading)}</td><td>${formatNum(l.calibration_liters)}</td><td>${formatNum(l.net_liters)}</td><td>${formatNum(l.unit_price)}</td><td>${formatNum(l.total_amount)}</td><td class="hide-on-print"><button class="btn btn-sm btn-danger" onclick="undoLog('${l.log_id}','${l.meter_id}')">حذف</button></td></tr>`).join('');
 
       document.getElementById('tanks-cards-container').innerHTML = Object.keys(appState.tanks||{}).map(k=>{
         const t=appState.tanks[k]; return `<div class="card"><div class="card-title">🛢️ ${t.name}</div><div style="margin:10px 0;">الرصيد: <strong>${formatNum(t.current_volume)}</strong> / ${formatNum(t.capacity)}</div><div style="font-size:0.8rem; color:#888;">آخر سيخة: ${t.last_dip_actual?formatNum(t.last_dip_actual)+' لتر':'لا يوجد'}</div><hr style="border-color:var(--border); margin:10px 0;"/><div style="display:flex;gap:5px;"><input type="number" id="sup_${k}" placeholder="توريد لتر..." style="flex:1;"/><input type="text" id="supn_${k}" placeholder="ملاحظة..." style="flex:1;"/><button class="btn btn-sm btn-secondary" onclick="addSup('${k}')">تأكيد</button></div><div style="display:flex;gap:5px; margin-top:8px;"><input type="number" id="dip_${k}" placeholder="قياس السيخة..." style="flex:2;"/><button class="btn btn-sm btn-warning" onclick="saveDip('${k}')">اعتماد السيخة</button></div></div>`;
@@ -771,7 +808,7 @@
     }
 
     function saveMeter(k) { const r=getMeterPayload(k); if(r) { db.ref().update(r); document.getElementById(`curr_${k}`).value=''; document.getElementById(`calib_${k}`).value='0'; document.getElementById(`rollover_${k}`).checked=false; previewMeter(k); showToast('تم ✅'); } }
-    function submitAllEnteredMeters() { let up={},c=0; for(let k of Object.keys(appState.meters)) { if(document.getElementById(`curr_${k}`)?.value) { const r=getMeterPayload(k); if(r){ Object.assign(up,r); count++; document.getElementById(`curr_${k}`).value=''; } } } if(c>0) { db.ref().update(up); showToast(`حفظ ${c} عدادات`); } }
+    function submitAllEnteredMeters() { let up={},c=0; for(let k of Object.keys(appState.meters)) { if(document.getElementById(`curr_${k}`)?.value) { const r=getMeterPayload(k); if(r){ Object.assign(up,r); c++; document.getElementById(`curr_${k}`).value=''; } } } if(c>0) { db.ref().update(up); showToast(`حفظ ${c} عدادات`); } }
     function getMeterPayload(k) {
       const m=appState.meters[k], cv=safeNum(document.getElementById(`curr_${k}`).value), pv=safeNum(m.current_reading), cl=safeNum(document.getElementById(`calib_${k}`).value), ro=document.getElementById(`rollover_${k}`).checked;
       const raw = ro ? ((safeNum(document.getElementById(`max_${k}`).value)-pv)+cv) : (cv-pv);
@@ -802,25 +839,126 @@
     function handleAddExpense(e) { e.preventDefault(); const d=getSyriaDateString(), id=db.ref().push().key; db.ref(`expenses/${d}/${id}`).set({id, date:d, time:getSyriaTimeString(), timestamp:Date.now(), description:document.getElementById('expense-desc').value, amount:safeNum(document.getElementById('expense-amount').value)}); showToast('تم الحفظ'); document.getElementById('expense-desc').value=''; document.getElementById('expense-amount').value=''; }
     function delExp(id) { if(confirm('حذف؟')) db.ref(`expenses/${getSyriaDateString()}/${id}`).remove(); }
 
+    // ---------------- الديون والزبائن المتقدمة ----------------
     function calcDebtAmountFromLiters() { const f=document.getElementById('debt-fuel').value, l=safeNum(document.getElementById('debt-liters').value); if(f&&l) document.getElementById('debt-amount').value = l * safeNum(appState.settings.fuels[f].price); }
-    function handleAddDebt(e) { e.preventDefault(); const c=document.getElementById('debt-customer').value, f=document.getElementById('debt-fuel').value, l=safeNum(document.getElementById('debt-liters').value), a=safeNum(document.getElementById('debt-amount').value), n=document.getElementById('debt-note').value, id=db.ref().push().key; db.ref(`debts/${id}`).set({id, date:getSyriaDateString(), timestamp:Date.now(), customer:c, fuel_id:f, fuel_name:appState.settings.fuels[f].name, liters:l, amount:a, note:n, paid_amount:0, paid:false}); showToast('تم حفظ الدين'); e.target.reset(); }
+    function handleAddDebt(e) { e.preventDefault(); const c=document.getElementById('debt-customer').value.trim(), f=document.getElementById('debt-fuel').value, l=safeNum(document.getElementById('debt-liters').value), a=safeNum(document.getElementById('debt-amount').value), n=document.getElementById('debt-note').value.trim(), id=db.ref().push().key; db.ref(`debts/${id}`).set({id, date:getSyriaDateString(), time:getSyriaTimeString(), timestamp:Date.now(), customer:c, fuel_id:f, fuel_name:appState.settings.fuels[f].name, liters:l, amount:a, note:n, paid_amount:0, paid:false}); showToast('تم حفظ الدين'); e.target.reset(); }
+    
     function renderAdminDebts() {
       const q = (document.getElementById('customer-search-input')?.value||'').trim().toLowerCase(), tb=document.getElementById('admin-debts-tbody');
-      let ds = Object.values(appState.debts||{}).filter(d=>d.customer.toLowerCase().includes(q)).sort((a,b)=>b.timestamp-a.timestamp);
-      tb.innerHTML = ds.map(d=>`<tr><td>${d.date}</td><td><strong onclick="openCust('${d.customer}')" style="color:var(--secondary);cursor:pointer;">${d.customer} 🔍</strong></td><td>${d.fuel_name} (${formatNum(d.liters)} لتر)</td><td>إجمالي: ${formatNum(d.amount)}<br/><span style="color:var(--danger)">متبقي: ${formatNum(d.amount-d.paid_amount)}</span></td><td>${d.paid?'<span class="badge ok">مسدد</span>':'<span class="badge err">جاري</span>'}</td><td>${!d.paid?`<button class="btn btn-sm btn-success" onclick="payDebt('${d.id}', '${d.customer}', ${d.amount}, ${d.paid_amount})">💵 دفعة</button>`:''}<button class="btn btn-sm btn-secondary" onclick="openCust('${d.customer}')">📊 كشف</button></td></tr>`).join('');
+      let ds = Object.values(appState.debts||{});
+      
+      // تجميع ديون الزبون في سطر واحد
+      const cb = {};
+      ds.forEach(d => {
+        if(!cb[d.customer]) cb[d.customer] = { customer:d.customer, total:0, paid:0, count:0 };
+        cb[d.customer].total += safeNum(d.amount); cb[d.customer].paid += safeNum(d.paid_amount); cb[d.customer].count++;
+      });
+      let arr = Object.values(cb);
+      if (q) arr = arr.filter(x => x.customer.toLowerCase().includes(q));
+
+      tb.innerHTML = arr.length===0 ? `<tr><td colspan="6" style="text-align:center;">لا توجد بيانات</td></tr>` : arr.map(c => {
+        const rem = c.total - c.paid;
+        return `<tr><td>-</td><td><strong onclick="openCust('${c.customer}')" style="color:var(--secondary);cursor:pointer;">${c.customer} 🔍</strong></td><td>${c.count} حركات</td><td>إجمالي: ${formatNum(c.total)}<br/><span style="color:var(--danger)">متبقي: ${formatNum(rem)}</span></td><td>${rem<=0?'<span class="badge ok">مسدد</span>':'<span class="badge err">جاري</span>'}</td><td>${rem>0?`<button class="btn btn-sm btn-success" onclick="payCustDebt('${c.customer}', ${c.total}, ${c.paid})">💵 دفعة</button>`:''}<button class="btn btn-sm btn-secondary" onclick="openCust('${c.customer}')">📊 كشف</button></td></tr>`;
+      }).join('');
     }
-    function payDebt(id,c,tot,pd) { document.getElementById('pay-debt-id').value=id; document.getElementById('pay-debt-info').innerHTML=`زبون: <b>${c}</b><br/>متبقي: <b>${formatNum(tot-pd)}</b>`; document.getElementById('pay-debt-amount').value=tot-pd; document.getElementById('pay-debt-modal').style.display='flex'; }
-    function submitPayDebt() { const id=document.getElementById('pay-debt-id').value, p=safeNum(document.getElementById('pay-debt-amount').value), d=appState.debts[id], np=safeNum(d.paid_amount)+p; if(p>0) { db.ref(`debts/${id}`).update({paid_amount:np, paid:np>=d.amount, last_paid_amount:p, last_paid_date:getSyriaDateString()}); document.getElementById('pay-debt-modal').style.display='none'; showToast('تم التسديد'); } }
+
+    function payCustDebt(c, tot, pd) { 
+      // سنوزع الدفعة على الديون المفتوحة لهذا الزبون بالتسلسل الأقدم للأحدث
+      document.getElementById('pay-debt-id').value = c; // وضعنا اسم الزبون كـ ID هنا
+      document.getElementById('pay-debt-info').innerHTML=`الزبون: <b>${c}</b><br/>المتبقي الكلي عليه: <b>${formatNum(tot-pd)}</b>`; 
+      document.getElementById('pay-debt-amount').value = tot-pd; 
+      document.getElementById('pay-debt-modal').style.display='flex'; 
+    }
+
+    function submitPayDebt() { 
+      const cust = document.getElementById('pay-debt-id').value; // customer name
+      let p = safeNum(document.getElementById('pay-debt-amount').value); 
+      if(p<=0) return;
+      
+      const up = {};
+      const t = getSyriaFullTime();
+      
+      // جلب وتصفية الديون المفتوحة للزبون وترتيبها الأقدم فالأحدث
+      let ds = Object.values(appState.debts||{}).filter(x=>x.customer===cust && !x.paid).sort((a,b)=>a.timestamp-b.timestamp);
+      
+      for(const d of ds) {
+        if(p <= 0) break;
+        const rem = safeNum(d.amount) - safeNum(d.paid_amount);
+        const toPay = Math.min(p, rem);
+        const np = safeNum(d.paid_amount) + toPay;
+        const paidStatus = np >= safeNum(d.amount);
+        
+        up[`debts/${d.id}/paid_amount`] = np;
+        up[`debts/${d.id}/paid`] = paidStatus;
+        
+        // تسجيل الدفعة في سجل الدفعات الدقيق للعملية
+        const pid = db.ref().push().key;
+        up[`debts/${d.id}/payments/${pid}`] = { date:getSyriaDateString(), time:getSyriaTimeString(), amount:toPay, timestamp:Date.now() };
+        
+        p -= toPay;
+      }
+      
+      db.ref().update(up);
+      document.getElementById('pay-debt-modal').style.display='none'; 
+      showToast('تم التسجيل بنجاح'); 
+    }
+
     function openCust(c) {
+      currentViewingCustomer = c;
       document.getElementById('cust-modal-title').textContent = `كشف: ${c}`;
-      const ds=Object.values(appState.debts||{}).filter(x=>x.customer===c), tr=ds.reduce((a,b)=>a+safeNum(b.amount),0), tp=ds.reduce((a,b)=>a+safeNum(b.paid_amount),0);
+      const ds=Object.values(appState.debts||{}).filter(x=>x.customer===c).sort((a,b)=>b.timestamp-a.timestamp);
+      const tr=ds.reduce((a,b)=>a+safeNum(b.amount),0), tp=ds.reduce((a,b)=>a+safeNum(b.paid_amount),0);
+      
       document.getElementById('cust-modal-summary').innerHTML = `<div style="background:var(--input-bg);padding:10px;text-align:center;border-radius:6px;">مسحوبات<br/><b style="color:var(--primary)">${formatNum(tr)}</b></div><div style="background:var(--input-bg);padding:10px;text-align:center;border-radius:6px;">مسدد<br/><b style="color:var(--success)">${formatNum(tp)}</b></div><div style="background:var(--input-bg);padding:10px;text-align:center;border-radius:6px;">متبقي<br/><b style="color:var(--danger)">${formatNum(tr-tp)}</b></div>`;
-      document.getElementById('cust-modal-tbody').innerHTML = ds.map(d=>`<tr><td>${d.date}</td><td>${d.fuel_name}</td><td>${d.liters}</td><td>${d.amount}</td><td>${d.paid_amount}</td><td>${d.paid?'مسدد':'متبقي'}</td></tr>`).join('');
+      
+      document.getElementById('cust-modal-tbody').innerHTML = ds.length? ds.map(d=>`<tr><td>${d.date} ${d.time||''}</td><td>${d.fuel_name}</td><td>${d.liters}</td><td>${formatNum(d.amount)}</td><td>${d.paid?'مسدد':'متبقي'}</td></tr>`).join('') : '<tr><td colspan="5">لا يوجد</td></tr>';
+      
+      const pays = []; ds.forEach(d=>{ if(d.payments) Object.values(d.payments).forEach(p=>pays.push(p)); });
+      pays.sort((a,b)=>b.timestamp-a.timestamp);
+      document.getElementById('cust-modal-payments-tbody').innerHTML = pays.length? pays.map(p=>`<tr><td>${p.date} ${p.time||''}</td><td style="color:var(--success);font-weight:700;">${formatNum(p.amount)}</td><td style="font-size:10px;">دفعة مسجلة</td></tr>`).join('') : '<tr><td colspan="3">لا دفعات نقدية مسجلة</td></tr>';
+      
       document.getElementById('customer-stats-modal').style.display='flex';
+    }
+
+    // تصدير PDF مستقل للزبون المفتوح حالياً في كشف الحساب
+    function exportCustomerStatementPDF() {
+      const el = document.getElementById('customer-pdf-area');
+      el.classList.add('pdf-print-mode');
+      document.querySelectorAll('#customer-pdf-area .table-responsive').forEach(e => e.style.maxHeight = 'none');
+      showToast('جاري تصدير كشف حساب الزبون...', '#1c75bc');
+      html2pdf().set({
+        margin: [5,5,5,5], filename: `كشف_حساب_${currentViewingCustomer}_${getSyriaDateString()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 760 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
+      }).from(el).save().then(()=>{ 
+        el.classList.remove('pdf-print-mode'); 
+        document.querySelectorAll('#customer-pdf-area .table-responsive').forEach(e => e.style.maxHeight = '350px');
+      });
+    }
+
+    // تصدير وردية أمين المحطة PDF
+    function exportAdminReportPDF() {
+      const el = document.getElementById('admin-pdf-area');
+      el.classList.add('pdf-print-mode');
+      document.querySelector('#admin-pdf-area .pdf-header-box').style.display = 'block';
+      showToast('جاري تصدير تقرير الوردية (PDF)...', '#1c75bc');
+      html2pdf().set({
+        margin: [5,5,5,5], filename: `وردية_أمين_المحطة_${getSyriaDateString()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 760 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
+      }).from(el).save().then(()=>{ 
+        el.classList.remove('pdf-print-mode'); 
+        document.querySelector('#admin-pdf-area .pdf-header-box').style.display = 'none';
+      });
     }
 
     function handleAddNewMeter(e) { e.preventDefault(); const id=db.ref().push().key; db.ref(`meters/${id}`).set({name:document.getElementById('new-meter-name').value, fuel_type_id:document.getElementById('new-meter-fuel').value, current_reading:safeNum(document.getElementById('new-meter-reading').value), max_reading:999999}); showToast('تمت الإضافة'); }
 
+    // ---------------- لوحة المالك والـ PDF الشامل ----------------
     function setOwnerFilter(t) { currentOwnerFilter=t; document.querySelectorAll('#owner-view .btn-primary').forEach(b=>b.className='btn btn-sm btn-secondary'); document.getElementById(`filter-btn-${t}`).className='btn btn-sm btn-primary'; document.getElementById('custom-date-range').style.display=t==='custom'?'flex':'none'; renderOwnerDashboard(); }
     function getFilterDateBounds() { const d=getSyriaDateObj(), ts=getSyriaDateString(); if(currentOwnerFilter==='today') return {s:ts,e:ts,l:`تقرير اليوم (${ts})`}; if(currentOwnerFilter==='week'){const w=new Date(d.getTime()-6*86400000); return {s:`${w.getFullYear()}-${String(w.getMonth()+1).padStart(2,'0')}-${String(w.getDate()).padStart(2,'0')}`, e:ts, l:'هذا الأسبوع'};} if(currentOwnerFilter==='month') return {s:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`, e:ts, l:'هذا الشهر'}; return {s:document.getElementById('owner-start-date').value||ts, e:document.getElementById('owner-end-date').value||ts, l:'تاريخ مخصص'}; }
 
@@ -844,27 +982,32 @@
         if(!cb[d.customer]) cb[d.customer]={n:d.customer, r:0, p:0};
         cb[d.customer].r+=safeNum(d.amount); cb[d.customer].p+=safeNum(d.paid_amount);
         tu += (safeNum(d.amount)-safeNum(d.paid_amount));
-        if(d.last_paid_date>=b.s && d.last_paid_date<=b.e) tc+=safeNum(d.last_paid_amount);
+        if(d.payments) Object.values(d.payments).forEach(p=>{ if(p.date>=b.s && p.date<=b.e) tc += safeNum(p.amount); });
       });
 
       document.getElementById('owner-total-sales').textContent=formatNum(ts); document.getElementById('owner-total-expenses').textContent=formatNum(te); document.getElementById('owner-total-unpaid-debts').textContent=formatNum(tu); document.getElementById('owner-collected-debts').textContent=formatNum(tc); document.getElementById('owner-net-cash').textContent=formatNum(ts-te+tc); document.getElementById('owner-total-liters').textContent=formatNum(tl);
-      document.getElementById('owner-pumps-breakdown-tbody').innerHTML = Object.values(pb).map(p=>`<tr><td>${p.name}</td><td>${p.f}</td><td>${p.c}</td><td>${p.sp||'-'}</td><td>${p.ep||'-'}</td><td>${p.cl}</td><td>${formatNum(p.nl)}</td><td>${formatNum(p.m)}</td></tr>`).join('');
-      document.getElementById('owner-fuel-breakdown-tbody').innerHTML = Object.keys(fb).map(k=>`<tr><td>${fb[k].n}</td><td>${formatNum(fb[k].l)}</td><td>${formatNum(fb[k].m)}</td><td>${formatNum(appState.tanks[k]?.current_volume)}</td></tr>`).join('');
-      document.getElementById('owner-debts-summary-tbody').innerHTML = Object.values(cb).map(c=>`<tr><td>${c.n}</td><td>${formatNum(c.r)}</td><td>${formatNum(c.p)}</td><td>${formatNum(c.r-c.p)}</td></tr>`).join('');
+      document.getElementById('owner-pumps-breakdown-tbody').innerHTML = Object.values(pb).map(p=>`<tr><td>${p.name}</td><td><span class="badge">${p.current_fuel}</span></td><td>${p.ops_count}</td><td>${p.first_prev !== null ? formatNum(p.first_prev) : '-'}</td><td>${p.last_curr !== null ? formatNum(p.last_curr) : '-'}</td><td>${formatNum(p.calib_liters)}</td><td style="font-weight:700;">${formatNum(p.net_liters)} لتر</td><td style="font-weight:700;">${formatNum(p.revenue)} ل.س</td></tr>`).join('');
+      document.getElementById('owner-fuel-breakdown-tbody').innerHTML = Object.keys(fb).map(k=>`<tr><td><span class="badge">${fb[k].n}</span></td><td style="font-weight:700;">${formatNum(fb[k].l)} لتر</td><td style="font-weight:700;">${formatNum(fb[k].m)} ل.س</td><td>${formatNum(safeNum(appState.tanks[k]?.current_volume))} لتر</td></tr>`).join('');
+      document.getElementById('owner-debts-summary-tbody').innerHTML = Object.values(cb).map(c=>`<tr><td><strong>${c.n}</strong></td><td>${formatNum(c.r)} ل.س</td><td>${formatNum(c.p)} ل.س</td><td style="font-weight:700;">${formatNum(c.r-c.p)} ل.س</td><td>${(c.r-c.p)<=0?'مسدد بالكامل':'ذمم قائمة'}</td></tr>`).join('');
       document.getElementById('owner-expenses-and-supplies-tbody').innerHTML = cx.map(x=>`<tr><td>${x.d}</td><td>${x.n}</td><td>${formatNum(x.a)}</td></tr>`).join('');
     }
 
     function exportOwnerReportPDF() {
       const el = document.getElementById('pdf-report-area');
       el.classList.add('pdf-print-mode');
+      document.querySelector('#pdf-report-area .pdf-header-box').style.display = 'table';
       showToast('جاري تحضير ملف الـ PDF وتنسيقه لعدم التداخل...', '#1c75bc');
       html2pdf().set({
-        margin: [5,5,5,5], filename: `تقرير_محطة_دنيا_${getSyriaDateString()}.pdf`,
+        margin: [5,5,5,5], filename: `النسخة_الاحتياطية_الشاملة_${getSyriaDateString()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 800 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 760 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.pdf-stat-box', '.pdf-section-card', 'table'] }
-      }).from(el).save().then(()=>{ el.classList.remove('pdf-print-mode'); showToast('تم الحفظ بنجاح ✅', '#10b981'); });
+      }).from(el).save().then(()=>{ 
+        el.classList.remove('pdf-print-mode'); 
+        document.querySelector('#pdf-report-area .pdf-header-box').style.display = 'none';
+        showToast('تم الحفظ بنجاح ✅', '#10b981'); 
+      });
     }
 
     function shareWhatsAppSummary() { window.open(`https://wa.me/?text=` + encodeURIComponent(`ملخص محطة دنيا
