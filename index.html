@@ -177,7 +177,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(10, 15, 24, 0.82);
+      background: rgba(10, 15, 24, 0.85);
       backdrop-filter: blur(5px);
       display: none;
       justify-content: center;
@@ -238,9 +238,9 @@
     }
 
     .sub-item-title {
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       font-weight: 800;
-      color: var(--primary);
+      color: var(--secondary);
       margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
@@ -646,11 +646,11 @@
         </p>
         <div class="form-group">
           <label>🛢️ كم عدد الخزانات الأرضية (أنواع الوقود) في المحطة؟</label>
-          <input type="number" id="wiz-tanks-count" min="1" max="10" value="2" required />
+          <input type="number" id="wiz-tanks-count" min="1" max="10" value="2" />
         </div>
         <div class="form-group">
           <label>⛽ كم عدد العدادات (المضخات) الإجمالية في المحطة؟</label>
-          <input type="number" id="wiz-meters-count" min="1" max="24" value="2" required />
+          <input type="number" id="wiz-meters-count" min="1" max="24" value="2" />
         </div>
         <button type="button" class="btn btn-primary btn-block btn-lg" onclick="goToWizardStep2()">التالي: بيانات الخزانات والأسعار ⬅️</button>
       </div>
@@ -662,8 +662,8 @@
         </p>
         <div id="wiz-tanks-inputs-list"></div>
         <div style="display:flex; gap:10px; margin-top:14px;">
-          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="backToWizardStep1()">➡️ رجوع</button>
-          <button type="button" class="btn btn-primary" style="flex:2;" onclick="goToWizardStep3()">التالي: تسمية وأرقام العدادات ⬅️</button>
+          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="backToWizardStep1()">⬅️ السابق</button>
+          <button type="button" class="btn btn-primary" style="flex:2;" onclick="goToWizardStep3()">التالي: تسمية وأرقام العدادات ➡️</button>
         </div>
       </div>
 
@@ -674,8 +674,8 @@
         </p>
         <div id="wiz-meters-inputs-list"></div>
         <div style="display:flex; gap:10px; margin-top:14px;">
-          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="backToWizardStep2()">➡️ رجوع</button>
-          <button type="button" class="btn btn-success btn-lg" style="flex:2;" onclick="finishSetupWizard()">✅ اعتماد وتشغيل المحطة 100%</button>
+          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="backToWizardStep2()">⬅️ السابق</button>
+          <button type="button" class="btn btn-success btn-lg" style="flex:2;" onclick="finishSetupWizard()">💾 حفظ وإطلاق النظام</button>
         </div>
       </div>
     </div>
@@ -993,7 +993,7 @@
           <form onsubmit="handleAddNewMeter(event)">
             <div class="form-group">
               <label>اسم العداد:</label>
-              <input type="text" id="new-meter-name" placeholder="مثال: مضخة المازوت رقم 2" required />
+              <input type="text" id="new-meter-name" placeholder="مثال: عداد 3" required />
             </div>
             <div class="form-group">
               <label>نوع الوقود المربوط:</label>
@@ -1276,15 +1276,39 @@
       projectId: "donea-d13db"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    let db = null;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+    } catch (err) {
+      console.warn("Firebase init warning:", err);
+    }
 
+    // تحويل الأرقام العربية/الفارسية المشرقية (٠١٢٣٤٥٦٧٨٩) تلقائياً إلى إنجليزية ومنع القيم التالفة
     function safeNum(val) {
-      return Number(val) || 0;
+      if (val === null || val === undefined || val === '') return 0;
+      if (typeof val === 'number') return isFinite(val) ? val : 0;
+      const normalized = String(val)
+        .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+        .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+        .replace(/,/g, '')
+        .trim();
+      const num = Number(normalized);
+      return isFinite(num) ? num : 0;
     }
 
     function formatNum(val) {
-      return (Number(val) || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+      return safeNum(val).toLocaleString('en-US', { maximumFractionDigits: 2 });
+    }
+
+    function generateUniqueKey(prefix = 'id') {
+      try {
+        if (db) {
+          const k = db.ref().push().key;
+          if (k) return k;
+        }
+      } catch (e) {}
+      return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     }
 
     function getSyriaDateObj(customDate = new Date()) {
@@ -1309,7 +1333,8 @@
 
     function updateHeaderDate() {
       const todayStr = getSyriaDateString();
-      document.getElementById('current-date-badge').textContent = `تاريخ اليوم (سوريا): ${todayStr}`;
+      const badgeEl = document.getElementById('current-date-badge');
+      if (badgeEl) badgeEl.textContent = `تاريخ اليوم (سوريا): ${todayStr}`;
       const adminDateLabel = document.getElementById('admin-today-label');
       if (adminDateLabel) adminDateLabel.textContent = todayStr;
     }
@@ -1318,10 +1343,12 @@
 
     function showToast(msg, color = '#f26f22') {
       const toast = document.getElementById('toast-box');
+      if (!toast) return;
       toast.textContent = msg;
       toast.style.borderRightColor = color;
       toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, 3500);
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 3500);
     }
 
     function toggleDaylightMode() {
@@ -1331,16 +1358,103 @@
       showToast(isLight ? 'تم تفعيل الوضع النهاري عالي التباين ☀️' : 'تم تفعيل الوضع الداكن 🌙');
     }
 
+    /**************************************************************
+     * محرك التحديث المزدوج الفوري (Instant Local State + Firebase Sync)
+     * يضمن استجابة فورية 0ms وعدم تجمد أي زر حتى لو انقطع الإنترنت
+     **************************************************************/
+    let appState = {
+      settings: { fuels: {} },
+      meters: {},
+      tanks: {},
+      daily_logs: {},
+      expenses: {},
+      debts: {},
+      tank_supplies: {},
+      audit_logs: {}
+    };
+
+    let currentOwnerFilter = 'today';
+    let isDatabaseConfigured = false;
+    let firstFirebaseLoadCompleted = false;
+    let quickModalPromptedThisOpen = false;
+    let lastLocalWriteTimestamp = 0;
+
+    function saveStateToLocalCache() {
+      try {
+        localStorage.setItem('donea_cached_state_v3', JSON.stringify(appState));
+      } catch (e) {}
+    }
+
+    function loadStateFromLocalCache() {
+      try {
+        const raw = localStorage.getItem('donea_cached_state_v3');
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.settings && parsed.settings.fuels && parsed.meters && parsed.tanks &&
+            Object.keys(parsed.settings.fuels).length > 0 && Object.keys(parsed.meters).length > 0) {
+          appState = {
+            settings: parsed.settings || { fuels: {} },
+            meters: parsed.meters || {},
+            tanks: parsed.tanks || {},
+            daily_logs: parsed.daily_logs || {},
+            expenses: parsed.expenses || {},
+            debts: parsed.debts || {},
+            tank_supplies: parsed.tank_supplies || {},
+            audit_logs: parsed.audit_logs || {}
+          };
+          isDatabaseConfigured = true;
+          return true;
+        }
+      } catch (e) {}
+      return false;
+    }
+
+    // تطبيق مسارات التحديث مثل 'meters/meter_1/current_reading' مباشرة في الذاكرة المحلية ثم رفعها إلى Firebase
+    function applyUpdatesInstant(updatesMap) {
+      lastLocalWriteTimestamp = Date.now();
+      Object.entries(updatesMap).forEach(([path, val]) => {
+        const parts = path.split('/').filter(Boolean);
+        if (parts.length === 0) return;
+        let curr = appState;
+        for (let i = 0; i < parts.length - 1; i++) {
+          const p = parts[i];
+          if (curr[p] === undefined || curr[p] === null || typeof curr[p] !== 'object') {
+            curr[p] = {};
+          }
+          curr = curr[p];
+        }
+        const lastKey = parts[parts.length - 1];
+        if (val === null) {
+          delete curr[lastKey];
+        } else {
+          curr[lastKey] = val;
+        }
+      });
+
+      saveStateToLocalCache();
+      renderAdminInterface();
+      if (document.getElementById('owner-view').classList.contains('active')) {
+        renderOwnerDashboard();
+      }
+
+      try {
+        if (db) db.ref().update(updatesMap).catch(err => console.warn("Sync warning:", err));
+      } catch (e) {}
+    }
+
     function recordAuditLog(actionType, detailsText) {
       const todayStr = getSyriaDateString();
-      const logKey = db.ref(`audit_logs/${todayStr}`).push().key;
-      db.ref(`audit_logs/${todayStr}/${logKey}`).set({
+      const logKey = generateUniqueKey('audit');
+      const entry = {
         id: logKey,
         date: todayStr,
         time: getSyriaTimeString(),
         timestamp: Date.now(),
         action: actionType,
         details: detailsText
+      };
+      applyUpdatesInstant({
+        [`audit_logs/${todayStr}/${logKey}`]: entry
       });
     }
 
@@ -1351,9 +1465,6 @@
     const OWNER_PASS = "Donea$$12345678";
     const MAX_ATTEMPTS = 5;
     const LOCKOUT_MS = 15 * 60 * 1000;
-
-    // متغير لتتبع إظهار نافذة الإدخال السريع في كل مرة يفتح فيها الأمين التطبيق
-    let quickModalPromptedThisOpen = false;
 
     function togglePasswordVisibility() {
       const input = document.getElementById('login-password');
@@ -1442,53 +1553,66 @@
     }
 
     /**************************************************************
-     * 3. الحالة السحابية ومعالج التأسيس الأولي + نافذة الفتح السريعة
+     * 3. المزامنة مع Firebase ومعالج التأسيس الأولي + نافذة الفتح السريعة
      **************************************************************/
-    let appState = {
-      settings: { fuels: {} },
-      meters: {},
-      tanks: {},
-      daily_logs: {},
-      expenses: {},
-      debts: {},
-      tank_supplies: {},
-      audit_logs: {}
-    };
-    let currentOwnerFilter = 'today';
-    let isDatabaseConfigured = false;
-    let firstFirebaseLoadCompleted = false;
+    // تحميل مبدئي من الكاش المحلي إن وجد لضمان سرعة فتح فورية
+    loadStateFromLocalCache();
 
-    db.ref('/').on('value', (snapshot) => {
-      const data = snapshot.val();
-      firstFirebaseLoadCompleted = true;
+    if (db) {
+      db.ref('/').on('value', (snapshot) => {
+        const data = snapshot.val();
+        firstFirebaseLoadCompleted = true;
 
-      if (!data || !data.settings || !data.settings.fuels || !data.meters || !data.tanks) {
-        isDatabaseConfigured = false;
-        appState = { settings: { fuels: {} }, meters: {}, tanks: {}, daily_logs: {}, expenses: {}, debts: {}, tank_supplies: {}, audit_logs: {} };
+        const hasValidCloudStructure = Boolean(
+          data && data.settings && data.settings.fuels &&
+          Object.keys(data.settings.fuels).length > 0 &&
+          data.meters && Object.keys(data.meters).length > 0 &&
+          data.tanks && Object.keys(data.tanks).length > 0
+        );
+
+        if (!hasValidCloudStructure) {
+          // إذا قمنا للتو بحفظ التأسيس محلياً خلال آخر 10 ثوانٍ، لا نسمح لرد سحابي قديم فارغ بإلغاء التأسيس
+          if (isDatabaseConfigured && (Date.now() - lastLocalWriteTimestamp < 10000)) {
+            try { db.ref().set(appState); } catch (e) {}
+            return;
+          }
+          isDatabaseConfigured = false;
+          localStorage.removeItem('donea_cached_state_v3');
+          appState = { settings: { fuels: {} }, meters: {}, tanks: {}, daily_logs: {}, expenses: {}, debts: {}, tank_supplies: {}, audit_logs: {} };
+          triggerAdminModalsAccordingToState();
+          return;
+        }
+
+        isDatabaseConfigured = true;
+        document.getElementById('setup-wizard-modal').style.display = 'none';
+
+        appState = {
+          settings: data.settings || { fuels: {} },
+          meters: data.meters || {},
+          tanks: data.tanks || {},
+          daily_logs: data.daily_logs || {},
+          expenses: data.expenses || {},
+          debts: data.debts || {},
+          tank_supplies: data.tank_supplies || {},
+          audit_logs: data.audit_logs || {}
+        };
+
+        saveStateToLocalCache();
+        renderAdminInterface();
+        if (document.getElementById('owner-view').classList.contains('active')) {
+          renderOwnerDashboard();
+        }
         triggerAdminModalsAccordingToState();
-        return;
+      });
+    }
+
+    // مؤقت أمان: إذا تأخر اتصال Firebase أكثر من 1.2 ثانية بسبب ضعف الشبكة، يعمل النظام فوراً بالكاش المحلي أو يفتح معالج التأسيس
+    setTimeout(() => {
+      if (!firstFirebaseLoadCompleted) {
+        firstFirebaseLoadCompleted = true;
+        triggerAdminModalsAccordingToState();
       }
-
-      isDatabaseConfigured = true;
-      document.getElementById('setup-wizard-modal').style.display = 'none';
-
-      appState = {
-        settings: data.settings || { fuels: {} },
-        meters: data.meters || {},
-        tanks: data.tanks || {},
-        daily_logs: data.daily_logs || {},
-        expenses: data.expenses || {},
-        debts: data.debts || {},
-        tank_supplies: data.tank_supplies || {},
-        audit_logs: data.audit_logs || {}
-      };
-
-      renderAdminInterface();
-      if (document.getElementById('owner-view').classList.contains('active')) {
-        renderOwnerDashboard();
-      }
-      triggerAdminModalsAccordingToState();
-    });
+    }, 1200);
 
     function triggerAdminModalsAccordingToState() {
       if (!firstFirebaseLoadCompleted) return;
@@ -1496,20 +1620,22 @@
       if (currentRole !== 'admin') return;
 
       if (!isDatabaseConfigured) {
-        // المرة الأولى على الإطلاق (أو بعد مسح شامل): إظهار معالج التأسيس متعدد الخطوات
         document.getElementById('shift-quick-modal').style.display = 'none';
-        openSetupWizardModal();
+        const wizModal = document.getElementById('setup-wizard-modal');
+        if (wizModal.style.display !== 'flex') {
+          openSetupWizardModal();
+        }
       } else if (!quickModalPromptedThisOpen) {
-        // في المرات القادمة عند كل فتح للتطبيق: إظهار نافذة إدخال أرقام العدادات السريعة (موافق / تخطي)
         quickModalPromptedThisOpen = true;
         openQuickShiftModalManually();
       }
     }
 
     /**************************************************************
-     * منطق معالج التأسيس الأولي المنظم (3 خطوات)
+     * منطق معالج التأسيس الأولي المنظم (3 خطوات محمية بالكامل)
      **************************************************************/
     let wizardDraftFuels = [];
+    let wizardSavedCounts = { tanksCount: 2, metersCount: 2 };
 
     function openSetupWizardModal() {
       document.getElementById('setup-wizard-modal').style.display = 'flex';
@@ -1526,8 +1652,11 @@
     }
 
     function goToWizardStep2() {
-      const tanksCount = Math.min(10, Math.max(1, safeNum(document.getElementById('wiz-tanks-count').value)));
-      const metersCount = Math.min(24, Math.max(1, safeNum(document.getElementById('wiz-meters-count').value)));
+      const tanksCount = Math.min(10, Math.max(1, Math.round(safeNum(document.getElementById('wiz-tanks-count').value) || 2)));
+      const metersCount = Math.min(24, Math.max(1, Math.round(safeNum(document.getElementById('wiz-meters-count').value) || 2)));
+      wizardSavedCounts.tanksCount = tanksCount;
+      wizardSavedCounts.metersCount = metersCount;
+
       document.getElementById('wiz-tanks-count').value = tanksCount;
       document.getElementById('wiz-meters-count').value = metersCount;
 
@@ -1538,29 +1667,33 @@
       listContainer.innerHTML = '';
 
       for (let i = 0; i < tanksCount; i++) {
-        const defName = defaultFuelNames[i] || `مادة وقود ${i + 1}`;
-        const defPrice = defaultFuelPrices[i] || 175;
+        const prevDraft = wizardDraftFuels[i];
+        const defName = prevDraft ? prevDraft.name : (defaultFuelNames[i] || `وقود ${i + 1}`);
+        const defPrice = prevDraft ? prevDraft.price : (defaultFuelPrices[i] || 175);
+        const defCap = prevDraft ? prevDraft.capacity : 30000;
+        const defVol = prevDraft ? prevDraft.initial_volume : 15000;
+
         listContainer.innerHTML += `
           <div class="sub-item-box">
             <div class="sub-item-title">
-              <span>🛢️ بيانات الخزان والمادة رقم (${i + 1})</span>
+              <span>الخزان والمادة ${i + 1}:</span>
             </div>
             <div class="grid-2">
               <div class="form-group">
-                <label>اسم مادة الوقود:</label>
-                <input type="text" id="wiz_fuel_name_${i}" value="${defName}" required />
+                <label>اسم المادة:</label>
+                <input type="text" id="wiz_fuel_name_${i}" value="${defName}" />
               </div>
               <div class="form-group">
-                <label>سعر اللتر الحالي (ل.س):</label>
-                <input type="number" id="wiz_fuel_price_${i}" value="${defPrice}" min="1" step="any" required />
+                <label>سعر اللتر (ل.س):</label>
+                <input type="number" id="wiz_fuel_price_${i}" value="${defPrice}" min="1" step="any" />
               </div>
               <div class="form-group">
                 <label>السعة الكلية للخزان (لتر):</label>
-                <input type="number" id="wiz_tank_cap_${i}" value="30000" min="100" step="any" required />
+                <input type="number" id="wiz_tank_cap_${i}" value="${defCap}" min="100" step="any" />
               </div>
               <div class="form-group">
-                <label>الرصيد الفعلي المتوفر حالياً (لتر):</label>
-                <input type="number" id="wiz_tank_vol_${i}" value="15000" min="0" step="any" required />
+                <label>الرصيد الحالي في الخزان (لتر):</label>
+                <input type="number" id="wiz_tank_vol_${i}" value="${defVol}" min="0" step="any" />
               </div>
             </div>
           </div>
@@ -1585,22 +1718,22 @@
     }
 
     function goToWizardStep3() {
-      const tanksCount = safeNum(document.getElementById('wiz-tanks-count').value);
-      const metersCount = safeNum(document.getElementById('wiz-meters-count').value);
-      wizardDraftFuels = [];
+      const tanksCount = wizardSavedCounts.tanksCount || Math.max(1, safeNum(document.getElementById('wiz-tanks-count')?.value) || 2);
+      const metersCount = wizardSavedCounts.metersCount || Math.max(1, safeNum(document.getElementById('wiz-meters-count')?.value) || 2);
+      const collectedFuels = [];
 
       for (let i = 0; i < tanksCount; i++) {
-        const fName = (document.getElementById(`wiz_fuel_name_${i}`)?.value || '').trim();
+        const fName = (document.getElementById(`wiz_fuel_name_${i}`)?.value || '').trim() || `وقود ${i + 1}`;
         const fPrice = safeNum(document.getElementById(`wiz_fuel_price_${i}`)?.value);
-        const tCap = safeNum(document.getElementById(`wiz_tank_cap_${i}`)?.value);
+        const tCap = safeNum(document.getElementById(`wiz_tank_cap_${i}`)?.value) || 30000;
         const tVol = safeNum(document.getElementById(`wiz_tank_vol_${i}`)?.value);
 
-        if (!fName || fPrice <= 0) {
-          showToast(`يرجى التأكد من اسم وسعر المادة رقم (${i + 1})`, '#ef4444');
+        if (fPrice <= 0) {
+          showToast(`يرجى إدخال سعر صحيح أكبر من الصفر للمادة (${fName})`, '#ef4444');
           return;
         }
 
-        wizardDraftFuels.push({
+        collectedFuels.push({
           id: `fuel_${i + 1}`,
           name: fName,
           price: fPrice,
@@ -1609,33 +1742,33 @@
         });
       }
 
+      wizardDraftFuels = collectedFuels;
+
       const metersContainer = document.getElementById('wiz-meters-inputs-list');
       metersContainer.innerHTML = '';
 
       for (let m = 0; m < metersCount; m++) {
         const defaultFuelObj = wizardDraftFuels[m % wizardDraftFuels.length];
         const fuelOptions = wizardDraftFuels.map(f =>
-          `<option value="${f.id}" ${f.id === defaultFuelObj.id ? 'selected' : ''}>${f.name} (${formatNum(f.price)} ل.س)</option>`
+          `<option value="${f.id}" ${f.id === defaultFuelObj.id ? 'selected' : ''}>${f.name}</option>`
         ).join('');
 
         metersContainer.innerHTML += `
           <div class="sub-item-box">
             <div class="sub-item-title">
-              <span>⛽ إعداد العداد / المضخة رقم (${m + 1})</span>
+              <span>العداد ${m + 1}:</span>
             </div>
-            <div class="grid-2">
-              <div class="form-group">
-                <label>اسم العداد / المضخة:</label>
-                <input type="text" id="wiz_meter_name_${m}" value="مضخة ${defaultFuelObj.name} رقم ${m + 1}" required />
-              </div>
-              <div class="form-group">
-                <label>مادة الوقود المربوطة بالعداد:</label>
-                <select id="wiz_meter_fuel_${m}">${fuelOptions}</select>
-              </div>
-              <div class="form-group" style="grid-column: 1 / -1;">
-                <label>رقم العداد الميكانيكي الحالي (قراءة البداية):</label>
-                <input type="number" id="wiz_meter_read_${m}" value="0" min="0" step="any" required />
-              </div>
+            <div class="form-group">
+              <label>الاسم:</label>
+              <input type="text" id="wiz_meter_name_${m}" value="عداد ${m + 1}" />
+            </div>
+            <div class="form-group">
+              <label>الوقود:</label>
+              <select id="wiz_meter_fuel_${m}">${fuelOptions}</select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>قراءة البداية:</label>
+              <input type="number" id="wiz_meter_read_${m}" value="0" min="0" step="any" />
             </div>
           </div>
         `;
@@ -1650,63 +1783,101 @@
     }
 
     function finishSetupWizard() {
-      const metersCount = safeNum(document.getElementById('wiz-meters-count').value);
-      const fuelsPayload = {};
-      const tanksPayload = {};
-      const metersPayload = {};
+      try {
+        const metersCount = wizardSavedCounts.metersCount || Math.max(1, safeNum(document.getElementById('wiz-meters-count')?.value) || 2);
 
-      wizardDraftFuels.forEach(f => {
-        fuelsPayload[f.id] = {
-          name: f.name,
-          price: f.price
-        };
-        tanksPayload[f.id] = {
-          name: `خزان ${f.name}`,
-          fuel_type_id: f.id,
-          capacity: f.capacity,
-          current_volume: f.initial_volume
-        };
-      });
-
-      for (let m = 0; m < metersCount; m++) {
-        const mName = (document.getElementById(`wiz_meter_name_${m}`)?.value || '').trim() || `عداد ${m + 1}`;
-        const mFuel = document.getElementById(`wiz_meter_fuel_${m}`)?.value || wizardDraftFuels[0].id;
-        const mRead = Math.max(0, safeNum(document.getElementById(`wiz_meter_read_${m}`)?.value));
-
-        metersPayload[`meter_${m + 1}`] = {
-          name: mName,
-          fuel_type_id: mFuel,
-          current_reading: mRead,
-          max_reading: 999999
-        };
-      }
-
-      const todayStr = getSyriaDateString();
-      const auditKey = db.ref(`audit_logs/${todayStr}`).push().key;
-
-      const fullInitialPayload = {
-        settings: { fuels: fuelsPayload },
-        tanks: tanksPayload,
-        meters: metersPayload,
-        audit_logs: {
-          [todayStr]: {
-            [auditKey]: {
-              id: auditKey,
-              date: todayStr,
-              time: getSyriaTimeString(),
-              timestamp: Date.now(),
-              action: 'تأسيس المحطة الأولي',
-              details: `تم إعداد (${wizardDraftFuels.length}) خزانات و (${metersCount}) عدادات عبر معالج التأسيس الذكي`
-            }
+        // حماية إضافية في حال لم تكن مصفوفة المواد معبأة لأي سبب
+        if (!wizardDraftFuels || wizardDraftFuels.length === 0) {
+          const tanksCount = wizardSavedCounts.tanksCount || 2;
+          wizardDraftFuels = [];
+          for (let i = 0; i < tanksCount; i++) {
+            const fName = (document.getElementById(`wiz_fuel_name_${i}`)?.value || '').trim() || (i === 0 ? 'مازوت' : 'بنزين');
+            const fPrice = safeNum(document.getElementById(`wiz_fuel_price_${i}`)?.value) || 175;
+            const tCap = safeNum(document.getElementById(`wiz_tank_cap_${i}`)?.value) || 30000;
+            const tVol = safeNum(document.getElementById(`wiz_tank_vol_${i}`)?.value) || 15000;
+            wizardDraftFuels.push({
+              id: `fuel_${i + 1}`,
+              name: fName,
+              price: fPrice,
+              capacity: Math.max(100, tCap),
+              initial_volume: Math.max(0, tVol)
+            });
           }
         }
-      };
 
-      // منع ظهور نافذة الوردية مباشرة بعد الانتهاء من التأسيس الأولي
-      quickModalPromptedThisOpen = true;
-      db.ref().set(fullInitialPayload);
-      document.getElementById('setup-wizard-modal').style.display = 'none';
-      showToast('تم تأسيس بيانات المحطة بنجاح 100% ✅', '#10b981');
+        const fuelsPayload = {};
+        const tanksPayload = {};
+        const metersPayload = {};
+
+        wizardDraftFuels.forEach(f => {
+          fuelsPayload[f.id] = {
+            name: f.name,
+            price: safeNum(f.price) || 175
+          };
+          tanksPayload[f.id] = {
+            name: `خزان ${f.name}`,
+            fuel_type_id: f.id,
+            capacity: safeNum(f.capacity) || 30000,
+            current_volume: safeNum(f.initial_volume)
+          };
+        });
+
+        for (let m = 0; m < metersCount; m++) {
+          const mName = (document.getElementById(`wiz_meter_name_${m}`)?.value || '').trim() || `عداد ${m + 1}`;
+          const mFuel = document.getElementById(`wiz_meter_fuel_${m}`)?.value || wizardDraftFuels[0].id;
+          const mRead = Math.max(0, safeNum(document.getElementById(`wiz_meter_read_${m}`)?.value));
+
+          metersPayload[`meter_${m + 1}`] = {
+            name: mName,
+            fuel_type_id: mFuel,
+            current_reading: mRead,
+            max_reading: 999999
+          };
+        }
+
+        const todayStr = getSyriaDateString();
+        const auditKey = generateUniqueKey('audit');
+
+        const fullInitialPayload = {
+          settings: { fuels: fuelsPayload },
+          tanks: tanksPayload,
+          meters: metersPayload,
+          daily_logs: {},
+          expenses: {},
+          debts: {},
+          tank_supplies: {},
+          audit_logs: {
+            [todayStr]: {
+              [auditKey]: {
+                id: auditKey,
+                date: todayStr,
+                time: getSyriaTimeString(),
+                timestamp: Date.now(),
+                action: 'تأسيس المحطة الأولي',
+                details: `تم إعداد (${wizardDraftFuels.length}) خزانات و (${metersCount}) عدادات عبر معالج التأسيس الذكي`
+              }
+            }
+          }
+        };
+
+        // 1. تحديث فوري في ذاكرة التطبيق والكاش المحلي وإغلاق النافذة فوراً دون انتظار الإنترنت
+        lastLocalWriteTimestamp = Date.now();
+        appState = fullInitialPayload;
+        isDatabaseConfigured = true;
+        quickModalPromptedThisOpen = true;
+        saveStateToLocalCache();
+
+        document.getElementById('setup-wizard-modal').style.display = 'none';
+        renderAdminInterface();
+        showToast('تم حفظ الإعدادات وإطلاق النظام بنجاح 100% ✅', '#10b981');
+
+        // 2. رفع البيانات إلى Firebase في الخلفية
+        if (db) {
+          db.ref().set(fullInitialPayload).catch(err => console.warn("Firebase sync pending:", err));
+        }
+      } catch (err) {
+        alert('حدث خطأ غير متوقع أثناء الحفظ: ' + err.message);
+      }
     }
 
     /**************************************************************
@@ -1819,9 +1990,8 @@
 
       for (const mId of Object.keys(meters)) {
         const qCurrEl = document.getElementById(`q_curr_${mId}`);
-        if (!qCurrEl || qCurrEl.value === '') continue;
+        if (!qCurrEl || qCurrEl.value.trim() === '') continue;
 
-        // نقل القيم إلى حقول البطاقات الأساسية لاستخدام نفس محرك الفحص الذري
         const mainCurr = document.getElementById(`curr_${mId}`);
         const mainCalib = document.getElementById(`calib_${mId}`);
         const mainRoll = document.getElementById(`rollover_${mId}`);
@@ -1846,9 +2016,8 @@
         return;
       }
 
-      db.ref().update(combinedUpdates);
-      processedMeters.forEach(mId => clearMeterInputs(mId));
       closeQuickShiftModal();
+      applyUpdatesInstant(combinedUpdates);
       showToast(`تم حفظ قراءات (${processedMeters.length}) عدادات بنجاح ✅`, '#10b981');
     }
 
@@ -1857,45 +2026,43 @@
      **************************************************************/
     function repairDatabaseSchema() {
       if (!confirm('سيقوم هذا الإجراء بفحص وإصلاح هيكلية القاعدة وربط أي عداد بمادة افتراضية صحيحة دون حذف الفواتير السابقة. هل تود المتابعة؟')) return;
-      db.ref('/').once('value').then((snap) => {
-        const current = snap.val() || {};
-        if (!current.settings || !current.settings.fuels || !current.meters || !current.tanks) {
-          openSetupWizardModal();
-          return;
-        }
 
-        const fuels = current.settings.fuels;
-        const firstFuelId = Object.keys(fuels)[0];
-        const tanks = current.tanks;
-        const meters = current.meters;
+      if (!isDatabaseConfigured || !appState.settings || !appState.settings.fuels || Object.keys(appState.settings.fuels).length === 0) {
+        openSetupWizardModal();
+        return;
+      }
 
-        Object.keys(fuels).forEach(fId => {
-          fuels[fId].name = String(fuels[fId].name || 'وقود');
-          fuels[fId].price = safeNum(fuels[fId].price) || 175;
-        });
+      const fuels = appState.settings.fuels;
+      const firstFuelId = Object.keys(fuels)[0];
+      const tanks = appState.tanks || {};
+      const meters = appState.meters || {};
 
-        Object.keys(tanks).forEach(tId => {
-          tanks[tId].capacity = safeNum(tanks[tId].capacity) || 30000;
-          tanks[tId].current_volume = safeNum(tanks[tId].current_volume);
-          tanks[tId].fuel_type_id = fuels[tanks[tId].fuel_type_id] ? tanks[tId].fuel_type_id : firstFuelId;
-        });
-
-        Object.keys(meters).forEach(mId => {
-          meters[mId].name = String(meters[mId].name || mId);
-          if (!meters[mId].fuel_type_id || !fuels[meters[mId].fuel_type_id]) {
-            meters[mId].fuel_type_id = firstFuelId;
-          }
-          meters[mId].current_reading = safeNum(meters[mId].current_reading);
-          meters[mId].max_reading = safeNum(meters[mId].max_reading) || 999999;
-        });
-
-        db.ref().update({ 'settings/fuels': fuels, 'tanks': tanks, 'meters': meters });
-        recordAuditLog('إصلاح قاعدة البيانات', 'تم تشغيل أداة الفحص والإصلاح القياسية');
-        showToast('تم فحص وإصلاح قاعدة البيانات بنجاح ✅', '#10b981');
+      Object.keys(fuels).forEach(fId => {
+        fuels[fId].name = String(fuels[fId].name || 'وقود');
+        fuels[fId].price = safeNum(fuels[fId].price) || 175;
       });
+
+      Object.keys(tanks).forEach(tId => {
+        tanks[tId].capacity = safeNum(tanks[tId].capacity) || 30000;
+        tanks[tId].current_volume = safeNum(tanks[tId].current_volume);
+        tanks[tId].fuel_type_id = fuels[tanks[tId].fuel_type_id] ? tanks[tId].fuel_type_id : firstFuelId;
+      });
+
+      Object.keys(meters).forEach(mId => {
+        meters[mId].name = String(meters[mId].name || mId);
+        if (!meters[mId].fuel_type_id || !fuels[meters[mId].fuel_type_id]) {
+          meters[mId].fuel_type_id = firstFuelId;
+        }
+        meters[mId].current_reading = safeNum(meters[mId].current_reading);
+        meters[mId].max_reading = safeNum(meters[mId].max_reading) || 999999;
+      });
+
+      applyUpdatesInstant({ 'settings/fuels': fuels, 'tanks': tanks, 'meters': meters });
+      recordAuditLog('إصلاح قاعدة البيانات', 'تم تشغيل أداة الفحص والإصلاح القياسية');
+      showToast('تم فحص وإصلاح قاعدة البيانات بنجاح ✅', '#10b981');
     }
 
-    // زر إعادة التطبيق للصفر (يمسح كل شيء ويطلق معالج التأسيس الأولي فوراً)
+    // زر إعادة التطبيق للصفر (يمسح كل شيء فوراً ويطلق معالج التأسيس الأولي)
     function factoryResetApp() {
       const inputEl = document.getElementById('reset-confirm-input');
       const val = (inputEl ? inputEl.value : '').trim();
@@ -1909,17 +2076,24 @@
         return;
       }
 
-      db.ref().remove().then(() => {
-        if (inputEl) inputEl.value = '';
-        showToast('تم مسح جميع البيانات، يرجى إدخال الإعدادات الجديدة للمحطة 🚨', '#ef4444');
-        openSetupWizardModal();
-      }).catch(err => {
-        showToast('حدث خطأ أثناء المسح: ' + err.message, '#ef4444');
-      });
+      lastLocalWriteTimestamp = Date.now();
+      isDatabaseConfigured = false;
+      wizardDraftFuels = [];
+      localStorage.removeItem('donea_cached_state_v3');
+      appState = { settings: { fuels: {} }, meters: {}, tanks: {}, daily_logs: {}, expenses: {}, debts: {}, tank_supplies: {}, audit_logs: {} };
+
+      if (inputEl) inputEl.value = '';
+      renderAdminInterface();
+      openSetupWizardModal();
+      showToast('تم مسح جميع البيانات، يرجى إدخال الإعدادات الجديدة للمحطة 🚨', '#ef4444');
+
+      try {
+        if (db) db.ref().remove().catch(err => console.warn("Reset sync warning:", err));
+      } catch (e) {}
     }
 
     /**************************************************************
-     * 4. واجهة أمين المحطة الكاملة (مع كافة الميزات الـ 5 المستعادة)
+     * 4. واجهة أمين المحطة الكاملة
      **************************************************************/
     function renderAdminInterface() {
       renderAdminShiftSummary();
@@ -2104,23 +2278,26 @@
       const tankObj = (appState.tanks && appState.tanks[fuelId]) || null;
 
       const prev = safeNum(meter.current_reading);
-      const currInput = document.getElementById(`curr_${meterId}`).value;
-      const calib = safeNum(document.getElementById(`calib_${meterId}`).value);
-      const isRollover = document.getElementById(`rollover_${meterId}`).checked;
+      const currInput = document.getElementById(`curr_${meterId}`)?.value || '';
+      const calib = safeNum(document.getElementById(`calib_${meterId}`)?.value);
+      const isRollover = Boolean(document.getElementById(`rollover_${meterId}`)?.checked);
       const warnBox = document.getElementById(`warn_${meterId}`);
+      const rollBox = document.getElementById(`rollover_box_${meterId}`);
 
-      document.getElementById(`rollover_box_${meterId}`).style.display = isRollover ? 'block' : 'none';
+      if (rollBox) rollBox.style.display = isRollover ? 'block' : 'none';
 
       if (currInput === '') {
-        document.getElementById(`net_liters_${meterId}`).textContent = '0';
-        document.getElementById(`total_money_${meterId}`).textContent = '0';
-        warnBox.style.display = 'none';
+        const netEl = document.getElementById(`net_liters_${meterId}`);
+        const monEl = document.getElementById(`total_money_${meterId}`);
+        if (netEl) netEl.textContent = '0';
+        if (monEl) monEl.textContent = '0';
+        if (warnBox) warnBox.style.display = 'none';
         updateBatchShiftPreview();
         return;
       }
 
       const curr = safeNum(currInput);
-      const maxVal = safeNum(document.getElementById(`max_${meterId}`).value) || 999999;
+      const maxVal = safeNum(document.getElementById(`max_${meterId}`)?.value) || 999999;
 
       let rawDiff = isRollover ? ((maxVal - prev) + curr) : (curr - prev);
       const netLiters = Math.max(0, rawDiff - calib);
@@ -2130,17 +2307,19 @@
       document.getElementById(`total_money_${meterId}`).textContent = formatNum(totalAmount);
 
       const tankAvail = tankObj ? safeNum(tankObj.current_volume) : 999999;
-      if (!isRollover && curr < prev) {
-        warnBox.style.display = 'block';
-        warnBox.textContent = '⚠️ القراءة الحالية أصغر من السابقة! تحقق من الرقم أو فعّل التصفير.';
-      } else if (netLiters > tankAvail) {
-        warnBox.style.display = 'block';
-        warnBox.textContent = `⚠️ تنبيه: الكمية (${formatNum(netLiters)} لتر) أكبر من الرصيد الدفتري بالخزان (${formatNum(tankAvail)} لتر)!`;
-      } else if (netLiters > 15000) {
-        warnBox.style.display = 'block';
-        warnBox.textContent = `⚠️ تنبيه: كمية كبيرة جداً (${formatNum(netLiters)} لتر)، تأكد من عدم زيادة صفر بالخطأ!`;
-      } else {
-        warnBox.style.display = 'none';
+      if (warnBox) {
+        if (!isRollover && curr < prev) {
+          warnBox.style.display = 'block';
+          warnBox.textContent = '⚠️ القراءة الحالية أصغر من السابقة! تحقق من الرقم أو فعّل التصفير.';
+        } else if (netLiters > tankAvail) {
+          warnBox.style.display = 'block';
+          warnBox.textContent = `⚠️ تنبيه: الكمية (${formatNum(netLiters)} لتر) أكبر من الرصيد الدفتري بالخزان (${formatNum(tankAvail)} لتر)!`;
+        } else if (netLiters > 15000) {
+          warnBox.style.display = 'block';
+          warnBox.textContent = `⚠️ تنبيه: كمية كبيرة جداً (${formatNum(netLiters)} لتر)، تأكد من عدم زيادة صفر بالخطأ!`;
+        } else {
+          warnBox.style.display = 'none';
+        }
       }
 
       updateBatchShiftPreview();
@@ -2185,8 +2364,8 @@
         if (!confirm(result.confirmMsg)) return;
       }
 
-      db.ref().update(result.updates);
       clearMeterInputs(meterId);
+      applyUpdatesInstant(result.updates);
       showToast(`تم تسجيل البيع لـ ${result.meterName} بنجاح ✅`, '#10b981');
     }
 
@@ -2198,7 +2377,7 @@
 
       for (const mId of Object.keys(meters)) {
         const currEl = document.getElementById(`curr_${mId}`);
-        if (!currEl || currEl.value === '') continue;
+        if (!currEl || currEl.value.trim() === '') continue;
 
         const res = buildMeterSaleAtomicPayload(mId, tankDeductions);
         if (!res) return;
@@ -2214,8 +2393,8 @@
 
       if (!confirm(`سيتم حفظ وإغلاق (${processedMeters.length}) عدادات دفعة واحدة. هل أنت متأكد؟`)) return;
 
-      db.ref().update(combinedUpdates);
       processedMeters.forEach(mId => clearMeterInputs(mId));
+      applyUpdatesInstant(combinedUpdates);
       showToast(`تم إغلاق وحفظ (${processedMeters.length}) عدادات بنجاح ✅`, '#10b981');
     }
 
@@ -2228,16 +2407,16 @@
       const tankObj = (appState.tanks && appState.tanks[fuelId]) || null;
 
       const prevReading = safeNum(meter.current_reading);
-      const currStr = document.getElementById(`curr_${meterId}`).value;
+      const currStr = (document.getElementById(`curr_${meterId}`)?.value || '').trim();
       if (currStr === '') {
         showToast(`يرجى إدخال القراءة الحالية لـ ${meter.name}`, '#ef4444');
         return null;
       }
 
       const currReading = safeNum(currStr);
-      const calibLiters = safeNum(document.getElementById(`calib_${meterId}`).value);
-      const isRollover = document.getElementById(`rollover_${meterId}`).checked;
-      const maxReading = safeNum(document.getElementById(`max_${meterId}`).value) || 999999;
+      const calibLiters = safeNum(document.getElementById(`calib_${meterId}`)?.value);
+      const isRollover = Boolean(document.getElementById(`rollover_${meterId}`)?.checked);
+      const maxReading = safeNum(document.getElementById(`max_${meterId}`)?.value) || 999999;
 
       if (!isRollover && currReading < prevReading) {
         showToast(`خطأ في ${meter.name}: القراءة الحالية أقل من السابقة!`, '#ef4444');
@@ -2256,7 +2435,7 @@
 
       const todayStr = getSyriaDateString();
       const timeStr = getSyriaTimeString();
-      const logId = db.ref(`daily_logs/${todayStr}`).push().key;
+      const logId = generateUniqueKey('sale');
 
       const alreadyDeducted = safeNum(runningTankDeductions[fuelId]);
       const currentTankVolume = tankObj ? safeNum(tankObj.current_volume) : 0;
@@ -2291,7 +2470,6 @@
       if (c) c.value = '';
       if (cl) cl.value = '0';
       if (r) r.checked = false;
-      previewMeterCalculation(meterId);
     }
 
     function undoLastMeterSale(meterId) {
@@ -2315,13 +2493,14 @@
         atomicUndo[`tanks/${fuelId}/current_volume`] = currentTankVol + safeNum(lastLog.net_liters);
       }
 
-      db.ref().update(atomicUndo);
+      applyUpdatesInstant(atomicUndo);
       recordAuditLog('تراجع عن فاتورة عداد', `إلغاء فاتورة ${lastLog.meter_name} بكمية ${formatNum(lastLog.net_liters)} لتر وإرجاع القراءة إلى ${lastLog.prev_reading}`);
       showToast('تم التراجع بنجاح ↩️', '#f59e0b');
     }
 
     function renderAdminDailyLogs() {
       const tbody = document.getElementById('admin-daily-sales-tbody');
+      if (!tbody) return;
       const todayStr = getSyriaDateString();
       const logsObj = (appState.daily_logs && appState.daily_logs[todayStr]) || {};
       const logsArr = Object.values(logsObj).sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
@@ -2346,10 +2525,11 @@
     }
 
     /**************************************************************
-     * 5. الخزانات، فواتير الصهاريج، وجرد السيخة الفعلي (مستعادة بالكامل)
+     * 5. الخزانات، فواتير الصهاريج، وجرد السيخة الفعلي
      **************************************************************/
     function renderTanksSection() {
       const container = document.getElementById('tanks-cards-container');
+      if (!container) return;
       const tanks = appState.tanks || {};
       const fuels = (appState.settings && appState.settings.fuels) || {};
       container.innerHTML = '';
@@ -2409,8 +2589,8 @@
 
       const volEl = document.getElementById(`supply_vol_${tankId}`);
       const noteEl = document.getElementById(`supply_note_${tankId}`);
-      const addedVolume = safeNum(volEl.value);
-      const invoiceNote = (noteEl.value || '').trim() || 'توريد صهريج قياسي';
+      const addedVolume = safeNum(volEl?.value);
+      const invoiceNote = (noteEl?.value || '').trim() || 'توريد صهريج قياسي';
 
       if (addedVolume <= 0) {
         showToast('يرجى إدخال كمية توريد صحيحة', '#ef4444');
@@ -2418,7 +2598,7 @@
       }
 
       const todayStr = getSyriaDateString();
-      const supKey = db.ref(`tank_supplies/${todayStr}`).push().key;
+      const supKey = generateUniqueKey('sup');
       const newVol = safeNum(tank.current_volume) + addedVolume;
 
       const updates = {};
@@ -2434,19 +2614,19 @@
         note: invoiceNote
       };
 
-      db.ref().update(updates);
+      if (volEl) volEl.value = '';
+      if (noteEl) noteEl.value = '';
+      applyUpdatesInstant(updates);
       recordAuditLog('توريد صهريج وقود', `إضافة ${formatNum(addedVolume)} لتر إلى ${tank.name} (${invoiceNote})`);
-      volEl.value = '';
-      noteEl.value = '';
       showToast(`تم توريد ${formatNum(addedVolume)} لتر وتوثيق الفاتورة ✅`, '#10b981');
     }
 
     function previewDipDiff(tankId) {
       const tank = appState.tanks[tankId];
-      const inputVal = document.getElementById(`dip_actual_${tankId}`).value;
+      const inputVal = document.getElementById(`dip_actual_${tankId}`)?.value || '';
       const previewEl = document.getElementById(`dip_preview_${tankId}`);
-      if (!tank || inputVal === '') {
-        previewEl.textContent = '';
+      if (!tank || !previewEl || inputVal === '') {
+        if (previewEl) previewEl.textContent = '';
         return;
       }
       const bookVol = safeNum(tank.current_volume);
@@ -2468,7 +2648,7 @@
     function saveTankDipReconciliation(tankId) {
       const tank = appState.tanks[tankId];
       const inputEl = document.getElementById(`dip_actual_${tankId}`);
-      if (!tank || inputEl.value === '') {
+      if (!tank || !inputEl || inputEl.value.trim() === '') {
         showToast('يرجى إدخال القياس الفعلي للسيخة أولاً', '#ef4444');
         return;
       }
@@ -2480,16 +2660,16 @@
       if (!confirm(`الرصيد الدفتري: ${formatNum(bookVol)} لتر\nقياس السيخة الفعلي: ${formatNum(actualVol)} لتر\nالفرق: ${formatNum(diff)} لتر\n\nهل تريد اعتماد قياس السيخة كرصيد فعلي جديد للخزان وتوثيق الفرق للمالك؟`)) return;
 
       const todayStr = getSyriaDateString();
-      db.ref(`tanks/${tankId}`).update({
-        current_volume: actualVol,
-        last_dip_date: `${todayStr} ${getSyriaTimeString()}`,
-        last_dip_actual: actualVol,
-        last_dip_book: bookVol,
-        last_dip_diff: diff
+      inputEl.value = '';
+      applyUpdatesInstant({
+        [`tanks/${tankId}/current_volume`]: actualVol,
+        [`tanks/${tankId}/last_dip_date`]: `${todayStr} ${getSyriaTimeString()}`,
+        [`tanks/${tankId}/last_dip_actual`]: actualVol,
+        [`tanks/${tankId}/last_dip_book`]: bookVol,
+        [`tanks/${tankId}/last_dip_diff`]: diff
       });
 
       recordAuditLog('مطابقة سيخة الخزان', `${tank.name}: الدفتري ${formatNum(bookVol)} لتر | الفعلي ${formatNum(actualVol)} لتر | الفرق (${formatNum(diff)} لتر)`);
-      inputEl.value = '';
       showToast('تم اعتماد قياس السيخة وتوثيق المطابقة بنجاح ✅', '#10b981');
     }
 
@@ -2540,26 +2720,32 @@
       }
 
       const todayStr = getSyriaDateString();
-      const expKey = db.ref(`expenses/${todayStr}`).push().key;
+      const expKey = generateUniqueKey('exp');
 
-      db.ref(`expenses/${todayStr}/${expKey}`).set({
-        id: expKey, date: todayStr, time: getSyriaTimeString(),
-        timestamp: Date.now(), description: desc, amount: amount
+      descEl.value = '';
+      amountEl.value = '';
+      applyUpdatesInstant({
+        [`expenses/${todayStr}/${expKey}`]: {
+          id: expKey, date: todayStr, time: getSyriaTimeString(),
+          timestamp: Date.now(), description: desc, amount: amount
+        }
       });
 
-      descEl.value = ''; amountEl.value = '';
       showToast('تم تسجيل المصروف بنجاح ✅', '#10b981');
     }
 
     function deleteExpenseItem(dateStr, expId, desc, amt) {
       if (!confirm('هل تريد حذف هذا المصروف؟')) return;
-      db.ref(`expenses/${dateStr}/${expId}`).remove();
+      applyUpdatesInstant({
+        [`expenses/${dateStr}/${expId}`]: null
+      });
       recordAuditLog('حذف مصروف يومي', `حذف مصروف (${desc}) بقيمة ${formatNum(amt)} ل.س`);
       showToast('تم الحذف بنجاح', '#f59e0b');
     }
 
     function renderAdminExpenses() {
       const tbody = document.getElementById('admin-expenses-tbody');
+      if (!tbody) return;
       const todayStr = getSyriaDateString();
       const todayExps = (appState.expenses && appState.expenses[todayStr]) || {};
       const list = Object.values(todayExps).sort((a, b) => safeNum(b.timestamp) - safeNum(a.timestamp));
@@ -2582,8 +2768,8 @@
      * 7. إدارة الديون والمبيعات الآجلة
      **************************************************************/
     function calcDebtAmountFromLiters() {
-      const fuelId = document.getElementById('debt-fuel').value;
-      const liters = safeNum(document.getElementById('debt-liters').value);
+      const fuelId = document.getElementById('debt-fuel')?.value;
+      const liters = safeNum(document.getElementById('debt-liters')?.value);
       const price = safeNum(appState.settings?.fuels?.[fuelId]?.price);
       if (liters > 0 && price > 0) {
         document.getElementById('debt-amount').value = liters * price;
@@ -2611,34 +2797,36 @@
       }
 
       const todayStr = getSyriaDateString();
-      const debtKey = db.ref('debts').push().key;
-
-      db.ref(`debts/${debtKey}`).set({
-        id: debtKey,
-        date: todayStr,
-        time: getSyriaTimeString(),
-        timestamp: Date.now(),
-        customer: customer,
-        fuel_id: fuelId,
-        fuel_name: fuelName,
-        liters: liters,
-        amount: amount,
-        note: note,
-        paid: false,
-        paid_date: null
-      });
+      const debtKey = generateUniqueKey('debt');
 
       custEl.value = ''; litEl.value = ''; amtEl.value = ''; noteEl.value = '';
+      applyUpdatesInstant({
+        [`debts/${debtKey}`]: {
+          id: debtKey,
+          date: todayStr,
+          time: getSyriaTimeString(),
+          timestamp: Date.now(),
+          customer: customer,
+          fuel_id: fuelId,
+          fuel_name: fuelName,
+          liters: liters,
+          amount: amount,
+          note: note,
+          paid: false,
+          paid_date: null
+        }
+      });
+
       showToast(`تم تسجيل دين آجل على (${customer}) بنجاح ✅`, '#10b981');
     }
 
     function markDebtAsPaid(debtId, customer, amount) {
       if (!confirm(`تأكيد استلام مبلغ (${formatNum(amount)} ل.س) نقداً من الزبون (${customer}) وإضافته لصندوق المحطة؟`)) return;
       const todayStr = getSyriaDateString();
-      db.ref(`debts/${debtId}`).update({
-        paid: true,
-        paid_date: todayStr,
-        paid_time: getSyriaTimeString()
+      applyUpdatesInstant({
+        [`debts/${debtId}/paid`]: true,
+        [`debts/${debtId}/paid_date`]: todayStr,
+        [`debts/${debtId}/paid_time`]: getSyriaTimeString()
       });
       recordAuditLog('تسديد دين زبون', `تحصيل دين بقيمة ${formatNum(amount)} ل.س من الزبون (${customer})`);
       showToast('تم تسديد الدين وإضافة المبلغ لصندوق اليوم ✅', '#10b981');
@@ -2678,29 +2866,35 @@
       const fuels = (appState.settings && appState.settings.fuels) || {};
       const meters = appState.meters || {};
 
-      document.getElementById('settings-prices-list').innerHTML = Object.keys(fuels).map(fId => `
-        <div class="form-group">
-          <label>سعر لتر (${fuels[fId].name}):</label>
-          <div style="display:flex; gap:8px;">
-            <input type="number" id="price_input_${fId}" value="${safeNum(fuels[fId].price)}" step="any" />
-            <button class="btn btn-primary btn-sm" onclick="updateFuelPrice('${fId}')">حفظ السعر</button>
+      const pricesEl = document.getElementById('settings-prices-list');
+      if (pricesEl) {
+        pricesEl.innerHTML = Object.keys(fuels).map(fId => `
+          <div class="form-group">
+            <label>سعر لتر (${fuels[fId].name}):</label>
+            <div style="display:flex; gap:8px;">
+              <input type="number" id="price_input_${fId}" value="${safeNum(fuels[fId].price)}" step="any" />
+              <button class="btn btn-primary btn-sm" onclick="updateFuelPrice('${fId}')">حفظ السعر</button>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
 
       const fuelOptionsHtml = (selectedFuelId) => Object.keys(fuels).map(fId =>
         `<option value="${fId}" ${fId === selectedFuelId ? 'selected' : ''}>${fuels[fId].name}</option>`
       ).join('');
 
-      document.getElementById('settings-meters-mapping').innerHTML = Object.keys(meters).map(mId => `
-        <div class="form-group">
-          <label>${meters[mId].name}:</label>
-          <div style="display:flex; gap:8px;">
-            <select id="map_fuel_${mId}">${fuelOptionsHtml(meters[mId].fuel_type_id)}</select>
-            <button class="btn btn-secondary btn-sm" onclick="changeMeterFuelType('${mId}')">تبديل المادة</button>
+      const mappingEl = document.getElementById('settings-meters-mapping');
+      if (mappingEl) {
+        mappingEl.innerHTML = Object.keys(meters).map(mId => `
+          <div class="form-group">
+            <label>${meters[mId].name}:</label>
+            <div style="display:flex; gap:8px;">
+              <select id="map_fuel_${mId}">${fuelOptionsHtml(meters[mId].fuel_type_id)}</select>
+              <button class="btn btn-secondary btn-sm" onclick="changeMeterFuelType('${mId}')">تبديل المادة</button>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
 
       const newMeterSelect = document.getElementById('new-meter-fuel');
       if (newMeterSelect) newMeterSelect.innerHTML = fuelOptionsHtml('');
@@ -2710,25 +2904,29 @@
     }
 
     function updateFuelPrice(fuelId) {
-      const newPrice = safeNum(document.getElementById(`price_input_${fuelId}`).value);
+      const newPrice = safeNum(document.getElementById(`price_input_${fuelId}`)?.value);
       if (newPrice <= 0) {
-        showToast('يرجى إدخال سعر صحيح', '#ef4444');
+        showToast('يرجى إدخال سعر صحيح أكبر من الصفر', '#ef4444');
         return;
       }
       const oldPrice = safeNum(appState.settings?.fuels?.[fuelId]?.price);
       const fuelName = appState.settings?.fuels?.[fuelId]?.name || fuelId;
 
-      db.ref(`settings/fuels/${fuelId}/price`).set(newPrice);
+      applyUpdatesInstant({
+        [`settings/fuels/${fuelId}/price`]: newPrice
+      });
       recordAuditLog('تعديل سعر وقود', `تغيير سعر (${fuelName}) من ${formatNum(oldPrice)} إلى ${formatNum(newPrice)} ل.س`);
       showToast('تم حفظ السعر بنجاح ✅', '#10b981');
     }
 
     function changeMeterFuelType(meterId) {
-      const selectedFuel = document.getElementById(`map_fuel_${meterId}`).value;
+      const selectedFuel = document.getElementById(`map_fuel_${meterId}`)?.value;
       const meterName = appState.meters?.[meterId]?.name || meterId;
       const newFuelName = appState.settings?.fuels?.[selectedFuel]?.name || selectedFuel;
 
-      db.ref(`meters/${meterId}/fuel_type_id`).set(selectedFuel);
+      applyUpdatesInstant({
+        [`meters/${meterId}/fuel_type_id`]: selectedFuel
+      });
       recordAuditLog('تبديل وقود عداد', `تحويل (${meterName}) إلى مادة (${newFuelName})`);
       showToast('تم تبديل المادة بنجاح ✅', '#10b981');
     }
@@ -2740,9 +2938,14 @@
       const fuelId = document.getElementById('new-meter-fuel').value;
       const initReading = safeNum(document.getElementById('new-meter-reading').value);
 
-      db.ref(`meters/meter_${Date.now()}`).set({ name, fuel_type_id: fuelId, current_reading: initReading, max_reading: 999999 });
+      const newMId = `meter_${Date.now()}`;
+      nameEl.value = '';
+      document.getElementById('new-meter-reading').value = '0';
+
+      applyUpdatesInstant({
+        [`meters/${newMId}`]: { name, fuel_type_id: fuelId, current_reading: initReading, max_reading: 999999 }
+      });
       recordAuditLog('إضافة عداد جديد', `إضافة (${name}) بقراءة ابتدائية ${formatNum(initReading)}`);
-      nameEl.value = ''; document.getElementById('new-meter-reading').value = '0';
       showToast('تمت إضافة العداد بنجاح ✅', '#10b981');
     }
 
@@ -2754,14 +2957,20 @@
       const capEl = document.getElementById('new-tank-capacity');
       const initEl = document.getElementById('new-tank-initial');
 
+      const newPrice = safeNum(priceEl.value);
+      const newCap = safeNum(capEl.value) || 30000;
+      const newInit = safeNum(initEl.value);
+
       const newFuelId = 'fuel_' + Date.now();
-      db.ref().update({
-        [`settings/fuels/${newFuelId}`]: { name: fuelName, price: safeNum(priceEl.value) },
-        [`tanks/${newFuelId}`]: { name: `خزان ${fuelName}`, fuel_type_id: newFuelId, capacity: safeNum(capEl.value), current_volume: safeNum(initEl.value) }
+      nameEl.value = '';
+      priceEl.value = '';
+
+      applyUpdatesInstant({
+        [`settings/fuels/${newFuelId}`]: { name: fuelName, price: newPrice },
+        [`tanks/${newFuelId}`]: { name: `خزان ${fuelName}`, fuel_type_id: newFuelId, capacity: newCap, current_volume: newInit }
       });
 
-      recordAuditLog('إضافة مادة وخزان', `إضافة (${fuelName}) بسعر ${formatNum(priceEl.value)} ل.س`);
-      nameEl.value = ''; priceEl.value = '';
+      recordAuditLog('إضافة مادة وخزان', `إضافة (${fuelName}) بسعر ${formatNum(newPrice)} ل.س`);
       showToast('تمت الإضافة بنجاح ✅', '#10b981');
     }
 
