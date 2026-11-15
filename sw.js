@@ -1,4 +1,4 @@
-const CACHE_NAME = 'donea-fuel-pwa-v7';
+const CACHE_NAME = 'donea-fuel-pwa-v8';
 const ASSETS = [
   './',
   './index.html',
